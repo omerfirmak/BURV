@@ -1,7 +1,7 @@
 `timescale 1ns / 1ps
 
-`include "../include/riscv_defines.sv"
-`include "../include/alu_defines.sv"
+`include "riscv_defines.sv"
+`include "alu_defines.sv"
 
 module alu (
         	input logic [`ALU_OP_WIDTH -1 : 0]      alu_op_i,

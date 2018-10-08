@@ -1,16 +1,15 @@
 
 MODULE = riscv_top
 
-VERILOG_SRC = ../include/alu_defines.sv 	\
-			  ../include/riscv_defines.sv	\
-			  riscv_top.sv					\
-			  ip/ram.sv 					\
-			  ip/dp_ram.sv 					\
-			  ../rtl/alu.sv 				\
-			  ../rtl/reg_file.sv			\
-			  ../rtl/riscv_core.sv			\
-			  ../rtl/decode_stage.sv		\
-			  ../rtl/prefetch_buffer.sv
+VERILOG_SRC = 	../rtl/include/alu_defines.sv 		\
+		../rtl/include/riscv_defines.sv		\
+		../rtl/alu.sv 				\
+		../rtl/reg_file.sv			\
+		../rtl/riscv_core.sv			\
+		../rtl/decoder.sv			\
+		../rtl/prefetch_buffer.sv		\
+		ip/dp_ram.sv				\
+		riscv_top.sv
 
 all: sim
 
@@ -23,7 +22,7 @@ clean:
 	rm -f *.vcd
 
 verilate: clean
-	verilator --cc --trace $(VERILOG_SRC) --exe $(MODULE)_tb.cpp --top-module riscv_top
+	verilator --cc --trace $(VERILOG_SRC) -I../rtl/include --exe $(MODULE)_tb.cpp --top-module riscv_top
 
 compile_sim: verilate
 	make -j -C obj_dir/ -f V$(MODULE).mk V$(MODULE)

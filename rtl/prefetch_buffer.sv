@@ -1,6 +1,6 @@
 `timescale 1ns / 1ps
 
-`include "../include/riscv_defines.sv"
+`include "riscv_defines.sv"
 
 module prefetch_buffer (
 	input logic clk,    // Clock
@@ -22,15 +22,15 @@ module prefetch_buffer (
 	always_ff @(posedge clk or negedge rst_n) begin
 		if(~rst_n) begin
 			for (integer index = 0; index < 4; ++index) begin
-				mem_high[index] <= 0; //16'(2 * index);
-				mem_low[index]  <= 0; //16'(2 * index  + 1);
+				mem_high[index] <= 0;
+				mem_low[index]  <= 0;
 			end
 			read_index <= 0;
 			write_index <= 0;
 		end else begin
 			if (write_en) begin
-				mem_high[write_index] <= data_in[`RISCV_WORD_WIDTH - 1, (`RISCV_WORD_WIDTH / 2)];
-				mem_low[write_index] <= data_in[(`RISCV_WORD_WIDTH / 2) - 1, 0];
+				mem_high[write_index] <= data_in[`RISCV_WORD_WIDTH - 1 : (`RISCV_WORD_WIDTH / 2)];
+				mem_low[write_index] <= data_in[(`RISCV_WORD_WIDTH / 2) - 1 : 0];
 				write_index <= write_index + 1;
 			end
 

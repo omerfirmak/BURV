@@ -1,3 +1,6 @@
+`timescale 1ns / 1ps
+
+`include "riscv_defines.sv"
 
 module riscv_core (
 	input clk,    // Clock

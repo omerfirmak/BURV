@@ -2,8 +2,7 @@
 module riscv_top (
 	input clk,    // Clock
 	input clk_en, // Clock Enable
-	input rst_n,  // Asynchronous reset active low
-	input tmp	
+	input rst_n   // Asynchronous reset active low
 );
 
 	riscv_core riscv_core

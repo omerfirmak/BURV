@@ -1,6 +1,6 @@
 `timescale 1ns / 1ps
 
-`include "../include/riscv_defines.sv"
+`include "riscv_defines.sv"
 
 module reg_file (
                     input logic clk,

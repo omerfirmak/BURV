@@ -1,3 +1,7 @@
+`timescale 1ns / 1ps
+
+`include "riscv_defines.sv"
+
 module decoder (
 	input clk,    // Clock
 	input rst_n,  // Asynchronous reset active low
