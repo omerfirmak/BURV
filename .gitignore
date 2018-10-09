@@ -1,3 +1,5 @@
 tb/obj_dir
 tb/*.vcd
 tb/wave.gtkw
+*.pdf
+*.bkp

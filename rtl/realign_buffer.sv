@@ -2,16 +2,17 @@
 
 `include "riscv_defines.sv"
 
-module prefetch_buffer (
+module realign_buffer (
 	input logic clk,    // Clock
 	input logic rst_n,  // Asynchronous reset active low
 
+	input  logic write_en_i,
+	input  logic [`RISCV_WORD_WIDTH - 1 : 0] data_i,
+	output logic buffer_full_o,
 
-	input logic write_en,
-	input logic [`RISCV_WORD_WIDTH - 1 : 0] data_in,
 
-	input  logic [1 : 0] read_en,
-	output logic [`RISCV_WORD_WIDTH - 1 : 0] data_out
+	input  logic [1 : 0] read_en_i,
+	output logic [`RISCV_WORD_WIDTH - 1 : 0] data_o
 );
 
 	logic [2 : 0]  read_index;
@@ -28,13 +29,13 @@ module prefetch_buffer (
 			read_index <= 0;
 			write_index <= 0;
 		end else begin
-			if (write_en) begin
-				mem_high[write_index] <= data_in[`RISCV_WORD_WIDTH - 1 : (`RISCV_WORD_WIDTH / 2)];
-				mem_low[write_index] <= data_in[(`RISCV_WORD_WIDTH / 2) - 1 : 0];
+			if (write_en_i && ~buffer_full_o) begin
+				mem_high[write_index] <= data_i[`RISCV_WORD_WIDTH - 1 : (`RISCV_WORD_WIDTH / 2)];
+				mem_low[write_index] <= data_i[(`RISCV_WORD_WIDTH / 2) - 1 : 0];
 				write_index <= write_index + 1;
 			end
 
-			unique case (read_en)
+			unique case (read_en_i)
 				2'b10:
 					read_index <= read_index + 1;
 				2'b11:
@@ -50,6 +51,7 @@ module prefetch_buffer (
 	assign out_high = read_index[0] == 1'b0 ? mem_high[read_index[2:1]] :  mem_low[read_index[2:1]];  
 	assign out_low  = read_index[0] == 1'b0 ? mem_low[read_index[2:1]]  :  mem_high[ 2'(read_index[2:1] + 1'b1)];
 
-	assign data_out = {out_high, out_low};
+	assign data_o = {out_high, out_low};
+	assign buffer_full_o = 2'(write_index + 1'b1) == read_index[2:1];
 
 endmodule

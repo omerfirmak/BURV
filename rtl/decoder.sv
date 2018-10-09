@@ -8,12 +8,7 @@ module decoder (
 
 	// From fetch stage
 	input  logic [`RISCV_WORD_WIDTH - 1 : 0] instr_i,
-	input  logic                         	 instr_valid_i,
-
-	// To fetch stage
-	output  logic							  instr_req_o,
-	output  logic [`RISCV_ADDR_WIDTH - 1 : 0] target_addr_o,
-	output  logic                         	  target_valid_o
+	input  logic                         	 instr_valid_i
 );
 
 	logic [6 : 0] opcode;

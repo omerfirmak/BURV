@@ -1,72 +1,68 @@
 
 module dp_ram
-  #(
+#(
     parameter ADDR_WIDTH = `RISCV_ADDR_WIDTH
-  )(
-    // Clock and Reset
+)(
+// Clock and Reset
     input  logic clk,
 
-    input  logic                   en_a_i,
-    input  logic [ADDR_WIDTH-1:0]  addr_a_i,
-    input  logic [31:0]            wdata_a_i,
-    output logic [31:0]            rdata_a_o,
-    input  logic                   we_a_i,
-    input  logic [3:0]             be_a_i,
+    input  logic a_valid_i,
+    output logic a_ready_o,
 
-    input  logic                   en_b_i,
-    input  logic [ADDR_WIDTH-1:0]  addr_b_i,
-    input  logic [31:0]            wdata_b_i,
-    output logic [31:0]            rdata_b_o,
-    input  logic                   we_b_i,
-    input  logic [3:0]             be_b_i
-  );
+    input  logic [`RISCV_ADDR_WIDTH - 1 : 0] a_addr_i,
+    input  logic [`RISCV_WORD_WIDTH - 1 : 0] a_wdata_i,
+    input  logic [3 : 0]                     a_we_i,
+    output logic [`RISCV_WORD_WIDTH - 1 : 0] a_rdata_o,
 
-  localparam words = 1024;
+    input  logic b_valid_i,
+    output logic b_ready_o,
 
-  logic [3:0][7:0] mem[words];
+    input  logic [`RISCV_ADDR_WIDTH - 1 : 0] b_addr_i,
+    input  logic [`RISCV_WORD_WIDTH - 1 : 0] b_wdata_i,
+    input  logic [3 : 0]                     b_we_i,
+    output logic [`RISCV_WORD_WIDTH - 1 : 0] b_rdata_o
+);
 
-  always @(posedge clk)
-  begin
-    if (en_a_i && we_a_i)
-    begin
-      if (be_a_i[0])
-        mem[addr_a_i][0] <= wdata_a_i[7:0];
-      if (be_a_i[1])
-        mem[addr_a_i][1] <= wdata_a_i[15:8];
-      if (be_a_i[2])
-        mem[addr_a_i][2] <= wdata_a_i[23:16];
-      if (be_a_i[3])
-        mem[addr_a_i][3] <= wdata_a_i[31:24];
+    localparam words = 1024;
+
+    logic [3:0][7:0] mem[words];
+
+    always @(posedge clk) begin
+        a_ready_o <= 0;
+        b_ready_o <= 0;
+        
+        if (a_valid_i && !a_ready_o) begin
+            if (a_we_i[0]) mem[a_addr_i][0] <= a_wdata_i[7:0];
+            if (a_we_i[1]) mem[a_addr_i][1] <= a_wdata_i[15:8];
+            if (a_we_i[2]) mem[a_addr_i][2] <= a_wdata_i[23:16];
+            if (a_we_i[3]) mem[a_addr_i][3] <= a_wdata_i[31:24];
+
+            a_rdata_o <= mem[a_addr_i];
+            a_ready_o <= 1;
+        end
+
+        if (b_valid_i && !b_ready_o) begin
+            if (b_we_i[0]) mem[b_addr_i][0] <= b_wdata_i[7:0];
+            if (b_we_i[1]) mem[b_addr_i][1] <= b_wdata_i[15:8];
+            if (b_we_i[2]) mem[b_addr_i][2] <= b_wdata_i[23:16];
+            if (b_we_i[3]) mem[b_addr_i][3] <= b_wdata_i[31:24];
+
+            b_rdata_o <= mem[b_addr_i];
+            b_ready_o <= 1;
+        end
     end
 
-    rdata_a_o <= mem[addr_a_i];
-
-    if (en_b_i && we_b_i)
-    begin
-      if (be_b_i[0])
-        mem[addr_b_i][0] <= wdata_b_i[7:0];
-      if (be_b_i[1])
-        mem[addr_b_i][1] <= wdata_b_i[15:8];
-      if (be_b_i[2])
-        mem[addr_b_i][2] <= wdata_b_i[23:16];
-      if (be_b_i[3])
-        mem[addr_b_i][3] <= wdata_b_i[31:24];
-    end
-
-    rdata_b_o <= mem[addr_b_i];
-  end
-
-  function [31:0] readWord;
+    function [31:0] readWord;
     /* verilator public */
     input integer byte_addr;
     readWord = mem[byte_addr];
-  endfunction
+    endfunction
 
-  task writeWord;
+    task writeWord;
     /* verilator public */
     input integer byte_addr;
     input [31:0] val;
     mem[byte_addr] = val;
-  endtask
+    endtask
 
 endmodule

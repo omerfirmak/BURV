@@ -86,15 +86,15 @@ module alu (
                 ALU_AND: alu_result_o = operand_a_i & operand_b_i;
 
                 ALU_EQ:  alu_result_o = is_equal;
-                ALU_NE:  alu_result_o = ~is_equal;
+                ALU_NE:  alu_result_o = !is_equal;
                 ALU_GTS: alu_result_o = is_greater_signed;
                 ALU_GTU: alu_result_o = is_greater;
                 ALU_GES: alu_result_o = is_greater_signed | is_equal;
                 ALU_GEU: alu_result_o = is_greater | is_equal;
-                ALU_LTS: alu_result_o = ~(is_greater_signed | is_equal);
-                ALU_LTU: alu_result_o = ~(is_greater | is_equal);
-                ALU_LES: alu_result_o = ~is_greater_signed;
-                ALU_LEU: alu_result_o = ~is_greater;
+                ALU_LTS: alu_result_o = !(is_greater_signed | is_equal);
+                ALU_LTU: alu_result_o = !(is_greater | is_equal);
+                ALU_LES: alu_result_o = !is_greater_signed;
+                ALU_LEU: alu_result_o = !is_greater;
                 default: ;
              endcase
         end
