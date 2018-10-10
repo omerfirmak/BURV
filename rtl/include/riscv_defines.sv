@@ -4,7 +4,7 @@
 `define RISCV_WORD_WIDTH 32
 `define RISCV_ADDR_WIDTH 32
 
-`define GP_REG_COUNT     32
+`define GP_REG_COUNT     16
 
 `define OPCODE_SYSTEM     7'h73
 `define OPCODE_FENCE      7'h0f

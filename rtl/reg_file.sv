@@ -23,7 +23,7 @@ module reg_file (
     assign read_data_2_o = mem[read_addr_2_i];
 
     always_ff @(posedge clk or negedge rst_n) begin : proc_
-        if(~rst_n) begin
+        if(!rst_n) begin
             for (integer index = 0; index < `GP_REG_COUNT; ++index) begin
                 mem[index] = 0;
             end

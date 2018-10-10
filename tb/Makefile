@@ -1,3 +1,5 @@
+MODULE = riscv_top
+
 VERILOG_SRC = 	../rtl/include/alu_defines.sv 		\
 				../rtl/include/riscv_defines.sv		\
 				../rtl/alu.sv 				\

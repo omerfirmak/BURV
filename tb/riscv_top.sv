@@ -1,8 +1,8 @@
 /* verilator lint_off UNOPTFLAT */ 
 module riscv_top (
 	input clk,    // Clock
-	input clk_en, // Clock Enable
-	input rst_n   // Asynchronous reset active low
+	input rst_n,   // Asynchronous reset active low
+	input misc
 );
 
 	// Instruction memory interface
@@ -50,6 +50,7 @@ module riscv_top (
 	(
 		.clk 		 (clk),
 		.rst_n		 (rst_n),
+		.misc		 (misc),
 
 		// Instruction memory interface
 		.imem_valid_o(imem_valid),

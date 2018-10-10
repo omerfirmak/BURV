@@ -5,6 +5,7 @@
 module riscv_core (
 	input logic clk,    // Clock
 	input logic rst_n,  // Asynchronous reset active low
+	input logic misc,
 
 	// Instruction memory interface
 	output logic imem_valid_o,
@@ -52,14 +53,12 @@ module riscv_core (
 		.alu_result_o	(alu_result)
 	);
 
-	assign alu_operand_b = alu_use_const_operand ? alu_const_operand : rf_read_data_2;
-
     reg_file reg_file
     (
 		.clk 			(clk),
 		.rst_n			(rst_n),
 
-		.write_data_i	(alu_result),
+		.write_data_i	(rf_write_data),
 		.write_addr_i	(rf_write_addr),
 		.write_en_i		(rf_write_en),
 		.read_addr_1_i	(rf_read_addr_1),
@@ -73,11 +72,12 @@ module riscv_core (
 		.clk 		   (clk),
 		.rst_n		   (rst_n),
 
-		.req_i		   (),
-		.target_addr_i (),
-		.target_valid_i(),
+		.req_i		   (1'b1),
+		.target_addr_i (32'h00000000),
+		.target_valid_i(misc),
 
 		.instr_o       (instr),
+		.instr_addr_o  (instr_addr),
 		.instr_valid_o (instr_valid),
 
 		// Instruction memory interface
@@ -91,6 +91,7 @@ module riscv_core (
     );
 
 	logic [`RISCV_WORD_WIDTH - 1 : 0] instr;
+	logic [`RISCV_ADDR_WIDTH - 1 : 0] instr_addr;
 	logic                         	  instr_valid;
 
     decoder decoder 
@@ -99,7 +100,16 @@ module riscv_core (
 		.rst_n		   (rst_n),
 
 		.instr_i       (instr),
-		.instr_valid_i (instr_valid)
+		.instr_addr_i  (instr_addr),
+		.instr_valid_i (instr_valid),
+
+
+		// Register file interface
+		.rf_rs1_addr_o (rf_read_addr_1),
+		.rf_rs2_addr_o (rf_read_addr_2),
+		.rf_rd_addr_o  (rf_write_addr),
+		.rf_we_o       (rf_write_en)
+
 	);
 
 

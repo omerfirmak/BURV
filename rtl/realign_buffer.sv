@@ -7,21 +7,25 @@ module realign_buffer (
 	input logic rst_n,  // Asynchronous reset active low
 
 	input  logic write_en_i,
-	input  logic [`RISCV_WORD_WIDTH - 1 : 0] data_i,
-	output logic buffer_full_o,
-
-
+	input  logic [`RISCV_WORD_WIDTH - 1 : 0] instr_i,
+	input  logic [`RISCV_ADDR_WIDTH - 1 : 0] addr_i,
+	
 	input  logic [1 : 0] read_en_i,
-	output logic [`RISCV_WORD_WIDTH - 1 : 0] data_o
+	output logic [`RISCV_WORD_WIDTH - 1 : 0] instr_o,
+	output logic [`RISCV_ADDR_WIDTH - 1 : 0] addr_o,
+
+	output logic full_o,
+	output logic empty_o
 );
 
 	logic [2 : 0]  read_index;
 	logic [1 : 0]  write_index; 
 	logic [(`RISCV_WORD_WIDTH / 2) - 1 : 0] mem_high[4]; 
 	logic [(`RISCV_WORD_WIDTH / 2) - 1 : 0] mem_low [4];
+	logic [`RISCV_ADDR_WIDTH - 1 : 0] 		mem_addr[4];
 
 	always_ff @(posedge clk or negedge rst_n) begin
-		if(~rst_n) begin
+		if(!rst_n) begin
 			for (integer index = 0; index < 4; ++index) begin
 				mem_high[index] <= 0;
 				mem_low[index]  <= 0;
@@ -29,9 +33,10 @@ module realign_buffer (
 			read_index <= 0;
 			write_index <= 0;
 		end else begin
-			if (write_en_i && ~buffer_full_o) begin
-				mem_high[write_index] <= data_i[`RISCV_WORD_WIDTH - 1 : (`RISCV_WORD_WIDTH / 2)];
-				mem_low[write_index] <= data_i[(`RISCV_WORD_WIDTH / 2) - 1 : 0];
+			if (write_en_i && !full_o) begin
+				mem_high[write_index] <= instr_i[`RISCV_WORD_WIDTH - 1 : (`RISCV_WORD_WIDTH / 2)];
+				mem_low[write_index]  <= instr_i[(`RISCV_WORD_WIDTH / 2) - 1 : 0];
+				mem_addr[write_index] <= addr_i;
 				write_index <= write_index + 1;
 			end
 
@@ -51,7 +56,9 @@ module realign_buffer (
 	assign out_high = read_index[0] == 1'b0 ? mem_high[read_index[2:1]] :  mem_low[read_index[2:1]];  
 	assign out_low  = read_index[0] == 1'b0 ? mem_low[read_index[2:1]]  :  mem_high[ 2'(read_index[2:1] + 1'b1)];
 
-	assign data_o = {out_high, out_low};
-	assign buffer_full_o = 2'(write_index + 1'b1) == read_index[2:1];
+	assign instr_o = {out_high, out_low};
+	assign addr_o  = read_index[0] == 1'b0 ? mem_addr[read_index[2:1]] :  mem_addr[read_index[2:1]] + 2;
+	assign full_o  = 2'(write_index + 1'b1) == read_index[2:1];
+	assign empty_o = write_index == read_index[2:1];
 
 endmodule
