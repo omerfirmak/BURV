@@ -45,7 +45,6 @@ module fetch_stage (
 
 		.full_o			(realign_buffer_full),
 		.empty_o		(realign_buffer_empty)
-
 	);
 
 	assign instr_valid_o = !realign_buffer_empty;

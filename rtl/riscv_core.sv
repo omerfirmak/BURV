@@ -61,9 +61,11 @@ module riscv_core (
 		.write_data_i	(rf_write_data),
 		.write_addr_i	(rf_write_addr),
 		.write_en_i		(rf_write_en),
+
 		.read_addr_1_i	(rf_read_addr_1),
-		.read_addr_2_i	(rf_read_addr_2),
 		.read_data_1_o	(alu_operand_a),
+
+		.read_addr_2_i	(rf_read_addr_2),
 		.read_data_2_o	(rf_read_data_2)
     );
 

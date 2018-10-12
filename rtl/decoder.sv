@@ -19,8 +19,11 @@ module decoder (
 );
 
 	logic [6 : 0] opcode;
+	logic [2 : 0] sub_func_3;
+	logic [6 : 0] sub_func_7;
 
 	// Immediate decoding and sign extension
+	logic [`RISCV_WORD_WIDTH - 1 : 0] imm_out;
 	logic [`RISCV_WORD_WIDTH - 1 : 0] imm_i_type;
 	logic [`RISCV_WORD_WIDTH - 1 : 0] imm_iz_type;
 	logic [`RISCV_WORD_WIDTH - 1 : 0] imm_s_type;
@@ -28,7 +31,6 @@ module decoder (
 	logic [`RISCV_WORD_WIDTH - 1 : 0] imm_u_type;
 	logic [`RISCV_WORD_WIDTH - 1 : 0] imm_uj_type;
 
-	
 	assign opcode = instr_i[6 : 0];
 
 	// immediate extraction and sign extension
@@ -43,14 +45,32 @@ module decoder (
 	assign rf_rs2_addr_o = $clog2(`GP_REG_COUNT)'(instr_i[24 : 20]);
 	assign rf_rd_addr_o  = $clog2(`GP_REG_COUNT)'(instr_i[11 : 7]);
 
+	assign sub_func_3 = instr_i[14 : 12];
+	assign sub_func_7 = instr_i[31 : 25];
 
 	always_comb begin
+		imm_out = 0;
+		rf_we_o = 0;
 		case (opcode)
+			`OPCODE_OPIMM: begin
+				imm_out = imm_i_type;
+				rf_we_o = 1;
+				case (sub_func_3)
+					`ADDI_FUNC3:;
+					`SLTI_FUNC3:;
+					`SLTIU_FUNC3:;
+					`XORI_FUNC3:;
+					`ORI_FUNC3:;
+					`ANDI_FUNC3:;
+					`SLLI_FUNC3:;
+					`SRI_FUNC3:;
+					default:;
+				endcase
+			end
 			`OPCODE_LUI:;
 			`OPCODE_SYSTEM:;
 			`OPCODE_FENCE:;
 			`OPCODE_OP:;
-			`OPCODE_OPIMM:;
 			`OPCODE_STORE:;
 			`OPCODE_LOAD:;
 			`OPCODE_BRANCH:;
@@ -64,7 +84,7 @@ module decoder (
 			`OPCODE_OP_FNMSUB:;
 			`OPCODE_STORE_FP:;
 			`OPCODE_LOAD_FP:;
-			default :;
+			default:;
 		endcase
 	end
 

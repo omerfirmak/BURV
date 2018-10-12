@@ -57,7 +57,7 @@ module realign_buffer (
 	assign out_low  = read_index[0] == 1'b0 ? mem_low[read_index[2:1]]  :  mem_high[ 2'(read_index[2:1] + 1'b1)];
 
 	assign instr_o = {out_high, out_low};
-	assign addr_o  = read_index[0] == 1'b0 ? mem_addr[read_index[2:1]] :  mem_addr[read_index[2:1]] + 2;
+	assign addr_o  = {mem_addr[read_index[2:1]][`RISCV_ADDR_WIDTH - 1 : 2],  (read_index[0] == 1'b0 ? 2'd0 : 2'd2)};
 	assign full_o  = 2'(write_index + 1'b1) == read_index[2:1];
 	assign empty_o = write_index == read_index[2:1];
 
