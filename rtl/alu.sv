@@ -4,18 +4,18 @@
 `include "alu_defines.sv"
 
 module alu (
-        	input logic [`ALU_OP_WIDTH -1 : 0]      alu_op_i,
+        	input logic [ALU_OP_WIDTH -1 : 0]      alu_op_i,
 
-        	input logic [`RISCV_WORD_WIDTH - 1 : 0] operand_a_i,
-        	input logic [`RISCV_WORD_WIDTH - 1 : 0] operand_b_i,
+        	input logic [RISCV_WORD_WIDTH - 1 : 0] operand_a_i,
+        	input logic [RISCV_WORD_WIDTH - 1 : 0] operand_b_i,
         
-        	output logic [`RISCV_WORD_WIDTH - 1 : 0] alu_result_o
+        	output logic [RISCV_WORD_WIDTH - 1 : 0] alu_result_o
 	);
 
-        logic [`RISCV_WORD_WIDTH - 1 : 0] operand_b_i_neg;
+        logic [RISCV_WORD_WIDTH - 1 : 0] operand_b_i_neg;
         
-        logic signed [`RISCV_WORD_WIDTH - 1 : 0] operand_a_i_signed;
-        logic signed [`RISCV_WORD_WIDTH - 1 : 0] operand_b_i_signed;
+        logic signed [RISCV_WORD_WIDTH - 1 : 0] operand_a_i_signed;
+        logic signed [RISCV_WORD_WIDTH - 1 : 0] operand_b_i_signed;
                 
         assign operand_b_i_neg = ~operand_b_i;
         
@@ -25,8 +25,8 @@ module alu (
         /*
          * Addition
          */
-        logic [`RISCV_WORD_WIDTH - 1 : 0] adder_in_b;
-        logic [`RISCV_WORD_WIDTH - 1 : 0] adder_out;
+        logic [RISCV_WORD_WIDTH - 1 : 0] adder_in_b;
+        logic [RISCV_WORD_WIDTH - 1 : 0] adder_out;
         logic use_neg_b;
         
         always_comb 
@@ -40,7 +40,7 @@ module alu (
          * Shift
          */
         
-        logic [`RISCV_WORD_WIDTH - 1 : 0] shift_out;
+        logic [RISCV_WORD_WIDTH - 1 : 0] shift_out;
         
         always_comb
         begin
@@ -57,13 +57,13 @@ module alu (
          * Comparison
          */
         
-        logic [`RISCV_WORD_WIDTH - 1 : 0] is_equal;
-        logic [`RISCV_WORD_WIDTH - 1 : 0] is_greater;
-        logic [`RISCV_WORD_WIDTH - 1 : 0] is_greater_signed;
+        logic [RISCV_WORD_WIDTH - 1 : 0] is_equal;
+        logic [RISCV_WORD_WIDTH - 1 : 0] is_greater;
+        logic [RISCV_WORD_WIDTH - 1 : 0] is_greater_signed;
 
-        assign is_equal = `RISCV_WORD_WIDTH'(operand_a_i == operand_b_i);
-        assign is_greater = `RISCV_WORD_WIDTH'(operand_a_i > operand_b_i);
-        assign is_greater_signed = `RISCV_WORD_WIDTH'(operand_a_i_signed > operand_b_i_signed);
+        assign is_equal = RISCV_WORD_WIDTH'(operand_a_i == operand_b_i);
+        assign is_greater = RISCV_WORD_WIDTH'(operand_a_i > operand_b_i);
+        assign is_greater_signed = RISCV_WORD_WIDTH'(operand_a_i_signed > operand_b_i_signed);
                 
         /*
          * Mux out
@@ -72,9 +72,9 @@ module alu (
         begin
              alu_result_o = 'x;
              unique case (alu_op_i)
+                ALU_PASS: alu_result_o = operand_a_i;
                 ALU_ADD,
                 ALU_SUB,
-                ALU_ADDU,
                 ALU_SUBU: alu_result_o = adder_out;
                 
                 ALU_SRA, 
@@ -95,7 +95,7 @@ module alu (
                 ALU_LTU: alu_result_o = ~(is_greater | is_equal);
                 ALU_LES: alu_result_o = ~is_greater_signed;
                 ALU_LEU: alu_result_o = ~is_greater;
-                default: ;
+                default:;
              endcase
         end
 endmodule

@@ -8,32 +8,33 @@ module fetch_stage (
 
 	// From latter stages
 	input logic								  req_i,
-	input logic [`RISCV_ADDR_WIDTH - 1 : 0]   target_addr_i,
+	input logic [RISCV_ADDR_WIDTH - 1 : 0]   target_addr_i,
 	input logic                         	  target_valid_i,
 
 	// To latter stages
-	output logic [`RISCV_WORD_WIDTH - 1 : 0]  instr_o,
-	output logic [`RISCV_ADDR_WIDTH - 1 : 0]  instr_addr_o,
+	output logic [RISCV_WORD_WIDTH - 1 : 0]  instr_o,
+	output logic [RISCV_ADDR_WIDTH - 1 : 0]  instr_addr_o,
 	output logic                         	  instr_valid_o,
 
 	// Instruction memory interface
 	output logic imem_valid_o,
 	input  logic imem_ready_i,
 
-	output logic [`RISCV_ADDR_WIDTH - 1 : 0] imem_addr_o,
-	output logic [`RISCV_WORD_WIDTH - 1 : 0] imem_wdata_o,
-	output logic [3 : 0] 					 imem_we_o,
-	input  logic [`RISCV_WORD_WIDTH - 1 : 0] imem_rdata_i
+	output logic [RISCV_ADDR_WIDTH - 1 : 0] imem_addr_o,
+	output logic [RISCV_WORD_WIDTH - 1 : 0] imem_wdata_o,
+	output logic [3 : 0] 					imem_we_o,
+	input  logic [RISCV_WORD_WIDTH - 1 : 0] imem_rdata_i
 );
 
 	logic realign_buffer_full,
 		  realign_buffer_empty;
-	logic [`RISCV_ADDR_WIDTH - 1 : 0] instr_addr;
+	logic [RISCV_ADDR_WIDTH - 1 : 0] instr_addr;
 
 	realign_buffer buffer
 	(
 		.clk     		(clk),
 		.rst_n   		(rst_n & !target_valid_i),
+		.read_offset_i	(target_addr_i[1]),
 
 		.write_en_i 	(imem_ready_i),
 		.instr_i 		(imem_rdata_i),
@@ -64,8 +65,7 @@ module fetch_stage (
 			end
 
 			if (target_valid_i) begin
-				instr_addr <= target_addr_i;
-
+				instr_addr <= {target_addr_i[RISCV_WORD_WIDTH - 1 : 2], 2'b00};
 			end
 		end
 	end

@@ -11,39 +11,38 @@ module riscv_core (
 	output logic imem_valid_o,
 	input  logic imem_ready_i,
 
-	output logic [`RISCV_ADDR_WIDTH - 1 : 0] imem_addr_o,
-	output logic [`RISCV_WORD_WIDTH - 1 : 0] imem_wdata_o,
+	output logic [RISCV_ADDR_WIDTH - 1 : 0] imem_addr_o,
+	output logic [RISCV_WORD_WIDTH - 1 : 0] imem_wdata_o,
 	output logic [3 : 0] 					 imem_we_o,
-	input  logic [`RISCV_WORD_WIDTH - 1 : 0] imem_rdata_i,
+	input  logic [RISCV_WORD_WIDTH - 1 : 0] imem_rdata_i,
 
 	// Data memory interface
 	output logic dmem_valid_o,
 	input  logic dmem_ready_i,
 
-	output logic [`RISCV_ADDR_WIDTH - 1 : 0] dmem_addr_o,
-	output logic [`RISCV_WORD_WIDTH - 1 : 0] dmem_wdata_o,
+	output logic [RISCV_ADDR_WIDTH - 1 : 0] dmem_addr_o,
+	output logic [RISCV_WORD_WIDTH - 1 : 0] dmem_wdata_o,
 	output logic [3 : 0] 					 dmem_we_o,
-	input  logic [`RISCV_WORD_WIDTH - 1 : 0] dmem_rdata_i
+	input  logic [RISCV_WORD_WIDTH - 1 : 0] dmem_rdata_i
 );
 
 	// ALU signals
-    logic [`ALU_OP_WIDTH -1 : 0]      		alu_op;
-    logic [`RISCV_WORD_WIDTH - 1 : 0] 		alu_operand_a;
-    logic [`RISCV_WORD_WIDTH - 1 : 0] 		alu_operand_b;
-    logic [`RISCV_WORD_WIDTH - 1 : 0] 		alu_result;
-    logic                             		alu_cmp_result;
-
-	logic [`RISCV_WORD_WIDTH - 1 : 0] 		alu_const_operand;
-    logic 							  		alu_use_const_operand;
+	logic [ALU_OP_WIDTH -1 : 0]      		alu_op;
+	logic [RISCV_WORD_WIDTH - 1 : 0] 		alu_operand_a;
+	logic [1 : 0] 							alu_operand_a_sel;
+	logic [RISCV_WORD_WIDTH - 1 : 0] 		alu_operand_b;
+	logic [1 : 0] 							alu_operand_b_sel;
+	logic [RISCV_WORD_WIDTH - 1 : 0] 		alu_result;
 
 	// Register File signals
-    logic [`RISCV_WORD_WIDTH - 1 : 0] 		rf_write_data;
-    logic [$clog2(`GP_REG_COUNT) - 1 : 0] 	rf_write_addr;
-    logic 									rf_write_en;
-    logic [$clog2(`GP_REG_COUNT) - 1 : 0] 	rf_read_addr_1;
-    logic [$clog2(`GP_REG_COUNT) - 1 : 0] 	rf_read_addr_2;
-    logic [`RISCV_WORD_WIDTH - 1 : 0] 		rf_read_data_1;
-    logic [`RISCV_WORD_WIDTH - 1 : 0] 		rf_read_data_2;
+	logic [RISCV_WORD_WIDTH - 1 : 0] 		rf_write_data;
+	logic [$clog2(GP_REG_COUNT) - 1 : 0] 	rf_write_addr;
+	logic 									rf_write_en;
+	logic 									rf_write_sel;
+	logic [$clog2(GP_REG_COUNT) - 1 : 0] 	rf_read_addr_1;
+	logic [$clog2(GP_REG_COUNT) - 1 : 0] 	rf_read_addr_2;
+	logic [RISCV_WORD_WIDTH - 1 : 0] 		rf_read_data_1;
+	logic [RISCV_WORD_WIDTH - 1 : 0] 		rf_read_data_2;
 
 	alu alu
 	(
@@ -53,8 +52,32 @@ module riscv_core (
 		.alu_result_o	(alu_result)
 	);
 
-    reg_file reg_file
-    (
+	always_comb begin
+		unique case (alu_operand_a_sel)
+			ALU_OP_SEL_RF_1: alu_operand_a = rf_read_data_1;
+			ALU_OP_SEL_RF_2: alu_operand_a = rf_read_data_2;
+			ALU_OP_SEL_IMM:  alu_operand_a = imm_val;
+			ALU_OP_SEL_PC:   alu_operand_a = instr_addr;
+			default: 		 alu_operand_a = rf_read_data_1;
+		endcase
+		
+		unique case (alu_operand_b_sel)
+			ALU_OP_SEL_RF_1: alu_operand_b = rf_read_data_1;
+			ALU_OP_SEL_RF_2: alu_operand_b = rf_read_data_2;
+			ALU_OP_SEL_IMM:  alu_operand_b = imm_val;
+			ALU_OP_SEL_PC:   alu_operand_b = instr_addr;
+			default: 		 alu_operand_b = rf_read_data_2;
+		endcase
+
+		unique case (rf_write_sel)
+			RF_WRITE_ALU_OUT: rf_write_data = alu_result;
+			RF_WRITE_LSU_OUT: rf_write_data = 0; // TODO: when LSU is implemented
+			default: 		  rf_write_data = alu_result;
+		endcase
+	end
+
+	reg_file reg_file
+	(
 		.clk 			(clk),
 		.rst_n			(rst_n),
 
@@ -63,11 +86,11 @@ module riscv_core (
 		.write_en_i		(rf_write_en),
 
 		.read_addr_1_i	(rf_read_addr_1),
-		.read_data_1_o	(alu_operand_a),
+		.read_data_1_o	(rf_read_data_1),
 
 		.read_addr_2_i	(rf_read_addr_2),
 		.read_data_2_o	(rf_read_data_2)
-    );
+	);
 
     fetch_stage fetch_stage
     (
@@ -75,7 +98,7 @@ module riscv_core (
 		.rst_n		   (rst_n),
 
 		.req_i		   (1'b1),
-		.target_addr_i (32'h00000000),
+		.target_addr_i (32'h00000002),
 		.target_valid_i(misc),
 
 		.instr_o       (instr),
@@ -92,25 +115,47 @@ module riscv_core (
 		.imem_rdata_i  (imem_rdata_i)
     );
 
-	logic [`RISCV_WORD_WIDTH - 1 : 0] instr;
-	logic [`RISCV_ADDR_WIDTH - 1 : 0] instr_addr;
-	logic                         	  instr_valid;
+	logic [RISCV_WORD_WIDTH - 1 : 0] instr;
+	logic [RISCV_ADDR_WIDTH - 1 : 0] instr_addr;
+	logic                         	 instr_valid;
+	logic [RISCV_WORD_WIDTH - 1 : 0] imm_val;
 
-    decoder decoder 
-    (
-		.clk 		   (clk),
-		.rst_n		   (rst_n),
+	decoder decoder 
+	(
+		.clk 		    (clk),
+		.rst_n		    (rst_n),
 
-		.instr_i       (instr),
-		.instr_addr_i  (instr_addr),
-		.instr_valid_i (instr_valid),
-
+		.instr_i        (instr),
+		.instr_addr_i   (instr_addr),
 
 		// Register file interface
-		.rf_rs1_addr_o (rf_read_addr_1),
-		.rf_rs2_addr_o (rf_read_addr_2),
-		.rf_rd_addr_o  (rf_write_addr),
-		.rf_we_o       (rf_write_en)
+		.rf_rs1_addr_o  (rf_read_addr_1),
+		.rf_rs2_addr_o  (rf_read_addr_2),
+		.rf_rd_addr_o   (rf_write_addr),
+		.rf_we_o        (rf_write_en),
+		.rf_write_sel_o (rf_write_sel),
+
+		.alu_op_o       (alu_op),
+		.operand_a_sel_o(alu_operand_a_sel),
+		.operand_b_sel_o(alu_operand_b_sel),
+
+		.imm_o          (imm_val),
+
+		.illegal_inst_o ()
+
+	);
+
+	controller controller
+	(
+		.clk 		   (clk),
+		.rst_n		   (rst_n)
+
+	);
+
+	lsu lsu
+	(
+		.clk 		   (clk),
+		.rst_n		   (rst_n)
 
 	);
 

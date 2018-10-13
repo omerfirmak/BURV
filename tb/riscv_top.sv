@@ -4,24 +4,23 @@ module riscv_top (
 	input rst_n,   // Asynchronous reset active low
 	input misc
 );
-
 	// Instruction memory interface
 	logic imem_valid;
 	logic imem_ready;
 
-	logic [`RISCV_ADDR_WIDTH - 1 : 0] imem_addr;
-	logic [`RISCV_WORD_WIDTH - 1 : 0] imem_wdata;
+	logic [RISCV_ADDR_WIDTH - 1 : 0] imem_addr;
+	logic [RISCV_WORD_WIDTH - 1 : 0] imem_wdata;
 	logic [3 : 0] 					  imem_we;
-	logic [`RISCV_WORD_WIDTH - 1 : 0] imem_rdata;
+	logic [RISCV_WORD_WIDTH - 1 : 0] imem_rdata;
 
 	// Data memory interface
 	logic dmem_valid;
 	logic dmem_ready;
 
-	logic [`RISCV_ADDR_WIDTH - 1 : 0] dmem_addr;
-	logic [`RISCV_WORD_WIDTH - 1 : 0] dmem_wdata;
+	logic [RISCV_ADDR_WIDTH - 1 : 0] dmem_addr;
+	logic [RISCV_WORD_WIDTH - 1 : 0] dmem_wdata;
 	logic [3 : 0] 					  dmem_we;
-	logic [`RISCV_WORD_WIDTH - 1 : 0] dmem_rdata;
+	logic [RISCV_WORD_WIDTH - 1 : 0] dmem_rdata;
 
 	dp_ram dp_ram
 	(
