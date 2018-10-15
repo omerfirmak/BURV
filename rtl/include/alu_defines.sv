@@ -8,7 +8,6 @@ typedef enum logic [ALU_OP_WIDTH - 1 : 0]  {
 
     ALU_ADD   = 'b011000,
     ALU_SUB   = 'b011001,
-    ALU_SUBU  = 'b011011,
     ALU_XOR   = 'b101111,
     ALU_OR    = 'b101110,
     ALU_AND   = 'b010101,
@@ -29,12 +28,6 @@ typedef enum logic [ALU_OP_WIDTH - 1 : 0]  {
     ALU_GEU   = 'b001011,
     ALU_EQ    = 'b001100,
     ALU_NE    = 'b001101
-    
-    // Set Lower Than operations
- /*   ALU_SLTS  = 'b000010,
-    ALU_SLTU  = 'b000011,
-    ALU_SLETS = 'b000110,
-    ALU_SLETU = 'b000111*/
 } ALU_OP_t;
 
 `endif

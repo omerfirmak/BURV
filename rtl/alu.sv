@@ -31,8 +31,7 @@ module alu (
         
         always_comb 
         begin
-            use_neg_b = (alu_op_i == ALU_SUB) || (alu_op_i == ALU_SUBU);
-            adder_in_b = use_neg_b ? (operand_b_i_neg + 1) : operand_b_i;
+            adder_in_b = (alu_op_i == ALU_SUB) ? (operand_b_i_neg + 1) : operand_b_i;
             adder_out = operand_a_i + adder_in_b;
         end
         
@@ -74,8 +73,7 @@ module alu (
              unique case (alu_op_i)
                 ALU_PASS: alu_result_o = operand_a_i;
                 ALU_ADD,
-                ALU_SUB,
-                ALU_SUBU: alu_result_o = adder_out;
+                ALU_SUB: alu_result_o = adder_out;
                 
                 ALU_SRA, 
                 ALU_SRL, 

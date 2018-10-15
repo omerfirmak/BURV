@@ -7,8 +7,10 @@ module decoder (
 	input rst_n,  // Asynchronous reset active low
 
 	// From fetch stage
-	input  logic [RISCV_WORD_WIDTH - 1 : 0] instr_i,
-	input  logic [RISCV_ADDR_WIDTH - 1 : 0] instr_addr_i,
+	input logic [RISCV_WORD_WIDTH - 1 : 0] instr_i,
+	input logic [RISCV_ADDR_WIDTH - 1 : 0] instr_addr_i,
+
+	input logic cycle_counter_i, // Cycle of instruction being decoded
 
 	// Register file interface
 	output logic [$clog2(GP_REG_COUNT) - 1 : 0]  rf_rs1_addr_o,
@@ -23,6 +25,8 @@ module decoder (
 
 	output logic [RISCV_WORD_WIDTH - 1 : 0] imm_o,
 
+	output logic compressed_inst_o,
+	output logic ctrl_trans_inst_o,
 	output logic illegal_inst_o
 );
 
@@ -95,42 +99,97 @@ module decoder (
 					default: illegal_inst_o = 1'b1;
 				endcase
 			end
+			OPCODE_OP:
+			begin
+				rf_we_o = 1;
+
+				unique case ({sub_func_7, sub_func_3})
+					{7'h0,  FUNC3_ADD_SUB}: alu_op_o = ALU_ADD;
+					{7'h20, FUNC3_ADD_SUB}: alu_op_o = ALU_SUB;
+					{7'h0,  FUNC3_SLL}:		alu_op_o = ALU_SLL;
+					{7'h0,  FUNC3_SLT}:		alu_op_o = ALU_LTS;
+					{7'h0,  FUNC3_SLTU}:	alu_op_o = ALU_LTU;
+					{7'h0,  FUNC3_XOR}:		alu_op_o = ALU_XOR;
+					{7'h0,  FUNC3_SR}:		alu_op_o = ALU_SRL;
+					{7'h20, FUNC3_SR}:		alu_op_o = ALU_SRA;
+					{7'h0,  FUNC3_OR}:		alu_op_o = ALU_OR;
+					{7'h0,  FUNC3_AND}:		alu_op_o = ALU_AND;
+					default : illegal_inst_o = 1'b1;
+				endcase
+			end
 			OPCODE_LUI: 
 			begin
 				alu_op_o = ALU_PASS;
-				operand_a_sel_o = ALU_OP_SEL_IMM;
 				imm_sel = IMM_U;
-			end				
+				operand_a_sel_o = ALU_OP_SEL_IMM;
+			end	
 			OPCODE_AUIPC: 
 			begin
 				alu_op_o = ALU_ADD;
 				operand_a_sel_o = ALU_OP_SEL_PC;
-				imm_sel = IMM_U;				
+				imm_sel = IMM_U;
 				operand_b_sel_o = ALU_OP_SEL_IMM;
 			end
-			OPCODE_SYSTEM:;
-			OPCODE_FENCE:;
-			OPCODE_OP:;
+			OPCODE_JALR:
+			begin
+				ctrl_trans_inst_o = 1'b1;
+				
+				alu_op_o = ALU_ADD;
+				operand_a_sel_o = ALU_OP_SEL_PC;
+				operand_b_sel_o = ALU_OP_SEL_IMM;
+
+
+				unique case (cycle_counter_i)
+					0:
+					begin
+						rf_we_o = 1;
+						imm_sel = IMM_PC_INC;
+					end
+					1: 	imm_sel = IMM_I;
+					default: illegal_inst_o = 1'b1;
+				endcase
+			end
+			OPCODE_JAL:
+			begin
+				ctrl_trans_inst_o = 1'b1;
+
+				alu_op_o = ALU_ADD;
+				operand_a_sel_o = ALU_OP_SEL_PC;
+				operand_b_sel_o = ALU_OP_SEL_IMM;
+
+				unique case (cycle_counter_i)
+					0:
+					begin
+						rf_we_o = 1;
+						imm_sel = IMM_PC_INC;
+					end
+					1:  imm_sel = IMM_UJ;
+					default: illegal_inst_o = 1'b1; 
+				endcase
+			end
 			OPCODE_STORE:;
 			OPCODE_LOAD:;
 			OPCODE_BRANCH:;
-			OPCODE_JALR:;
-			OPCODE_JAL:;
-			default:;
+			OPCODE_SYSTEM:;
+			OPCODE_FENCE:;
+			default: illegal_inst_o = 1'b1;
 		endcase
 	end
 
 	always_comb begin
 		unique case (imm_sel)
-			IMM_I:     imm_o = imm_i_type;
-			IMM_IZ:    imm_o = imm_iz_type;
-			IMM_S:     imm_o = imm_s_type;
-			IMM_SB:    imm_o = imm_sb_type;
-			IMM_U:     imm_o = imm_u_type;
-			IMM_UJ:    imm_o = imm_uj_type;
-			IMM_SHAMT: imm_o = RISCV_WORD_WIDTH'(rf_rs2_addr_o);
-			default:   imm_o = imm_i_type;
+			IMM_I:      imm_o = imm_i_type;
+			IMM_IZ:     imm_o = imm_iz_type;
+			IMM_S:      imm_o = imm_s_type;
+			IMM_SB:     imm_o = imm_sb_type;
+			IMM_U:      imm_o = imm_u_type;
+			IMM_UJ:     imm_o = imm_uj_type;
+			IMM_SHAMT:  imm_o = RISCV_WORD_WIDTH'(rf_rs2_addr_o);
+			IMM_PC_INC: imm_o = compressed_inst_o ? 2 : 4;
+			default:    imm_o = imm_i_type;
 		endcase
 	end
+
+	assign compressed_inst_o = instr_i[1:0] != 2'b11;
 
 endmodule

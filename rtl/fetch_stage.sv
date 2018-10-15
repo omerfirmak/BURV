@@ -7,14 +7,14 @@ module fetch_stage (
 	input rst_n,    // Asynchronous reset active low
 
 	// From latter stages
-	input logic								  req_i,
+	input logic								 req_i,
 	input logic [RISCV_ADDR_WIDTH - 1 : 0]   target_addr_i,
-	input logic                         	  target_valid_i,
+	input logic                         	 target_valid_i,
 
 	// To latter stages
 	output logic [RISCV_WORD_WIDTH - 1 : 0]  instr_o,
 	output logic [RISCV_ADDR_WIDTH - 1 : 0]  instr_addr_o,
-	output logic                         	  instr_valid_o,
+	output logic                         	 instr_valid_o,
 
 	// Instruction memory interface
 	output logic imem_valid_o,
@@ -33,7 +33,8 @@ module fetch_stage (
 	realign_buffer buffer
 	(
 		.clk     		(clk),
-		.rst_n   		(rst_n & !target_valid_i),
+		.rst_n   		(rst_n),
+		.clear_i      	(target_valid_i),
 		.read_offset_i	(target_addr_i[1]),
 
 		.write_en_i 	(imem_ready_i),

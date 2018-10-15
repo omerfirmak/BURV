@@ -15,7 +15,18 @@ typedef enum logic[2 : 0] {
 	FUNC3_ANDI		  = 3'h7,
 	FUNC3_SLLI		  = 3'h1,
 	FUNC3_SRI		  = 3'h5	
-} func3_t;
+} opimm_func3_t;
+
+typedef enum logic[2 : 0] {
+	FUNC3_ADD_SUB	  = 3'h0,
+	FUNC3_SLL		  = 3'h1,
+	FUNC3_SLT		  = 3'h2,
+	FUNC3_SLTU		  = 3'h3,
+	FUNC3_XOR		  = 3'h4,
+	FUNC3_SR		  = 3'h5,
+	FUNC3_OR		  = 3'h6,
+	FUNC3_AND		  = 3'h7
+} op_func3_t;
 
 typedef enum logic[6 : 0] {
 	OPCODE_OPIMM      = 7'h13,
@@ -32,13 +43,14 @@ typedef enum logic[6 : 0] {
 } opcode_t;
 
 typedef enum logic[2 : 0] {
-	IMM_I     = 3'h0,
-	IMM_IZ    = 3'h1,
-	IMM_S     = 3'h2,
-	IMM_SB    = 3'h3,
-	IMM_U     = 3'h4,
-	IMM_UJ    = 3'h5,
-	IMM_SHAMT = 3'h6
+	IMM_I       = 3'h0,
+	IMM_IZ      = 3'h1,
+	IMM_S       = 3'h2,
+	IMM_SB      = 3'h3,
+	IMM_U       = 3'h4,
+	IMM_UJ      = 3'h5,
+	IMM_SHAMT   = 3'h6,
+	IMM_PC_INC  = 3'h7
 } imm_sel_t;
 
 typedef enum logic[1 : 0] {

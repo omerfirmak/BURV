@@ -6,11 +6,12 @@ module realign_buffer (
 	input logic clk,    // Clock
 	input logic rst_n,  // Asynchronous reset active low
 
+	input  logic clear_i,
+
 	input  logic write_en_i,
 	input  logic [RISCV_WORD_WIDTH - 1 : 0] instr_i,
 	input  logic [RISCV_ADDR_WIDTH - 1 : 0] addr_i,
 	
-
 	input  logic read_offset_i,
 	input  logic [1 : 0] read_en_i,
 	output logic [RISCV_WORD_WIDTH - 1 : 0] instr_o,
@@ -28,17 +29,13 @@ module realign_buffer (
  
 	logic [(RISCV_WORD_WIDTH / 2) - 1 : 0] mem_high[4]; 
 	logic [(RISCV_WORD_WIDTH / 2) - 1 : 0] mem_low [4];
-	logic [RISCV_ADDR_WIDTH - 1 : 0] 		mem_addr[4];
+	logic [RISCV_ADDR_WIDTH - 1 : 0] 	   mem_addr[4];
 
 	assign write_index_inc = write_index + 1;
 	assign read_index_inc = read_index + read_en_i;
 
 	always_ff @(posedge clk or negedge rst_n) begin
-		if(!rst_n) begin
-			for (integer index = 0; index < 4; ++index) begin
-				mem_high[index] <= 0;
-				mem_low[index]  <= 0;
-			end
+		if(!rst_n | clear_i) begin
 			read_index <= 3'(read_offset_i);
 			write_index <= 0;
 		end else begin

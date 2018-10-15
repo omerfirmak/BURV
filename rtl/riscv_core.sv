@@ -98,7 +98,7 @@ module riscv_core (
 		.rst_n		   (rst_n),
 
 		.req_i		   (1'b1),
-		.target_addr_i (32'h00000002),
+		.target_addr_i (32'h00000000),
 		.target_valid_i(misc),
 
 		.instr_o       (instr),
@@ -119,6 +119,7 @@ module riscv_core (
 	logic [RISCV_ADDR_WIDTH - 1 : 0] instr_addr;
 	logic                         	 instr_valid;
 	logic [RISCV_WORD_WIDTH - 1 : 0] imm_val;
+	logic                         	 illegal_inst;
 
 	decoder decoder 
 	(
@@ -128,6 +129,7 @@ module riscv_core (
 		.instr_i        (instr),
 		.instr_addr_i   (instr_addr),
 
+		.cycle_counter_i(1'b0),
 		// Register file interface
 		.rf_rs1_addr_o  (rf_read_addr_1),
 		.rf_rs2_addr_o  (rf_read_addr_2),
@@ -141,9 +143,12 @@ module riscv_core (
 
 		.imm_o          (imm_val),
 
-		.illegal_inst_o ()
+		.compressed_inst_o  (),
+		.ctrl_trans_inst_o  (),
+		.illegal_inst_o 	(illegal_inst)
 
 	);
+
 
 	controller controller
 	(
