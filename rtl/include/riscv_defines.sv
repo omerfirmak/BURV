@@ -43,26 +43,26 @@ typedef enum logic[6 : 0] {
 } opcode_t;
 
 typedef enum logic[2 : 0] {
-	IMM_I       = 3'h0,
-	IMM_IZ      = 3'h1,
-	IMM_S       = 3'h2,
-	IMM_SB      = 3'h3,
-	IMM_U       = 3'h4,
-	IMM_UJ      = 3'h5,
-	IMM_SHAMT   = 3'h6,
-	IMM_PC_INC  = 3'h7
+	IMM_I = 0,
+	IMM_IZ,
+	IMM_S,
+	IMM_SB,
+	IMM_U,
+	IMM_UJ,
+	IMM_SHAMT,
+	IMM_PC_INC
 } imm_sel_t;
 
 typedef enum logic[1 : 0] {
-	ALU_OP_SEL_RF_1 = 2'h0,
-	ALU_OP_SEL_RF_2 = 2'h1,
-	ALU_OP_SEL_IMM  = 2'h2,
-	ALU_OP_SEL_PC   = 2'h3
+	ALU_OP_SEL_RF_1 = 0,
+	ALU_OP_SEL_RF_2,
+	ALU_OP_SEL_IMM,
+	ALU_OP_SEL_PC
 } alu_operand_sel_t;
 
 typedef enum logic {
-	RF_WRITE_ALU_OUT = 1'h0,
-	RF_WRITE_LSU_OUT = 1'h1
+	RF_WRITE_ALU_OUT = 0,
+	RF_WRITE_LSU_OUT
 } rf_write_sel_t;
 
 `endif
