@@ -23,6 +23,11 @@ module decoder (
     output logic [1 : 0] 			   operand_a_sel_o,
     output logic [1 : 0] 			   operand_b_sel_o,
 
+	output logic lsu_w_en_o,
+	output logic lsu_r_en_o, 	
+	output logic [1 : 0] lsu_data_type_o,
+	output logic lsu_sign_extend_o,
+
 	output logic [RISCV_WORD_WIDTH - 1 : 0] imm_o,
 
 	output logic compressed_inst_o,
@@ -62,12 +67,19 @@ module decoder (
 
 	always_comb begin
 		illegal_inst_o = 0;
+		
 		alu_op_o = ALU_AND;
 		imm_sel = IMM_I;
 		operand_a_sel_o = ALU_OP_SEL_RF_1;
 		operand_b_sel_o = ALU_OP_SEL_RF_2;
+		
 		rf_write_sel_o  = RF_WRITE_ALU_OUT;
 		rf_we_o = 0;
+		
+		lsu_w_en_o = 0;
+		lsu_r_en_o = 0;
+		lsu_data_type_o = 0;
+		lsu_sign_extend_o = 0;
 
 		unique case (opcode)
 			OPCODE_OPIMM:
@@ -167,8 +179,26 @@ module decoder (
 					default: illegal_inst_o = 1'b1; 
 				endcase
 			end
+			OPCODE_LOAD:
+			begin
+				alu_op_o = ALU_ADD;
+				operand_a_sel_o = ALU_OP_SEL_RF_1;
+				imm_sel = IMM_I;
+				operand_b_sel_o = ALU_OP_SEL_IMM;
+
+				rf_we_o = 1;
+				rf_write_sel_o = RF_WRITE_LSU_OUT;
+
+				lsu_r_en_o = 1;
+				lsu_sign_extend_o = ~instr_i[14];
+				unique case (instr_i[13:12])
+					2'b00:   lsu_data_type_o = DATA_BYTE;
+					2'b01:   lsu_data_type_o = DATA_HALF_WORD;
+					2'b10:   lsu_data_type_o = DATA_WORD;
+					default: illegal_inst_o = 1'b1; 
+				endcase
+			end	
 			OPCODE_STORE:;
-			OPCODE_LOAD:;
 			OPCODE_BRANCH:;
 			OPCODE_SYSTEM:;
 			OPCODE_FENCE:;

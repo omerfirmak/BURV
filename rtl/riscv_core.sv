@@ -22,7 +22,7 @@ module riscv_core (
 
 	output logic [RISCV_ADDR_WIDTH - 1 : 0] dmem_addr_o,
 	output logic [RISCV_WORD_WIDTH - 1 : 0] dmem_wdata_o,
-	output logic [3 : 0] 					 dmem_we_o,
+	output logic [3 : 0] 					dmem_we_o,
 	input  logic [RISCV_WORD_WIDTH - 1 : 0] dmem_rdata_i
 );
 
@@ -71,7 +71,7 @@ module riscv_core (
 
 		unique case (rf_write_sel)
 			RF_WRITE_ALU_OUT: rf_write_data = alu_result;
-			RF_WRITE_LSU_OUT: rf_write_data = 0; // TODO: when LSU is implemented
+			RF_WRITE_LSU_OUT: rf_write_data = lsu_rdata_o;
 			default: 		  rf_write_data = alu_result;
 		endcase
 	end
@@ -130,6 +130,7 @@ module riscv_core (
 		.instr_addr_i   (instr_addr),
 
 		.cycle_counter_i(1'b0),
+
 		// Register file interface
 		.rf_rs1_addr_o  (rf_read_addr_1),
 		.rf_rs2_addr_o  (rf_read_addr_2),
@@ -140,6 +141,11 @@ module riscv_core (
 		.alu_op_o       (alu_op),
 		.operand_a_sel_o(alu_operand_a_sel),
 		.operand_b_sel_o(alu_operand_b_sel),
+
+		.lsu_w_en_o       (lsu_w_en),
+		.lsu_r_en_o       (lsu_r_en),
+		.lsu_data_type_o  (lsu_data_type),
+		.lsu_sign_extend_o(lsu_sign_extend),
 
 		.imm_o          (imm_val),
 
@@ -157,11 +163,38 @@ module riscv_core (
 
 	);
 
+	logic lsu_w_en;
+	logic lsu_r_en; 	
+	logic [1 : 0] lsu_data_type;
+	logic lsu_sign_extend;
+
+	logic [RISCV_WORD_WIDTH - 1 : 0] lsu_rdata_o;
+
+
 	lsu lsu
 	(
-		.clk 		   (clk),
-		.rst_n		   (rst_n)
+		.clk 		  (clk),
+		.rst_n		  (rst_n),
 
+		.w_en_i       (lsu_w_en),
+		.r_en_i       (lsu_r_en),
+		.type_i       (lsu_data_type),
+		.wdata_i      (rf_read_data_2),
+		.addr_i       (alu_result),
+		.sign_extend_i(lsu_sign_extend),
+
+		.invalid_o    (),
+		.done_o       (),
+		.rdata_o      (lsu_rdata_o),
+
+		// Data memory interface
+		.dmem_valid_o (dmem_valid_o),
+		.dmem_ready_i (dmem_ready_i),
+
+		.dmem_addr_o  (dmem_addr_o),
+		.dmem_wdata_o (dmem_wdata_o),
+		.dmem_we_o    (dmem_we_o),
+		.dmem_rdata_i (dmem_rdata_i)
 	);
 
 
