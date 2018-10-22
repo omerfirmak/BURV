@@ -46,8 +46,6 @@ int main(int argc, char **argv, char **env) {
 
     for (int i=0; i<100; i++) {
         top->rst_n = i > 2;
-//      top->misc = i == 30;
-
         clock(1);
         if (Verilated::gotFinish())  exit(0);
     }

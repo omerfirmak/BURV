@@ -28,6 +28,16 @@ typedef enum logic[2 : 0] {
 	FUNC3_AND		  = 3'h7
 } op_func3_t;
 
+typedef enum logic[2 : 0] {
+	FUNC3_BEQ  = 3'h0,
+	FUNC3_BNE  = 3'h1,
+	FUNC3_BLT  = 3'h4,
+	FUNC3_BGE  = 3'h5,
+	FUNC3_BLTU = 3'h6,
+	FUNC3_BGEU = 3'h7
+} branch_func3_t;
+
+
 typedef enum logic[6 : 0] {
 	OPCODE_OPIMM      = 7'h13,
 	OPCODE_SYSTEM     = 7'h73,

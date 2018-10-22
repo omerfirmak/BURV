@@ -6,6 +6,10 @@ module fetch_stage (
 	input clk,    	// Clock
 	input rst_n,    // Asynchronous reset active low
 
+
+	input logic [1 : 0] 					 retired_inst_len_i,
+
+
 	// From latter stages
 	input logic								 req_i,
 	input logic [RISCV_ADDR_WIDTH - 1 : 0]   target_addr_i,
@@ -41,7 +45,7 @@ module fetch_stage (
 		.instr_i 		(imem_rdata_i),
 		.addr_i   		(imem_addr_o),
 	
-		.read_en_i 		(),
+		.read_en_i 		(retired_inst_len_i),
 		.instr_o		(instr_o),
 		.addr_o   		(instr_addr_o),
 

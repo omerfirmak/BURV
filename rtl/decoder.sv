@@ -31,7 +31,8 @@ module decoder (
 	output logic [RISCV_WORD_WIDTH - 1 : 0] imm_o,
 
 	output logic compressed_inst_o,
-	output logic ctrl_trans_inst_o,
+	output logic jump_inst_o,
+	output logic branch_inst_o,
 	output logic illegal_inst_o
 );
 
@@ -49,6 +50,7 @@ module decoder (
 	logic [RISCV_WORD_WIDTH - 1 : 0] imm_uj_type;
 
 	assign opcode = instr_i[6 : 0];
+	assign compressed_inst_o = opcode[1:0] != 2'b11;
 
 	// immediate extraction and sign extension
 	assign imm_i_type  = { {20 {instr_i[31]}}, instr_i[31 : 20] };
@@ -66,6 +68,8 @@ module decoder (
 	assign sub_func_7 = instr_i[31 : 25];
 
 	always_comb begin
+		jump_inst_o = 0;
+		branch_inst_o = 0;
 		illegal_inst_o = 0;
 		
 		alu_op_o = ALU_AND;
@@ -144,7 +148,7 @@ module decoder (
 			end
 			OPCODE_JALR:
 			begin
-				ctrl_trans_inst_o = 1'b1;
+				jump_inst_o = 1'b1;
 				
 				alu_op_o = ALU_ADD;
 				operand_a_sel_o = ALU_OP_SEL_PC;
@@ -157,13 +161,17 @@ module decoder (
 						rf_we_o = 1;
 						imm_sel = IMM_PC_INC;
 					end
-					1: 	imm_sel = IMM_I;
+					1: 	
+					begin
+						operand_a_sel_o = ALU_OP_SEL_RF_1;
+						imm_sel = IMM_I;
+					end
 					default: illegal_inst_o = 1'b1;
 				endcase
 			end
 			OPCODE_JAL:
 			begin
-				ctrl_trans_inst_o = 1'b1;
+				jump_inst_o = 1'b1;
 
 				alu_op_o = ALU_ADD;
 				operand_a_sel_o = ALU_OP_SEL_PC;
@@ -191,15 +199,58 @@ module decoder (
 
 				lsu_r_en_o = 1;
 				lsu_sign_extend_o = ~instr_i[14];
-				unique case (instr_i[13:12])
+				unique case (sub_func_3[1:0])
 					2'b00:   lsu_data_type_o = DATA_BYTE;
 					2'b01:   lsu_data_type_o = DATA_HALF_WORD;
 					2'b10:   lsu_data_type_o = DATA_WORD;
-					default: illegal_inst_o = 1'b1; 
+					default: illegal_inst_o  = 1'b1; 
 				endcase
 			end	
-			OPCODE_STORE:;
-			OPCODE_BRANCH:;
+			OPCODE_STORE:
+			begin
+				alu_op_o = ALU_ADD;
+				operand_a_sel_o = ALU_OP_SEL_RF_1;
+				imm_sel = IMM_S;
+				operand_b_sel_o = ALU_OP_SEL_IMM;
+
+				lsu_w_en_o = 1;
+				unique case (sub_func_3)
+					3'b000:   lsu_data_type_o = DATA_BYTE;
+					3'b001:   lsu_data_type_o = DATA_HALF_WORD;
+					3'b010:   lsu_data_type_o = DATA_WORD;
+					default:  illegal_inst_o  = 1'b1; 
+				endcase
+			end
+			OPCODE_BRANCH:
+			begin
+				branch_inst_o = 1;
+				operand_a_sel_o = ALU_OP_SEL_RF_1;
+				operand_b_sel_o = ALU_OP_SEL_RF_2;
+
+				unique case (cycle_counter_i)
+					0:
+					begin
+						unique case (sub_func_3)
+							FUNC3_BEQ:  alu_op_o = ALU_EQ;
+							FUNC3_BNE:  alu_op_o = ALU_NE;
+							FUNC3_BLT:  alu_op_o = ALU_LTS;
+							FUNC3_BGE:  alu_op_o = ALU_GES;
+							FUNC3_BLTU: alu_op_o = ALU_LTU;
+							FUNC3_BGEU: alu_op_o = ALU_GEU;
+							default:  illegal_inst_o  = 1'b1; 
+						endcase
+					end
+					1: 
+					begin
+						operand_a_sel_o = ALU_OP_SEL_PC;
+						operand_b_sel_o = ALU_OP_SEL_IMM;
+						imm_sel = IMM_SB;
+					end
+					default: illegal_inst_o = 1'b1; 
+				endcase
+
+
+			end
 			OPCODE_SYSTEM:;
 			OPCODE_FENCE:;
 			default: illegal_inst_o = 1'b1;
@@ -219,7 +270,4 @@ module decoder (
 			default:    imm_o = imm_i_type;
 		endcase
 	end
-
-	assign compressed_inst_o = instr_i[1:0] != 2'b11;
-
 endmodule

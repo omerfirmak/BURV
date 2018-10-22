@@ -49,7 +49,7 @@ module lsu (
 		rdata_o = RISCV_WORD_WIDTH'(1'bx);
 		unique case ({sign_extend_i, addr_i[1 : 0], type_i})
 			{1'b0, 2'b00, DATA_WORD},
-			{1'b1, 2'b00, DATA_WORD}:		rdata_o = dmem_rdata_i;
+			{1'b1, 2'b00, DATA_WORD}:		rdata_o = {dmem_rdata_i[7 : 0], dmem_rdata_i[15 : 8], dmem_rdata_i[23 : 16], dmem_rdata_i[31 : 24]};
 
 			{1'b0, 2'b00, DATA_HALF_WORD}:	rdata_o = {16'h0, dmem_rdata_i[7 : 0], dmem_rdata_i[15 : 8]};
 			{1'b0, 2'b10, DATA_HALF_WORD}:	rdata_o = {16'h0, dmem_rdata_i[23 : 16], dmem_rdata_i[31 : 24]};
