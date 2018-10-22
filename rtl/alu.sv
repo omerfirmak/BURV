@@ -61,8 +61,8 @@ module alu (
         logic [RISCV_WORD_WIDTH - 1 : 0] is_greater_signed;
 
         assign is_equal = RISCV_WORD_WIDTH'(operand_a_i == operand_b_i);
-        assign is_greater = RISCV_WORD_WIDTH'(operand_a_i > operand_b_i);
-        assign is_greater_signed = RISCV_WORD_WIDTH'(operand_a_i_signed > operand_b_i_signed);
+        assign is_less_then = RISCV_WORD_WIDTH'(operand_a_i > operand_b_i);
+        assign is_less_then_signed = RISCV_WORD_WIDTH'(operand_a_i_signed > operand_b_i_signed);
                 
         /*
          * Mux out
@@ -85,14 +85,10 @@ module alu (
 
                 ALU_EQ:  alu_result_o = is_equal;
                 ALU_NE:  alu_result_o = ~is_equal;
-                ALU_GTS: alu_result_o = is_greater_signed;
-                ALU_GTU: alu_result_o = is_greater;
                 ALU_GES: alu_result_o = is_greater_signed | is_equal;
                 ALU_GEU: alu_result_o = is_greater | is_equal;
-                ALU_LTS: alu_result_o = ~(is_greater_signed | is_equal);
-                ALU_LTU: alu_result_o = ~(is_greater | is_equal);
-                ALU_LES: alu_result_o = ~is_greater_signed;
-                ALU_LEU: alu_result_o = ~is_greater;
+                ALU_LTS: alu_result_o = is_less_then_signed;
+                ALU_LTU: alu_result_o = is_less_then;
                 default:;
              endcase
         end

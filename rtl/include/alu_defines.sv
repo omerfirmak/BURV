@@ -20,10 +20,6 @@ typedef enum logic [ALU_OP_WIDTH - 1 : 0]  {
     // Comparisons
     ALU_LTS,
     ALU_LTU,
-    ALU_LES,
-    ALU_LEU,
-    ALU_GTS,
-    ALU_GTU,
     ALU_GES,
     ALU_GEU,
     ALU_EQ,
