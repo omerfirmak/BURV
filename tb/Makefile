@@ -15,13 +15,14 @@ VERILOG_SRC = 	../rtl/include/alu_defines.sv 		\
 
 all: sim
 
-sim: compile_sim
+sim: compile_sim compile_software
 	./obj_dir/V$(MODULE)
 	gtkwave V$(MODULE).vcd
 
 clean:
 	rm -rf obj_dir
 	rm -f *.vcd
+	rm -f test.elf test.bin test.dump
 
 verilate: clean
 	verilator --cc --trace $(VERILOG_SRC) -I../rtl/include --exe $(MODULE)_tb.cpp --top-module $(MODULE)
@@ -31,3 +32,8 @@ compile_sim: verilate
 
 lint:
 	verilator --lint-only $(VERILOG_SRC)
+
+compile_software:
+	riscv32-unknown-elf-gcc -march=rv32e -mabi=ilp32e -T link.ld test.c -o test.elf
+	riscv32-unknown-elf-objdump --disassembler-options=no-aliases,numeric -D test.elf > test.dump
+	riscv32-unknown-elf-objcopy -O binary test.elf test.bin

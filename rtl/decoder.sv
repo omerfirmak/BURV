@@ -141,6 +141,8 @@ module decoder (
 			end	
 			OPCODE_AUIPC: 
 			begin
+				rf_we_o = 1;
+
 				alu_op_o = ALU_ADD;
 				operand_a_sel_o = ALU_OP_SEL_PC;
 				imm_sel = IMM_U;
@@ -248,8 +250,6 @@ module decoder (
 					end
 					default: illegal_inst_o = 1'b1; 
 				endcase
-
-
 			end
 			OPCODE_SYSTEM:;
 			OPCODE_FENCE:;
