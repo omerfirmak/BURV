@@ -1,9 +1,8 @@
-
 module dp_ram
 #(
     parameter ADDR_WIDTH = RISCV_ADDR_WIDTH
 )(
-// Clock and Reset
+    // Clock and Reset
     input  logic clk,
 
     input  logic a_valid_i,
@@ -11,7 +10,7 @@ module dp_ram
 
     input  logic [RISCV_ADDR_WIDTH - 1 : 0] a_addr_i,
     input  logic [RISCV_WORD_WIDTH - 1 : 0] a_wdata_i,
-    input  logic [3 : 0]                     a_we_i,
+    input  logic [3 : 0]                    a_we_i,
     output logic [RISCV_WORD_WIDTH - 1 : 0] a_rdata_o,
 
     input  logic b_valid_i,
@@ -19,7 +18,7 @@ module dp_ram
 
     input  logic [RISCV_ADDR_WIDTH - 1 : 0] b_addr_i,
     input  logic [RISCV_WORD_WIDTH - 1 : 0] b_wdata_i,
-    input  logic [3 : 0]                     b_we_i,
+    input  logic [3 : 0]                    b_we_i,
     output logic [RISCV_WORD_WIDTH - 1 : 0] b_rdata_o
 );
 
