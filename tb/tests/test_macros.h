@@ -421,7 +421,7 @@ test_ ## testnum: \
     li  x4, 0; \
 1:  la  x6, 2f; \
     TEST_INSERT_NOPS_ ## nop_cycles \
-    inst x19, x6, 0; \
+    inst x12, x6, 0; \
     bne x0, TESTNUM, fail; \
 2:  addi  x4, x4, 1; \
     li  x5, 2; \

@@ -268,7 +268,7 @@ module decoder (
 			IMM_SB:     imm_o = imm_sb_type;
 			IMM_U:      imm_o = imm_u_type;
 			IMM_UJ:     imm_o = imm_uj_type;
-			IMM_SHAMT:  imm_o = RISCV_WORD_WIDTH'(rf_rs2_addr_o);
+			IMM_SHAMT:  imm_o = RISCV_WORD_WIDTH'(instr_i[24 : 20]);
 			IMM_PC_INC: imm_o = compressed_inst_o ? 2 : 4;
 			default:    imm_o = imm_i_type;
 		endcase

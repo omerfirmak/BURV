@@ -45,9 +45,9 @@ module alu (
         begin
             shift_out = 'x;
             unique case (alu_op_i)
-                ALU_SRA: shift_out = operand_a_i_signed >>> operand_b_i_signed;
-                ALU_SRL: shift_out = operand_a_i >> operand_b_i;
-                ALU_SLL: shift_out = operand_a_i << operand_b_i;
+                ALU_SRA: shift_out = operand_a_i_signed >>> operand_b_i_signed[4 : 0];
+                ALU_SRL: shift_out = operand_a_i >> operand_b_i[4 : 0];
+                ALU_SLL: shift_out = operand_a_i << operand_b_i[4 : 0];
                 default: ;
             endcase
         end
@@ -56,6 +56,7 @@ module alu (
          * Comparison
          */
         
+        logic [RISCV_WORD_WIDTH - 1 : 0] comp_result;
         logic [RISCV_WORD_WIDTH - 1 : 0] is_equal;
         logic [RISCV_WORD_WIDTH - 1 : 0] is_greater;
         logic [RISCV_WORD_WIDTH - 1 : 0] is_greater_signed;
@@ -64,6 +65,21 @@ module alu (
         assign is_greater = RISCV_WORD_WIDTH'(operand_a_i > operand_b_i);
         assign is_greater_signed = RISCV_WORD_WIDTH'(operand_a_i_signed > operand_b_i_signed);
                 
+        always_comb
+        begin
+             comp_result = 'x;
+             unique case (alu_op_i)
+                ALU_EQ:  comp_result = is_equal;
+                ALU_NE:  comp_result = ~is_equal;
+                ALU_GES: comp_result = is_greater_signed | is_equal;
+                ALU_GEU: comp_result = is_greater | is_equal;
+                ALU_LTS: comp_result = ~(is_greater_signed | is_equal);
+                ALU_LTU: comp_result = ~(is_greater | is_equal);
+                default:;
+             endcase
+        end
+
+
         /*
          * Mux out
          */
@@ -83,12 +99,12 @@ module alu (
                 ALU_OR:  alu_result_o = operand_a_i | operand_b_i;
                 ALU_AND: alu_result_o = operand_a_i & operand_b_i;
 
-                ALU_EQ:  alu_result_o = is_equal;
-                ALU_NE:  alu_result_o = ~is_equal;
-                ALU_GES: alu_result_o = is_greater_signed | is_equal;
-                ALU_GEU: alu_result_o = is_greater | is_equal;
-                ALU_LTS: alu_result_o = ~(is_greater_signed | is_equal);
-                ALU_LTU: alu_result_o = ~(is_greater | is_equal);
+                ALU_EQ,
+                ALU_NE,
+                ALU_GES,
+                ALU_GEU,
+                ALU_LTS,
+                ALU_LTU: alu_result_o = {31'd0, comp_result[0]};
                 default:;
              endcase
         end

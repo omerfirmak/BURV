@@ -31,12 +31,12 @@ module lsu (
 		dmem_we = 4'h0;
 		unique case ({addr_i[1 : 0], type_i})
 			{2'b00, DATA_WORD}:			dmem_we = 4'b1111;
-			{2'b00, DATA_HALF_WORD}:	dmem_we = 4'b1100;
-			{2'b10, DATA_HALF_WORD}:	dmem_we = 4'b0011;
-			{2'b00, DATA_BYTE}:			dmem_we = 4'b1000;
-			{2'b01, DATA_BYTE}:			dmem_we = 4'b0100;
-			{2'b10, DATA_BYTE}:			dmem_we = 4'b0010;
-			{2'b11, DATA_BYTE}:			dmem_we = 4'b0001;
+			{2'b00, DATA_HALF_WORD}:	dmem_we = 4'b0011;
+			{2'b10, DATA_HALF_WORD}:	dmem_we = 4'b1100;
+			{2'b00, DATA_BYTE}:			dmem_we = 4'b0001;
+			{2'b01, DATA_BYTE}:			dmem_we = 4'b0010;
+			{2'b10, DATA_BYTE}:			dmem_we = 4'b0100;
+			{2'b11, DATA_BYTE}:			dmem_we = 4'b1000;
 			default : invalid_o = 1'b1;
 		endcase
 	end
@@ -49,23 +49,23 @@ module lsu (
 		rdata_o = RISCV_WORD_WIDTH'(1'bx);
 		unique case ({sign_extend_i, addr_i[1 : 0], type_i})
 			{1'b0, 2'b00, DATA_WORD},
-			{1'b1, 2'b00, DATA_WORD}:		rdata_o = {dmem_rdata_i[7 : 0], dmem_rdata_i[15 : 8], dmem_rdata_i[23 : 16], dmem_rdata_i[31 : 24]};
+			{1'b1, 2'b00, DATA_WORD}:		rdata_o = dmem_rdata_i;
 
-			{1'b0, 2'b00, DATA_HALF_WORD}:	rdata_o = {16'h0, dmem_rdata_i[7 : 0], dmem_rdata_i[15 : 8]};
-			{1'b0, 2'b10, DATA_HALF_WORD}:	rdata_o = {16'h0, dmem_rdata_i[23 : 16], dmem_rdata_i[31 : 24]};
+			{1'b0, 2'b00, DATA_HALF_WORD}:	rdata_o = {16'h0, dmem_rdata_i[15 : 0]};
+			{1'b0, 2'b10, DATA_HALF_WORD}:	rdata_o = {16'h0, dmem_rdata_i[31 : 16]};
 
-			{1'b1, 2'b00, DATA_HALF_WORD}:	rdata_o = {{16{dmem_rdata_i[7]}}, dmem_rdata_i[7 : 0], dmem_rdata_i[15 : 8]};
-			{1'b1, 2'b10, DATA_HALF_WORD}:	rdata_o = {{16{dmem_rdata_i[23]}}, dmem_rdata_i[23 : 16], dmem_rdata_i[31 : 24]};
+			{1'b1, 2'b00, DATA_HALF_WORD}:	rdata_o = {{16{dmem_rdata_i[15]}}, dmem_rdata_i[15 : 0]};
+			{1'b1, 2'b10, DATA_HALF_WORD}:	rdata_o = {{16{dmem_rdata_i[31]}}, dmem_rdata_i[31 : 16]};
 
-			{1'b0, 2'b00, DATA_BYTE}:		rdata_o = {24'h0, dmem_rdata_i[31 : 24]};
-			{1'b0, 2'b01, DATA_BYTE}:		rdata_o = {24'h0, dmem_rdata_i[23 : 16]};
-			{1'b0, 2'b10, DATA_BYTE}:		rdata_o = {24'h0, dmem_rdata_i[15 : 8]};
-			{1'b0, 2'b11, DATA_BYTE}:		rdata_o = {24'h0, dmem_rdata_i[7 : 0]};
+			{1'b0, 2'b00, DATA_BYTE}:		rdata_o = {24'h0, dmem_rdata_i[7 : 0]};
+			{1'b0, 2'b01, DATA_BYTE}:		rdata_o = {24'h0, dmem_rdata_i[15 : 8]};
+			{1'b0, 2'b10, DATA_BYTE}:		rdata_o = {24'h0, dmem_rdata_i[23 : 16]};
+			{1'b0, 2'b11, DATA_BYTE}:		rdata_o = {24'h0, dmem_rdata_i[31 : 24]};
 
-			{1'b1, 2'b00, DATA_BYTE}:		rdata_o = {{24{dmem_rdata_i[31]}}, dmem_rdata_i[31 : 24]};
-			{1'b1, 2'b01, DATA_BYTE}:		rdata_o = {{24{dmem_rdata_i[23]}}, dmem_rdata_i[23 : 16]};
-			{1'b1, 2'b10, DATA_BYTE}:		rdata_o = {{24{dmem_rdata_i[15]}}, dmem_rdata_i[15 : 8]};
-			{1'b1, 2'b11, DATA_BYTE}:		rdata_o = {{24{dmem_rdata_i[7]}}, dmem_rdata_i[7 : 0]};
+			{1'b1, 2'b00, DATA_BYTE}:		rdata_o = {{24{dmem_rdata_i[7]}}, dmem_rdata_i[7 : 0]};
+			{1'b1, 2'b01, DATA_BYTE}:		rdata_o = {{24{dmem_rdata_i[15]}}, dmem_rdata_i[15 : 8]};
+			{1'b1, 2'b10, DATA_BYTE}:		rdata_o = {{24{dmem_rdata_i[23]}}, dmem_rdata_i[23 : 16]};
+			{1'b1, 2'b11, DATA_BYTE}:		rdata_o = {{24{dmem_rdata_i[31]}}, dmem_rdata_i[31 : 24]};
 			default : invalid_o = 1'b1; 
 		endcase
 	end
@@ -74,13 +74,13 @@ module lsu (
 	always_comb begin
 		dmem_wdata_o = RISCV_WORD_WIDTH'(1'bx);
 		unique case ({addr_i[1 : 0], type_i})
-			{2'b00, DATA_WORD}:		dmem_wdata_o = {wdata_i[7 : 0], wdata_i[15 : 8], wdata_i[23 : 16], wdata_i[31 : 24]};
-			{2'b00, DATA_HALF_WORD}:dmem_wdata_o = {wdata_i[7 : 0], wdata_i[15 : 8], 16'hx};
-			{2'b10, DATA_HALF_WORD}:dmem_wdata_o = {16'hx, wdata_i[7 : 0], wdata_i[15 : 8]};
-			{2'b00, DATA_BYTE}:		dmem_wdata_o = {wdata_i[7 : 0], 24'hx};
-			{2'b01, DATA_BYTE}:		dmem_wdata_o = {8'hx, wdata_i[7 : 0], 16'hx};
-			{2'b10, DATA_BYTE}:		dmem_wdata_o = {16'hx, wdata_i[7 : 0], 8'hx};
-			{2'b11, DATA_BYTE}:		dmem_wdata_o = {24'hx, wdata_i[7 : 0]};
+			{2'b00, DATA_WORD}:		dmem_wdata_o = wdata_i;
+			{2'b00, DATA_HALF_WORD}:dmem_wdata_o = {16'h0, wdata_i[15 : 0]};
+			{2'b10, DATA_HALF_WORD}:dmem_wdata_o = {wdata_i[15 : 0], 16'h0};
+			{2'b00, DATA_BYTE}:		dmem_wdata_o = {24'h0, wdata_i[7 : 0]};
+			{2'b01, DATA_BYTE}:		dmem_wdata_o = {16'h0, wdata_i[7 : 0], 8'h0};
+			{2'b10, DATA_BYTE}:		dmem_wdata_o = {8'h0, wdata_i[7 : 0], 16'h0};
+			{2'b11, DATA_BYTE}:		dmem_wdata_o = {wdata_i[7 : 0], 24'h0};
 			default :;
 		endcase
 	end

@@ -118,6 +118,12 @@ module riscv_core (
 		.imem_we_o     (imem_we_o),
 		.imem_rdata_i  (imem_rdata_i)
     );
+    logic [3:0][7:0] test;
+
+    assign test[0] = 8'h01;
+    assign test[1] = 8'h02;
+    assign test[2] = 8'h03;
+    assign test[3] = 8'h04;
 
 	logic [RISCV_WORD_WIDTH - 1 : 0] instr;
 	logic [RISCV_ADDR_WIDTH - 1 : 0] instr_addr;

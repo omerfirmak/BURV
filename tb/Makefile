@@ -40,7 +40,7 @@ compile_software:
 	riscv32-unknown-elf-objdump --disassembler-options=no-aliases,numeric -D test.elf > test.dump
 	riscv32-unknown-elf-objcopy -O binary test.elf test.bin
 
-test_all: clean compile_sim
+test: clean compile_sim
 	echo $$(date) >> test.result
 	$(foreach var,$(TESTNAMES), (echo -n $(var) >> test.result; (riscv32-unknown-elf-gcc -march=rv32e -mabi=ilp32e -T link.ld $(var) -nostdlib -o test.elf && \
 																 riscv32-unknown-elf-objcopy -O binary test.elf test.bin && \
