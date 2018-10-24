@@ -2,7 +2,8 @@
 
 #include "Vriscv_top_riscv_top.h"
 #include "Vriscv_top_dp_ram.h"
-
+#include "Vriscv_top_reg_file.h"
+#include "Vriscv_top_riscv_core.h"
 
 #include "verilated.h"
 #include "verilated_vcd_c.h"
@@ -29,6 +30,7 @@ void clock(int times)
 int main(int argc, char **argv, char **env) {
     Verilated::commandArgs(argc, argv);
     top = new Vriscv_top;
+
     Verilated::traceEverOn(true);
     tfp = new VerilatedVcdC;
     top->trace (tfp, 99);
@@ -36,7 +38,6 @@ int main(int argc, char **argv, char **env) {
 
     top->clk = 0;
     top->misc = 0;
-
 /*
     top->riscv_top->dp_ram->writeWord(0, 0x3fc00093); //       li      x1,1020
     top->riscv_top->dp_ram->writeWord(4, 0x0000a023); //       sw      x0,0(x1)
@@ -46,6 +47,10 @@ int main(int argc, char **argv, char **env) {
     top->riscv_top->dp_ram->writeWord(20,0xff5ff06f); //       j       <loop>
 */
 
+    for (int i = 0; i < 1024; ++i) {
+        top->riscv_top->dp_ram->writeWord(4 * i++, 0);
+    }
+
     FILE *ptr;
     uint32_t tmp, index = 0;
     ptr = fopen("test.bin","rb");
@@ -54,12 +59,12 @@ int main(int argc, char **argv, char **env) {
         top->riscv_top->dp_ram->writeWord(4 * index++, tmp);
     }
 
-    for (int i=0; i<100; i++) {
+    for (int i=0; i<10000; i++) {
         top->rst_n = i > 2;
         clock(1);
         if (Verilated::gotFinish())  exit(0);
     }
 
     tfp->close();
-    exit(0);
+    exit(!(top->riscv_top->riscv_core->reg_file->readReg(11) == 'O' && top->riscv_top->riscv_core->reg_file->readReg(12) == 'K'));
 }

@@ -83,7 +83,7 @@ module riscv_core (
 
 		.write_data_i	(rf_write_data),
 		.write_addr_i	(rf_write_addr),
-		.write_en_i		(rf_write_en & retire_curr_inst),
+		.write_en_i		(rf_write_en & deassert_rf_wen_n),
 
 		.read_addr_1_i	(rf_read_addr_1),
 		.read_data_1_o	(rf_read_data_1),
@@ -91,6 +91,8 @@ module riscv_core (
 		.read_addr_2_i	(rf_read_addr_2),
 		.read_data_2_o	(rf_read_data_2)
 	);
+
+	logic target_valid;
 
     fetch_stage fetch_stage
     (
@@ -101,7 +103,7 @@ module riscv_core (
 
 		.req_i		   (1'b1),
 		.target_addr_i (alu_result),
-		.target_valid_i(retire_curr_inst & (jump_inst | branch_inst)),
+		.target_valid_i(target_valid),
 
 		.instr_o       (instr),
 		.instr_addr_o  (instr_addr),
@@ -164,6 +166,7 @@ module riscv_core (
 	);
 
 	logic	retire_curr_inst;
+	logic 	deassert_rf_wen_n;
 
 	controller controller
 	(
@@ -180,8 +183,10 @@ module riscv_core (
 
 		.comp_result_i    (alu_result[0]),
 
-		.cycle_counter_o  (cycle_counter),
-		.retire_o         (retire_curr_inst)
+		.cycle_counter_o    (cycle_counter),
+		.deassert_rf_wen_n_o(deassert_rf_wen_n),
+		.retire_o           (retire_curr_inst),
+		.target_valid_o     (target_valid)
 	);
 
 	logic lsu_en;

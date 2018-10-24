@@ -34,4 +34,18 @@ module reg_file (
         end
     end
 
+    function [31:0] readReg;
+    /* verilator public */
+    input integer reg_num;
+    readReg = mem[reg_num];
+    endfunction
+
+    task writeReg;
+    /* verilator public */
+    input integer reg_num;
+    input [31:0] val;
+    mem[reg_num] = val;
+    endtask
+
+
 endmodule

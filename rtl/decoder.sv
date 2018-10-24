@@ -135,6 +135,8 @@ module decoder (
 			end
 			OPCODE_LUI: 
 			begin
+				rf_we_o = 1;
+
 				alu_op_o = ALU_PASS;
 				imm_sel = IMM_U;
 				operand_a_sel_o = ALU_OP_SEL_IMM;
@@ -244,6 +246,7 @@ module decoder (
 					end
 					1: 
 					begin
+						alu_op_o = ALU_ADD;
 						operand_a_sel_o = ALU_OP_SEL_PC;
 						operand_b_sel_o = ALU_OP_SEL_IMM;
 						imm_sel = IMM_SB;
@@ -251,8 +254,8 @@ module decoder (
 					default: illegal_inst_o = 1'b1; 
 				endcase
 			end
-			OPCODE_SYSTEM:;
-			OPCODE_FENCE:;
+			OPCODE_SYSTEM:illegal_inst_o = 1'b1;
+			OPCODE_FENCE: illegal_inst_o = 1'b1;
 			default: illegal_inst_o = 1'b1;
 		endcase
 	end

@@ -12,24 +12,30 @@ module controller (
 
 	input logic comp_result_i,
 
-	output logic cycle_counter_o,	
-	output logic retire_o
+	output logic cycle_counter_o,
+	output logic deassert_rf_wen_n_o,
+	output logic retire_o,
+	output logic target_valid_o
 );
 
 	enum logic { IDLE, MULTI_CYCLE_OP } CS, NS;
 
 	always_comb 
 	begin
+		deassert_rf_wen_n_o = 0;
 		NS = CS;
 		retire_o = inst_valid_i & ~illegal_inst_i;
+		target_valid_o = 0;
 
 		if (inst_valid_i) begin
+			deassert_rf_wen_n_o = 1;
 			unique case (CS)
 				IDLE:
 				begin
 					unique case (1'b1)
 						lsu_en_i:
 						begin
+							deassert_rf_wen_n_o = 0;
 							retire_o = 0;
 							NS = MULTI_CYCLE_OP;
 						end
@@ -48,8 +54,14 @@ module controller (
 				end
 				MULTI_CYCLE_OP:
 				begin
-					if (lsu_en_i & ~lsu_done_i) NS = MULTI_CYCLE_OP;
-					else						NS = IDLE;
+					if (lsu_en_i & ~lsu_done_i)  begin
+						NS = MULTI_CYCLE_OP;
+						deassert_rf_wen_n_o = 0;						
+					end else if (jump_inst_i | branch_inst_i)  begin
+						NS = IDLE;
+						target_valid_o = 1;
+					end	
+					else NS = IDLE;
 				end
 				default : NS = IDLE;
 			endcase
