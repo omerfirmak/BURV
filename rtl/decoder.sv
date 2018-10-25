@@ -255,7 +255,6 @@ module decoder (
 				endcase
 			end
 			OPCODE_SYSTEM:illegal_inst_o = 1'b1;
-			OPCODE_FENCE: illegal_inst_o = 1'b1;
 			default: illegal_inst_o = 1'b1;
 		endcase
 	end
