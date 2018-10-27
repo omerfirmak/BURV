@@ -83,7 +83,7 @@ module riscv_core (
 
 		.write_data_i	(rf_write_data),
 		.write_addr_i	(rf_write_addr),
-		.write_en_i		(rf_write_en & deassert_rf_wen_n),
+		.write_en_i		(rf_write_en & deassert_wen_n_o),
 
 		.read_addr_1_i	(rf_read_addr_1),
 		.read_data_1_o	(rf_read_data_1),
@@ -102,7 +102,7 @@ module riscv_core (
 		.retired_inst_len_i (retire_curr_inst ? (2'b10 ^ 2'(compressed_inst)) : 0),
 
 		.req_i		   (1'b1),
-		.target_addr_i (alu_result),
+		.target_addr_i (save_epc ? exc_pc : alu_result),
 		.target_valid_i(target_valid),
 
 		.instr_o       (instr),
@@ -125,10 +125,14 @@ module riscv_core (
 	logic [RISCV_WORD_WIDTH - 1 : 0] imm_val;
 
 	logic                         	 illegal_inst;
-	logic                         	 cycle_counter;
+	logic                         	 ecall_inst;
+	logic                         	 ebreak_inst;
+	logic                         	 mret_inst;
 	logic                         	 compressed_inst;
 	logic                         	 jump_inst;
 	logic                         	 branch_inst;
+
+	logic                         	 cycle_counter;
 
 	decoder decoder 
 	(
@@ -161,12 +165,17 @@ module riscv_core (
 		.compressed_inst_o  (compressed_inst),
 		.jump_inst_o        (jump_inst),
 		.branch_inst_o      (branch_inst),
+		.ecall_inst_o       (ecall_inst),
+		.ebreak_inst_o      (ebreak_inst),
+		.mret_inst_o        (mret_inst),
 		.illegal_inst_o 	(illegal_inst)
 
 	);
 
-	logic	retire_curr_inst;
-	logic 	deassert_rf_wen_n;
+	logic	[RISCV_ADDR_WIDTH - 1 : 0] exc_pc;
+	logic							   save_epc;
+	logic							   retire_curr_inst;
+	logic 							   deassert_wen_n_o;
 
 	controller controller
 	(
@@ -176,6 +185,10 @@ module riscv_core (
 		.inst_valid_i	  (instr_valid),		
 		.jump_inst_i      (jump_inst),
 		.branch_inst_i    (branch_inst),
+		.ecall_inst_i     (ecall_inst),
+		.ebreak_inst_i    (ebreak_inst),
+		.mret_inst_i      (mret_inst),
+
 		.illegal_inst_i   (illegal_inst),
 
 		.lsu_en_i         (lsu_en),
@@ -184,9 +197,26 @@ module riscv_core (
 		.comp_result_i    (alu_result[0]),
 
 		.cycle_counter_o    (cycle_counter),
-		.deassert_rf_wen_n_o(deassert_rf_wen_n),
+		.deassert_wen_n_o   (deassert_wen_n_o),
 		.retire_o           (retire_curr_inst),
+
+		.save_epc_o     	(save_epc),
+		.exc_pc_o        	(exc_pc),
 		.target_valid_o     (target_valid)
+	);
+
+	csr csr (
+		.clk       (clk),
+		.rst_n     (rst_n),
+		
+		.op_i      (),
+		.addr_i    (),
+		.wdata_i   (),
+		.rdata_o   (),
+
+		.save_epc_i(save_epc),
+		.pc_i      (instr_addr),
+		.epc_o     ()
 	);
 
 	logic lsu_en;
@@ -207,8 +237,8 @@ module riscv_core (
 		.clk 		  (clk),
 		.rst_n		  (rst_n),
 
-		.w_en_i       (lsu_w_en & instr_valid),
-		.r_en_i       (lsu_r_en & instr_valid),
+		.w_en_i       (lsu_w_en & instr_valid & deassert_wen_n_o),
+		.r_en_i       (lsu_r_en & instr_valid & deassert_wen_n_o),
 		.type_i       (lsu_data_type),
 		.wdata_i      (rf_read_data_2),
 		.addr_i       (alu_result),

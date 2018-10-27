@@ -81,4 +81,12 @@ typedef enum logic[1 : 0] {
 	DATA_BYTE
 } data_type_t;
 
+typedef enum logic[1 : 0] {
+	CSR_OP_NONE = 2'h0,
+	CSR_OP_WRITE,
+	CSR_OP_SET,
+	CSR_OP_CLEAR
+} csr_op_t;
+
+
 `endif

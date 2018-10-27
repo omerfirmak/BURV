@@ -8,6 +8,7 @@ VERILOG_SRC = 	../rtl/include/alu_defines.sv 		\
 				../rtl/decoder.sv			\
 				../rtl/controller.sv			\
 				../rtl/lsu.sv			\
+				../rtl/csr.sv			\
 				../rtl/fetch_stage.sv		\
 				../rtl/realign_buffer.sv		\
 				ip/dp_ram.sv				\

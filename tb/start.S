@@ -3,7 +3,6 @@
 _start:
 	j reset_handler			# reset handler
 	j ecall_handler_asm		# ecall
-	j ebreak_handler_asm	# ebreak
 	J illegal_handler_asm	# illegal inst
 	J isr_asm				# ISR
 
@@ -44,6 +43,8 @@ zero_loop:
 zero_loop_end:
 
 	call __libc_init_array
+
+	ecall
 
     call main
     ecall

@@ -33,6 +33,9 @@ module decoder (
 	output logic compressed_inst_o,
 	output logic jump_inst_o,
 	output logic branch_inst_o,
+	output logic ecall_inst_o,
+	output logic ebreak_inst_o,
+	output logic mret_inst_o,
 	output logic illegal_inst_o
 );
 
@@ -254,7 +257,17 @@ module decoder (
 					default: illegal_inst_o = 1'b1; 
 				endcase
 			end
-			OPCODE_SYSTEM:illegal_inst_o = 1'b1;
+			OPCODE_SYSTEM:
+			begin
+				if (sub_func_3 == 3'b000) begin
+					unique case (instr_i[31:20])
+						12'h000: ecall_inst_o = 1'b1;
+						12'h001: ebreak_inst_o = 1'b1;
+						12'h302: mret_inst_o = 1'b1;
+						default: illegal_inst_o = 1'b1;
+					endcase
+				end else illegal_inst_o = 1'b1;
+			end
 			default: illegal_inst_o = 1'b1;
 		endcase
 	end
