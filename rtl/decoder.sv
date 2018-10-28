@@ -71,6 +71,9 @@ module decoder (
 	assign sub_func_7 = instr_i[31 : 25];
 
 	always_comb begin
+		ecall_inst_o = 0;
+		ebreak_inst_o = 0;
+		mret_inst_o = 0;
 		jump_inst_o = 0;
 		branch_inst_o = 0;
 		illegal_inst_o = 0;

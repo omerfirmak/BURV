@@ -69,6 +69,10 @@ module controller (
 							target_valid_o = 1;
 							save_epc_o = 1;
 						end
+						ebreak_inst_i:
+						begin
+							retire_o = 0;
+						end
 						illegal_inst_i:
 						begin
 							deassert_wen_n_o = 0;

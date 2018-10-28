@@ -237,8 +237,8 @@ module riscv_core (
 		.clk 		  (clk),
 		.rst_n		  (rst_n),
 
-		.w_en_i       (lsu_w_en & instr_valid & deassert_wen_n_o),
-		.r_en_i       (lsu_r_en & instr_valid & deassert_wen_n_o),
+		.w_en_i       (lsu_w_en & instr_valid & ~save_epc),
+		.r_en_i       (lsu_r_en & instr_valid & ~save_epc),
 		.type_i       (lsu_data_type),
 		.wdata_i      (rf_read_data_2),
 		.addr_i       (alu_result),
