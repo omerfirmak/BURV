@@ -88,5 +88,10 @@ typedef enum logic[1 : 0] {
 	CSR_OP_CLEAR
 } csr_op_t;
 
+typedef enum logic[1 : 0] {
+	PC_BRANCH_JUMP = 2'h0,
+	PC_EXCEPTION,
+	PC_EPC
+} pc_mux_sel_t;
 
 `endif

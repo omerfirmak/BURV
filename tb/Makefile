@@ -36,13 +36,13 @@ lint:
 	verilator --lint-only $(VERILOG_SRC)
 
 compile_soft:
-	riscv32-unknown-elf-gcc -march=rv32e -mabi=ilp32e -nostartfiles -T link.ld start.S $(SOFT_SRC) -o test.elf
+	riscv32-unknown-elf-gcc -g0 -march=rv32e -mabi=ilp32e -nostartfiles -T link.ld start.S handlers.c $(SOFT_SRC) -o test.elf
 	riscv32-unknown-elf-objdump --disassembler-options=no-aliases,numeric -D test.elf > test.dump
 	riscv32-unknown-elf-objcopy -O binary test.elf test.bin
 
 test_all: clean compile_sim
 	echo $$(date) >> test.result
-	$(foreach var,$(TESTNAMES), (echo -n $(var) >> test.result; (riscv32-unknown-elf-gcc -march=rv32e -mabi=ilp32e -T link.ld $(var) -nostdlib -o test.elf && \
+	$(foreach var,$(TESTNAMES), (echo -n $(var) >> test.result; (riscv32-unknown-elf-gcc -g0 -march=rv32e -mabi=ilp32e -T link.ld $(var) -nostdlib -o test.elf && \
 																 riscv32-unknown-elf-objcopy -O binary test.elf test.bin && \
 																 ./obj_dir/V$(MODULE) && echo -e "\t\tOK"  >> test.result || echo -e "\t\tFAILED"  >> test.result));)
 compile_test:

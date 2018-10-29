@@ -5,7 +5,6 @@
 module riscv_core (
 	input logic clk,    // Clock
 	input logic rst_n,  // Asynchronous reset active low
-	input logic misc,
 
 	// Instruction memory interface
 	output logic imem_valid_o,
@@ -23,7 +22,9 @@ module riscv_core (
 	output logic [RISCV_ADDR_WIDTH - 1 : 0] dmem_addr_o,
 	output logic [RISCV_WORD_WIDTH - 1 : 0] dmem_wdata_o,
 	output logic [3 : 0] 					dmem_we_o,
-	input  logic [RISCV_WORD_WIDTH - 1 : 0] dmem_rdata_i
+	input  logic [RISCV_WORD_WIDTH - 1 : 0] dmem_rdata_i,
+
+	input  logic irq_i
 );
 
 	// ALU signals
@@ -92,7 +93,17 @@ module riscv_core (
 		.read_data_2_o	(rf_read_data_2)
 	);
 
+	logic [RISCV_ADDR_WIDTH - 1 : 0] target_addr;
 	logic target_valid;
+
+	always_comb begin
+		unique case (pc_mux_sel)
+			PC_BRANCH_JUMP: target_addr = alu_result;
+			PC_EXCEPTION:   target_addr = exc_pc;
+			PC_EPC:			target_addr = epc;
+			default:		target_addr = 0;
+		endcase	
+	end
 
     fetch_stage fetch_stage
     (
@@ -102,7 +113,7 @@ module riscv_core (
 		.retired_inst_len_i (retire_curr_inst ? (2'b10 ^ 2'(compressed_inst)) : 0),
 
 		.req_i		   (1'b1),
-		.target_addr_i (save_epc ? exc_pc : alu_result),
+		.target_addr_i (target_addr),
 		.target_valid_i(target_valid),
 
 		.instr_o       (instr),
@@ -172,6 +183,7 @@ module riscv_core (
 
 	);
 
+	logic	[1 : 0]					   pc_mux_sel;
 	logic	[RISCV_ADDR_WIDTH - 1 : 0] exc_pc;
 	logic							   save_epc;
 	logic							   retire_curr_inst;
@@ -188,8 +200,8 @@ module riscv_core (
 		.ecall_inst_i     (ecall_inst),
 		.ebreak_inst_i    (ebreak_inst),
 		.mret_inst_i      (mret_inst),
-
 		.illegal_inst_i   (illegal_inst),
+		.irq_i            (irq_i),
 
 		.lsu_en_i         (lsu_en),
 		.lsu_done_i       (lsu_done),
@@ -200,10 +212,13 @@ module riscv_core (
 		.deassert_wen_n_o   (deassert_wen_n_o),
 		.retire_o           (retire_curr_inst),
 
-		.save_epc_o     	(save_epc),
+		.pc_mux_sel_o    	(pc_mux_sel),
 		.exc_pc_o        	(exc_pc),
+		.save_epc_o     	(save_epc),
 		.target_valid_o     (target_valid)
 	);
+
+	logic	[RISCV_ADDR_WIDTH - 1 : 0] epc;
 
 	csr csr (
 		.clk       (clk),
@@ -216,7 +231,7 @@ module riscv_core (
 
 		.save_epc_i(save_epc),
 		.pc_i      (instr_addr),
-		.epc_o     ()
+		.epc_o     (epc)
 	);
 
 	logic lsu_en;

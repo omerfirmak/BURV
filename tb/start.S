@@ -2,9 +2,9 @@
 .global _start
 _start:
 	j reset_handler			# reset handler
-	j ecall_handler_asm		# ecall
-	J illegal_handler_asm	# illegal inst
-	J isr_asm				# ISR
+	j ecall_handler			# ecall
+	J illegal_inst_handler	# illegal inst
+	J interrupt_handler		# ISR
 
 
 reset_handler:
@@ -43,23 +43,8 @@ zero_loop:
 zero_loop_end:
 
 	call __libc_init_array
-
-	ecall
-
     call main
-    ecall
-
-ecall_handler_asm:
-	j ecall_handler_asm
-
-ebreak_handler_asm:
-	j ebreak_handler_asm
-
-illegal_handler_asm:
-	j illegal_handler_asm
-
-isr_asm:
-	j isr_asm
+    ebreak
 
 .global _init
 .global _fini

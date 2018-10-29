@@ -14,6 +14,7 @@ module controller (
 	input logic ebreak_inst_i,
 	input logic mret_inst_i,
 	input logic illegal_inst_i,
+	input logic irq_i,
 
 	input logic lsu_en_i,
 	input logic lsu_done_i,
@@ -24,9 +25,12 @@ module controller (
 	output logic deassert_wen_n_o,
 	output logic retire_o,
 
-	output logic save_epc_o,
+	output logic [1 : 0] pc_mux_sel_o,
 	output logic [RISCV_ADDR_WIDTH - 1 : 0] exc_pc_o,
+	output logic save_epc_o,
 	output logic target_valid_o
+
+
 );
 
 	enum logic { IDLE, MULTI_CYCLE_OP } CS, NS;
@@ -39,6 +43,7 @@ module controller (
 		deassert_wen_n_o = 0;
 		retire_o = inst_valid_i & ~illegal_inst_i;
 		target_valid_o = 0;
+		pc_mux_sel_o = PC_BRANCH_JUMP;
 
 		if (inst_valid_i) begin
 			deassert_wen_n_o = 1;
@@ -62,23 +67,40 @@ module controller (
 							retire_o = ~comp_result_i;
 							NS = comp_result_i ? MULTI_CYCLE_OP : IDLE;
 						end
+						mret_inst_i:
+						begin
+							deassert_wen_n_o = 0;
+							pc_mux_sel_o = PC_EPC;
+							target_valid_o = 1;
+						end
 						ecall_inst_i:
 						begin
 							deassert_wen_n_o = 0;
+							pc_mux_sel_o = PC_EXCEPTION;
 							exc_pc_o = 4;
+							target_valid_o = 1;
+							save_epc_o = 1;
+						end
+						illegal_inst_i:
+						begin
+							deassert_wen_n_o = 0;
+							pc_mux_sel_o = PC_EXCEPTION;
+							exc_pc_o = 8;
+							target_valid_o = 1;
+							save_epc_o = 1;
+						end
+						irq_i:
+						begin
+							deassert_wen_n_o = 0;
+							pc_mux_sel_o = PC_EXCEPTION;
+							exc_pc_o = 12;
 							target_valid_o = 1;
 							save_epc_o = 1;
 						end
 						ebreak_inst_i:
 						begin
 							retire_o = 0;
-						end
-						illegal_inst_i:
-						begin
-							deassert_wen_n_o = 0;
-							exc_pc_o = 8;
-							target_valid_o = 1;
-							save_epc_o = 1;
+							$finish;
 						end
 						default: NS = IDLE;
 					endcase

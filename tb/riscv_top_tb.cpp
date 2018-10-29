@@ -37,7 +37,7 @@ int main(int argc, char **argv, char **env) {
     tfp->open ("Vriscv_top.vcd");
 
     top->clk = 0;
-    top->misc = 0;
+    top->irq = 0;
 /*
     top->riscv_top->dp_ram->writeWord(0, 0x3fc00093); //       li      x1,1020
     top->riscv_top->dp_ram->writeWord(4, 0x0000a023); //       sw      x0,0(x1)
@@ -62,7 +62,7 @@ int main(int argc, char **argv, char **env) {
     for (int i=0; i<10000; i++) {
         top->rst_n = i > 2;
         clock(1);
-        if (Verilated::gotFinish())  exit(0);
+        if (Verilated::gotFinish()) break;
     }
 
     tfp->close();
