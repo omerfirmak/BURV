@@ -33,10 +33,10 @@ compile_sim: verilate
 	make -j -C obj_dir/ -f V$(MODULE).mk V$(MODULE)
 
 lint:
-	verilator --lint-only $(VERILOG_SRC)
+	verilator -I../rtl/include --lint-only $(VERILOG_SRC)
 
 compile_soft:
-	riscv32-unknown-elf-gcc -g0 -march=rv32e -mabi=ilp32e -nostartfiles -T link.ld start.S handlers.c $(SOFT_SRC) -o test.elf
+	riscv32-unknown-elf-gcc -g0 -march=rv32e -mabi=ilp32e -nostartfiles -T link.ld start.S handlers.c $(SRC) -o test.elf
 	riscv32-unknown-elf-objdump --disassembler-options=no-aliases,numeric -D test.elf > test.dump
 	riscv32-unknown-elf-objcopy -O binary test.elf test.bin
 
@@ -46,6 +46,6 @@ test_all: clean compile_sim
 																 riscv32-unknown-elf-objcopy -O binary test.elf test.bin && \
 																 ./obj_dir/V$(MODULE) && echo -e "\t\tOK"  >> test.result || echo -e "\t\tFAILED"  >> test.result));)
 compile_test:
-	riscv32-unknown-elf-gcc -march=rv32e -mabi=ilp32e -nostdlib -nostartfiles -T link.ld tests/$(TEST_SRC).S -o test.elf
+	riscv32-unknown-elf-gcc -march=rv32e -mabi=ilp32e -nostdlib -nostartfiles -T link.ld tests/$(SRC).S -o test.elf
 	riscv32-unknown-elf-objdump --disassembler-options=no-aliases,numeric -D test.elf > test.dump
 	riscv32-unknown-elf-objcopy -O binary test.elf test.bin

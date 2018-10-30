@@ -70,9 +70,10 @@ typedef enum logic[1 : 0] {
 	ALU_OP_SEL_PC
 } alu_operand_sel_t;
 
-typedef enum logic {
+typedef enum logic[1 : 0] {
 	RF_WRITE_ALU_OUT = 1'h0,
-	RF_WRITE_LSU_OUT
+	RF_WRITE_LSU_OUT,
+	RF_WRITE_CSR_OUT	
 } rf_write_sel_t;
 
 typedef enum logic[1 : 0] {

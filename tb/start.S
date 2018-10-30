@@ -5,6 +5,7 @@ _start:
 	j ecall_handler			# ecall
 	J illegal_inst_handler	# illegal inst
 	J interrupt_handler		# ISR
+	J mem_fault_handler		# memory fault
 
 
 reset_handler:

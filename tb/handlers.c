@@ -11,6 +11,12 @@ void illegal_inst_handler(void)
 }
 
 __attribute__ ((interrupt))
+void mem_fault_handler(void)
+{
+	for(;;);
+}
+
+__attribute__ ((interrupt))
 void interrupt_handler(void)
 {
 }

@@ -34,14 +34,26 @@ module csr (
 		endcase
 	end
 
+	logic [31 : 0] wdata;
+
+	always_comb
+	begin
+		unique case (op_i)
+			CSR_OP_NONE:  wdata = rdata_o;
+			CSR_OP_WRITE: wdata = wdata_i;
+			CSR_OP_SET:	  wdata = rdata_o | wdata_i;
+			CSR_OP_CLEAR: wdata = rdata_o & ~(wdata_i);
+		endcase
+	end
+
 	always_comb
 	begin
 		mepc_n = mepc;
 		mstatus_n = mstatus;
 		
 		unique case (addr_i)
-			12'h300: mstatus_n = {wdata_i[7], wdata_i[3]};
-			12'h341: mepc_n = wdata_i;
+			12'h300: mstatus_n = {wdata[7], wdata[3]};
+			12'h341: mepc_n = wdata;
 			default:;
 		endcase
 

@@ -1,0 +1,116 @@
+[*]
+[*] GTKWave Analyzer v3.3.61 (w)1999-2014 BSI
+[*] Tue Oct 30 13:32:37 2018
+[*]
+[dumpfile] "/home/omer/Desktop/simple_riscv/tb/Vriscv_top.vcd"
+[dumpfile_mtime] "Tue Oct 30 13:31:08 2018"
+[dumpfile_size] 2639565
+[savefile] "/home/omer/Desktop/simple_riscv/tb/wave.gtkw"
+[timestart] 205
+[size] 1280 1341
+[pos] 1280 28
+*-5.496940 283 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] riscv_top.
+[treeopen] riscv_top.riscv_core.
+[sst_width] 229
+[signals_width] 304
+[sst_expanded] 1
+[sst_vpaned_height] 396
+@200
+-REGFILE
+@28
+TOP.clk
+TOP.rst_n
+@22
+riscv_top.riscv_core.reg_file.read_addr_1_i[3:0]
+riscv_top.riscv_core.reg_file.read_data_1_o[31:0]
+riscv_top.riscv_core.reg_file.read_addr_2_i[3:0]
+riscv_top.riscv_core.reg_file.read_data_2_o[31:0]
+@28
+riscv_top.riscv_core.reg_file.write_en_i
+@22
+riscv_top.riscv_core.reg_file.write_addr_i[3:0]
+riscv_top.riscv_core.reg_file.write_data_i[31:0]
+@200
+-ALU
+@22
+riscv_top.riscv_core.alu.alu_op_i[4:0]
+riscv_top.riscv_core.alu.operand_a_i[31:0]
+riscv_top.riscv_core.alu.operand_b_i[31:0]
+riscv_top.riscv_core.alu.alu_result_o[31:0]
+@200
+-CONTROLLER
+@28
+riscv_top.riscv_core.controller.clk
+riscv_top.riscv_core.controller.rst_n
+riscv_top.riscv_core.controller.irq_i
+riscv_top.riscv_core.controller.inst_valid_i
+riscv_top.riscv_core.controller.retire_o
+riscv_top.riscv_core.controller.jump_inst_i
+riscv_top.riscv_core.controller.branch_inst_i
+riscv_top.riscv_core.controller.ecall_inst_i
+riscv_top.riscv_core.controller.ebreak_inst_i
+riscv_top.riscv_core.controller.mret_inst_i
+riscv_top.riscv_core.controller.illegal_inst_i
+riscv_top.riscv_core.controller.lsu_en_i
+riscv_top.riscv_core.controller.lsu_done_i
+riscv_top.riscv_core.controller.lsu_err_i
+riscv_top.riscv_core.controller.cycle_counter_o
+riscv_top.riscv_core.controller.deassert_rf_wen_n_o
+@200
+-FETCH
+@28
+riscv_top.riscv_core.fetch_stage.clk
+riscv_top.riscv_core.fetch_stage.rst_n
+riscv_top.riscv_core.fetch_stage.instr_valid_o
+@22
+riscv_top.riscv_core.fetch_stage.instr_addr_o[31:0]
+riscv_top.riscv_core.fetch_stage.instr_o[31:0]
+riscv_top.riscv_core.fetch_stage.target_addr_i[31:0]
+@28
+riscv_top.riscv_core.fetch_stage.target_valid_i
+riscv_top.riscv_core.fetch_stage.retired_inst_len_i[1:0]
+@200
+-LSU
+@28
+riscv_top.riscv_core.lsu.clk
+riscv_top.riscv_core.lsu.rst_n
+riscv_top.riscv_core.lsu.w_en_i
+riscv_top.riscv_core.lsu.r_en_i
+riscv_top.riscv_core.lsu.type_i[1:0]
+@22
+riscv_top.riscv_core.lsu.addr_i[31:0]
+riscv_top.riscv_core.lsu.wdata_i[31:0]
+@28
+riscv_top.riscv_core.lsu.sign_extend_i
+riscv_top.riscv_core.lsu.err_o
+riscv_top.riscv_core.lsu.misaligned
+@29
+riscv_top.riscv_core.lsu.out_of_bounds
+@28
+riscv_top.riscv_core.lsu.done_o
+@22
+riscv_top.riscv_core.lsu.rdata_o[31:0]
+@200
+-RAM
+@28
+riscv_top.clk
+@22
+riscv_top.dmem_addr[31:0]
+riscv_top.dmem_rdata[31:0]
+@28
+riscv_top.dmem_ready
+riscv_top.dmem_valid
+@22
+riscv_top.dmem_wdata[31:0]
+riscv_top.dmem_we[3:0]
+riscv_top.imem_addr[31:0]
+riscv_top.imem_rdata[31:0]
+@28
+riscv_top.imem_ready
+riscv_top.imem_valid
+@22
+riscv_top.imem_wdata[31:0]
+riscv_top.imem_we[3:0]
+[pattern_trace] 1
+[pattern_trace] 0

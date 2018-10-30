@@ -18,11 +18,12 @@ module controller (
 
 	input logic lsu_en_i,
 	input logic lsu_done_i,
+	input logic lsu_err_i,
 
 	input logic comp_result_i,
 
 	output logic cycle_counter_o,
-	output logic deassert_wen_n_o,
+	output logic deassert_rf_wen_n_o,
 	output logic retire_o,
 
 	output logic [1 : 0] pc_mux_sel_o,
@@ -40,76 +41,84 @@ module controller (
 		NS = CS;
 		exc_pc_o = 0;
 		save_epc_o = 0;
-		deassert_wen_n_o = 0;
+		deassert_rf_wen_n_o = 0;
 		retire_o = inst_valid_i & ~illegal_inst_i;
 		target_valid_o = 0;
 		pc_mux_sel_o = PC_BRANCH_JUMP;
 
 		if (inst_valid_i) begin
-			deassert_wen_n_o = 1;
+			deassert_rf_wen_n_o = 1;
 			unique case (CS)
 				IDLE:
 				begin
-					unique case (1'b1)
-						lsu_en_i:
-						begin
-							deassert_wen_n_o = 0;
-							retire_o = 0;
-							NS = MULTI_CYCLE_OP;
-						end
-						jump_inst_i:
-						begin
-							retire_o = 0;
-							NS = MULTI_CYCLE_OP;
-						end
-						branch_inst_i:
-						begin
-							retire_o = ~comp_result_i;
-							NS = comp_result_i ? MULTI_CYCLE_OP : IDLE;
-						end
-						mret_inst_i:
-						begin
-							deassert_wen_n_o = 0;
-							pc_mux_sel_o = PC_EPC;
-							target_valid_o = 1;
-						end
-						ecall_inst_i:
-						begin
-							deassert_wen_n_o = 0;
-							pc_mux_sel_o = PC_EXCEPTION;
-							exc_pc_o = 4;
-							target_valid_o = 1;
-							save_epc_o = 1;
-						end
-						illegal_inst_i:
-						begin
-							deassert_wen_n_o = 0;
-							pc_mux_sel_o = PC_EXCEPTION;
-							exc_pc_o = 8;
-							target_valid_o = 1;
-							save_epc_o = 1;
-						end
-						irq_i:
-						begin
-							deassert_wen_n_o = 0;
-							pc_mux_sel_o = PC_EXCEPTION;
-							exc_pc_o = 12;
-							target_valid_o = 1;
-							save_epc_o = 1;
-						end
-						ebreak_inst_i:
-						begin
-							retire_o = 0;
-							$finish;
-						end
-						default: NS = IDLE;
-					endcase
+					if (irq_i) begin
+						deassert_rf_wen_n_o = 0;
+						pc_mux_sel_o = PC_EXCEPTION;
+						exc_pc_o = 12;
+						target_valid_o = 1;
+						save_epc_o = 1;
+					end else begin
+						unique case (1'b1)
+							lsu_en_i:
+							begin
+								if (lsu_err_i) begin
+									deassert_rf_wen_n_o = 0;
+									pc_mux_sel_o = PC_EXCEPTION;
+									exc_pc_o = 16;
+									target_valid_o = 1;
+									save_epc_o = 1;
+								end else begin
+									deassert_rf_wen_n_o = 0;
+									retire_o = 0;
+									NS = MULTI_CYCLE_OP;
+								end
+							end
+							jump_inst_i:
+							begin
+								retire_o = 0;
+								NS = MULTI_CYCLE_OP;
+							end
+							branch_inst_i:
+							begin
+								retire_o = ~comp_result_i;
+								NS = comp_result_i ? MULTI_CYCLE_OP : IDLE;
+							end
+							mret_inst_i:
+							begin
+								deassert_rf_wen_n_o = 0;
+								pc_mux_sel_o = PC_EPC;
+								target_valid_o = 1;
+							end
+							ecall_inst_i:
+							begin
+								deassert_rf_wen_n_o = 0;
+								pc_mux_sel_o = PC_EXCEPTION;
+								exc_pc_o = 4;
+								target_valid_o = 1;
+								save_epc_o = 1;
+							end
+							illegal_inst_i:
+							begin
+								deassert_rf_wen_n_o = 0;
+								pc_mux_sel_o = PC_EXCEPTION;
+								exc_pc_o = 8;
+								target_valid_o = 1;
+								save_epc_o = 1;
+							end
+							ebreak_inst_i:
+							begin
+								retire_o = 0;
+								$finish;
+							end
+							default: NS = IDLE;
+						endcase
+					end
 				end
 				MULTI_CYCLE_OP:
 				begin
 					if (lsu_en_i & ~lsu_done_i)  begin
 						NS = MULTI_CYCLE_OP;
-						deassert_wen_n_o = 0;						
+						deassert_rf_wen_n_o = 0;						
 					end else if (jump_inst_i | branch_inst_i)  begin
 						NS = IDLE;
 						target_valid_o = 1;

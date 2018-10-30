@@ -17,7 +17,7 @@ module decoder (
 	output logic [$clog2(GP_REG_COUNT) - 1 : 0]  rf_rs2_addr_o,
 	output logic [$clog2(GP_REG_COUNT) - 1 : 0]  rf_rd_addr_o,
 	output logic 							     rf_we_o,
-	output logic 								 rf_write_sel_o,
+	output logic [1 : 0]						 rf_write_sel_o,
 
 	output logic [ALU_OP_WIDTH -1 : 0] alu_op_o,
     output logic [1 : 0] 			   operand_a_sel_o,
@@ -27,6 +27,9 @@ module decoder (
 	output logic lsu_r_en_o, 	
 	output logic [1 : 0] lsu_data_type_o,
 	output logic lsu_sign_extend_o,
+
+	output logic [1 : 0]  csr_op_o,	
+	output logic [11 : 0] csr_addr_o,	
 
 	output logic [RISCV_WORD_WIDTH - 1 : 0] imm_o,
 
@@ -57,7 +60,7 @@ module decoder (
 
 	// immediate extraction and sign extension
 	assign imm_i_type  = { {20 {instr_i[31]}}, instr_i[31 : 20] };
-	assign imm_iz_type = { 20'b0, instr_i[31 : 20] };
+	assign imm_iz_type = { 27'b0, instr_i[19 : 15] };
 	assign imm_s_type  = { {20 {instr_i[31]}}, instr_i[31 : 25], instr_i[11 : 7] };
 	assign imm_sb_type = { {19 {instr_i[31]}}, instr_i[31], instr_i[7], instr_i[30 : 25], instr_i[11 : 8], 1'b0 };
 	assign imm_u_type  = { instr_i[31 : 12], 12'b0 };
@@ -69,6 +72,8 @@ module decoder (
 
 	assign sub_func_3 = instr_i[14 : 12];
 	assign sub_func_7 = instr_i[31 : 25];
+
+	assign csr_addr_o = instr_i[31 : 20];
 
 	always_comb begin
 		ecall_inst_o = 0;
@@ -90,6 +95,8 @@ module decoder (
 		lsu_r_en_o = 0;
 		lsu_data_type_o = 0;
 		lsu_sign_extend_o = 0;
+
+		csr_op_o = CSR_OP_NONE;
 
 		unique case (opcode)
 			OPCODE_OPIMM:
@@ -263,13 +270,25 @@ module decoder (
 			OPCODE_SYSTEM:
 			begin
 				if (sub_func_3 == 3'b000) begin
-					unique case (instr_i[31:20])
+					unique case (instr_i[31 : 20])
 						12'h000: ecall_inst_o = 1'b1;
 						12'h001: ebreak_inst_o = 1'b1;
 						12'h302: mret_inst_o = 1'b1;
 						default: illegal_inst_o = 1'b1;
 					endcase
-				end else illegal_inst_o = 1'b1;
+				end else begin
+					imm_sel = IMM_IZ;
+					alu_op_o = ALU_PASS;
+
+					unique case (sub_func_3[1 : 0])
+						2'b01: csr_op_o = CSR_OP_WRITE;
+						2'b10: csr_op_o = CSR_OP_SET;
+						2'b11: csr_op_o = CSR_OP_CLEAR;
+						default: illegal_inst_o = 1'b1;
+					endcase
+
+					operand_a_sel_o = sub_func_3[2] ? ALU_OP_SEL_IMM : ALU_OP_SEL_RF_1;
+				end;
 			end
 			default: illegal_inst_o = 1'b1;
 		endcase

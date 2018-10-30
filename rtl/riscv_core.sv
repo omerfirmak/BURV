@@ -39,7 +39,7 @@ module riscv_core (
 	logic [RISCV_WORD_WIDTH - 1 : 0] 		rf_write_data;
 	logic [$clog2(GP_REG_COUNT) - 1 : 0] 	rf_write_addr;
 	logic 									rf_write_en;
-	logic 									rf_write_sel;
+	logic [1 : 0]							rf_write_sel;
 	logic [$clog2(GP_REG_COUNT) - 1 : 0] 	rf_read_addr_1;
 	logic [$clog2(GP_REG_COUNT) - 1 : 0] 	rf_read_addr_2;
 	logic [RISCV_WORD_WIDTH - 1 : 0] 		rf_read_data_1;
@@ -72,7 +72,8 @@ module riscv_core (
 
 		unique case (rf_write_sel)
 			RF_WRITE_ALU_OUT: rf_write_data = alu_result;
-			RF_WRITE_LSU_OUT: rf_write_data = lsu_rdata_o;
+			RF_WRITE_LSU_OUT: rf_write_data = lsu_rdata;
+			RF_WRITE_CSR_OUT: rf_write_data = csr_rdata;
 			default: 		  rf_write_data = alu_result;
 		endcase
 	end
@@ -84,7 +85,7 @@ module riscv_core (
 
 		.write_data_i	(rf_write_data),
 		.write_addr_i	(rf_write_addr),
-		.write_en_i		(rf_write_en & deassert_wen_n_o),
+		.write_en_i		(rf_write_en & deassert_rf_wen_n),
 
 		.read_addr_1_i	(rf_read_addr_1),
 		.read_data_1_o	(rf_read_data_1),
@@ -171,6 +172,9 @@ module riscv_core (
 		.lsu_data_type_o  (lsu_data_type),
 		.lsu_sign_extend_o(lsu_sign_extend),
 
+		.csr_op_o         (csr_op),	
+		.csr_addr_o       (csr_addr),	
+
 		.imm_o            (imm_val),
 
 		.compressed_inst_o  (compressed_inst),
@@ -187,7 +191,7 @@ module riscv_core (
 	logic	[RISCV_ADDR_WIDTH - 1 : 0] exc_pc;
 	logic							   save_epc;
 	logic							   retire_curr_inst;
-	logic 							   deassert_wen_n_o;
+	logic 							   deassert_rf_wen_n;
 
 	controller controller
 	(
@@ -205,12 +209,13 @@ module riscv_core (
 
 		.lsu_en_i         (lsu_en),
 		.lsu_done_i       (lsu_done),
+		.lsu_err_i        (lsu_err),
 
 		.comp_result_i    (alu_result[0]),
 
-		.cycle_counter_o    (cycle_counter),
-		.deassert_wen_n_o   (deassert_wen_n_o),
-		.retire_o           (retire_curr_inst),
+		.cycle_counter_o     (cycle_counter),
+		.deassert_rf_wen_n_o (deassert_rf_wen_n),
+		.retire_o            (retire_curr_inst),
 
 		.pc_mux_sel_o    	(pc_mux_sel),
 		.exc_pc_o        	(exc_pc),
@@ -218,16 +223,19 @@ module riscv_core (
 		.target_valid_o     (target_valid)
 	);
 
+	logic	[1 : 0]  csr_op;
+	logic	[11 : 0] csr_addr;
+	logic	[RISCV_WORD_WIDTH - 1 : 0] csr_rdata;
 	logic	[RISCV_ADDR_WIDTH - 1 : 0] epc;
 
 	csr csr (
 		.clk       (clk),
 		.rst_n     (rst_n),
 		
-		.op_i      (),
-		.addr_i    (),
-		.wdata_i   (),
-		.rdata_o   (),
+		.op_i      (csr_op),
+		.addr_i    (csr_addr),
+		.wdata_i   (alu_result),
+		.rdata_o   (csr_rdata),
 
 		.save_epc_i(save_epc),
 		.pc_i      (instr_addr),
@@ -242,10 +250,10 @@ module riscv_core (
 	logic [1 : 0] lsu_data_type;
 	logic lsu_sign_extend;
 	logic lsu_done;
+	logic lsu_err;
 
 
-	logic [RISCV_WORD_WIDTH - 1 : 0] lsu_rdata_o;
-
+	logic [RISCV_WORD_WIDTH - 1 : 0] lsu_rdata;
 
 	lsu lsu
 	(
@@ -259,9 +267,9 @@ module riscv_core (
 		.addr_i       (alu_result),
 		.sign_extend_i(lsu_sign_extend),
 
-		.invalid_o    (),
+		.err_o    	  (lsu_err),
 		.done_o       (lsu_done),
-		.rdata_o      (lsu_rdata_o),
+		.rdata_o      (lsu_rdata),
 
 		// Data memory interface
 		.dmem_valid_o (dmem_valid_o),
