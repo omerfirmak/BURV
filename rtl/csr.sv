@@ -18,6 +18,7 @@ module csr (
 );
 
 	logic [31 : 0] mepc, mepc_n;
+	logic [31 : 0] mcycle, mcycle_n;
 	logic [1 : 0]  mstatus, mstatus_n;
 
 	`define MSTATUS_MIE  0
@@ -30,6 +31,7 @@ module csr (
 		unique case (addr_i)
 			12'h300: rdata_o = {19'h0, `MSTATUS_MPP, 3'h0, mstatus[`MSTATUS_MPIE], 3'h0, mstatus[`MSTATUS_MIE], 3'h0};
 			12'h341: rdata_o = mepc;
+			12'hB00: rdata_o = mcycle;
 			default:;
 		endcase
 	end
@@ -50,10 +52,12 @@ module csr (
 	begin
 		mepc_n = mepc;
 		mstatus_n = mstatus;
-		
+		mcycle_n = mcycle + 1;
+
 		unique case (addr_i)
 			12'h300: mstatus_n = {wdata[7], wdata[3]};
 			12'h341: mepc_n = wdata;
+			12'hB00: mcycle_n = wdata;
 			default:;
 		endcase
 
@@ -67,8 +71,10 @@ module csr (
 		if(~rst_n) begin
 			mepc <= 0;
 			mstatus <= 0;
+			mcycle <= 0;
 		end else begin
 			mepc <= mepc_n;
+			mcycle <= mcycle_n;
 			mstatus <= mstatus_n;
 		end
 	end

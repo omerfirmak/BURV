@@ -10,6 +10,7 @@ MEMORY
 /* Stack information variables */
 _min_stack      = 0x0400;   /* 1K - minimum stack space to reserve */
 _stack_len     = LENGTH(stack);
+_stack_end     = ORIGIN(stack);
 _stack_start   = ORIGIN(stack) + LENGTH(stack);
 __global_pointer$ = 0x800; /* 2K */
 
