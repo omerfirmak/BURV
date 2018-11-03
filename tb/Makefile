@@ -6,6 +6,7 @@ VERILOG_SRC = 	../rtl/include/alu_defines.sv 		\
 				../rtl/reg_file.sv			\
 				../rtl/riscv_core.sv			\
 				../rtl/decoder.sv			\
+				../rtl/decompressor.sv			\
 				../rtl/controller.sv			\
 				../rtl/lsu.sv			\
 				../rtl/csr.sv			\

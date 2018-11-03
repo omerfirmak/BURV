@@ -41,7 +41,8 @@ module decoder (
 	output logic mret_inst_o,
 	output logic illegal_inst_o
 );
-
+	logic [RISCV_WORD_WIDTH - 1 : 0] instr;
+	
 	logic [6 : 0] opcode;
 	logic [2 : 0] sub_func_3;
 	logic [6 : 0] sub_func_7;
@@ -55,25 +56,33 @@ module decoder (
 	logic [RISCV_WORD_WIDTH - 1 : 0] imm_u_type;
 	logic [RISCV_WORD_WIDTH - 1 : 0] imm_uj_type;
 
-	assign opcode = instr_i[6 : 0];
-	assign compressed_inst_o = opcode[1:0] != 2'b11;
+	decompressor decompressor 
+	(
+		.clk              (clk),
+		.rst_n            (rst_n),		
+		.instr_i          (instr_i),
+		.instr_o          (instr),
+		.compressed_inst_o(compressed_inst_o)
+	);
+
+	assign opcode = instr[6 : 0];
 
 	// immediate extraction and sign extension
-	assign imm_i_type  = { {20 {instr_i[31]}}, instr_i[31 : 20] };
-	assign imm_iz_type = { 27'b0, instr_i[19 : 15] };
-	assign imm_s_type  = { {20 {instr_i[31]}}, instr_i[31 : 25], instr_i[11 : 7] };
-	assign imm_sb_type = { {19 {instr_i[31]}}, instr_i[31], instr_i[7], instr_i[30 : 25], instr_i[11 : 8], 1'b0 };
-	assign imm_u_type  = { instr_i[31 : 12], 12'b0 };
-	assign imm_uj_type = { {12 {instr_i[31]}}, instr_i[19 : 12], instr_i[20], instr_i[30 : 21], 1'b0 };
+	assign imm_i_type  = { {20 {instr[31]}}, instr[31 : 20] };
+	assign imm_iz_type = { 27'b0, instr[19 : 15] };
+	assign imm_s_type  = { {20 {instr[31]}}, instr[31 : 25], instr[11 : 7] };
+	assign imm_sb_type = { {19 {instr[31]}}, instr[31], instr[7], instr[30 : 25], instr[11 : 8], 1'b0 };
+	assign imm_u_type  = { instr[31 : 12], 12'b0 };
+	assign imm_uj_type = { {12 {instr[31]}}, instr[19 : 12], instr[20], instr[30 : 21], 1'b0 };
 
-	assign rf_rs1_addr_o = $clog2(GP_REG_COUNT)'(instr_i[19 : 15]);
-	assign rf_rs2_addr_o = $clog2(GP_REG_COUNT)'(instr_i[24 : 20]);
-	assign rf_rd_addr_o  = $clog2(GP_REG_COUNT)'(instr_i[11 : 7]);
+	assign rf_rs1_addr_o = $clog2(GP_REG_COUNT)'(instr[19 : 15]);
+	assign rf_rs2_addr_o = $clog2(GP_REG_COUNT)'(instr[24 : 20]);
+	assign rf_rd_addr_o  = $clog2(GP_REG_COUNT)'(instr[11 : 7]);
 
-	assign sub_func_3 = instr_i[14 : 12];
-	assign sub_func_7 = instr_i[31 : 25];
+	assign sub_func_3 = instr[14 : 12];
+	assign sub_func_7 = instr[31 : 25];
 
-	assign csr_addr_o = instr_i[31 : 20];
+	assign csr_addr_o = instr[31 : 20];
 
 	always_comb begin
 		ecall_inst_o = 0;
@@ -215,7 +224,7 @@ module decoder (
 				rf_write_sel_o = RF_WRITE_LSU_OUT;
 
 				lsu_r_en_o = 1;
-				lsu_sign_extend_o = ~instr_i[14];
+				lsu_sign_extend_o = ~instr[14];
 				unique case (sub_func_3[1:0])
 					2'b00:   lsu_data_type_o = DATA_BYTE;
 					2'b01:   lsu_data_type_o = DATA_HALF_WORD;
@@ -270,7 +279,7 @@ module decoder (
 			OPCODE_SYSTEM:
 			begin
 				if (sub_func_3 == 3'b000) begin
-					unique case (instr_i[31 : 20])
+					unique case (instr[31 : 20])
 						12'h000: ecall_inst_o = 1'b1;
 						12'h001: ebreak_inst_o = 1'b1;
 						12'h302: mret_inst_o = 1'b1;
@@ -302,7 +311,7 @@ module decoder (
 			IMM_SB:     imm_o = imm_sb_type;
 			IMM_U:      imm_o = imm_u_type;
 			IMM_UJ:     imm_o = imm_uj_type;
-			IMM_SHAMT:  imm_o = RISCV_WORD_WIDTH'(instr_i[24 : 20]);
+			IMM_SHAMT:  imm_o = RISCV_WORD_WIDTH'(instr[24 : 20]);
 			IMM_PC_INC: imm_o = compressed_inst_o ? 2 : 4;
 			default:    imm_o = imm_i_type;
 		endcase
