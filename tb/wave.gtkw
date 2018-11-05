@@ -1,17 +1,19 @@
 [*]
 [*] GTKWave Analyzer v3.3.61 (w)1999-2014 BSI
-[*] Tue Oct 30 13:32:37 2018
+[*] Mon Nov  5 08:44:32 2018
 [*]
 [dumpfile] "/home/omer/Desktop/simple_riscv/tb/Vriscv_top.vcd"
-[dumpfile_mtime] "Tue Oct 30 13:31:08 2018"
-[dumpfile_size] 2639565
+[dumpfile_mtime] "Mon Nov  5 08:42:53 2018"
+[dumpfile_size] 5672493
 [savefile] "/home/omer/Desktop/simple_riscv/tb/wave.gtkw"
-[timestart] 205
-[size] 1280 1341
-[pos] 1280 28
-*-5.496940 283 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[timestart] 0
+[size] 2560 1341
+[pos] 1230 28
+*-7.947320 283 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] riscv_top.
 [treeopen] riscv_top.riscv_core.
+[treeopen] riscv_top.riscv_core.decoder.
+[treeopen] riscv_top.riscv_core.reg_file.
 [sst_width] 229
 [signals_width] 304
 [sst_expanded] 1
@@ -57,6 +59,7 @@ riscv_top.riscv_core.controller.lsu_done_i
 riscv_top.riscv_core.controller.lsu_err_i
 riscv_top.riscv_core.controller.cycle_counter_o
 riscv_top.riscv_core.controller.deassert_rf_wen_n_o
+riscv_top.riscv_core.controller.save_epc_o
 @200
 -FETCH
 @28
@@ -70,6 +73,15 @@ riscv_top.riscv_core.fetch_stage.target_addr_i[31:0]
 @28
 riscv_top.riscv_core.fetch_stage.target_valid_i
 riscv_top.riscv_core.fetch_stage.retired_inst_len_i[1:0]
+@200
+-DECOMPRESSOR
+@22
+riscv_top.riscv_core.decoder.decompressor.instr_i[31:0]
+riscv_top.riscv_core.decoder.decompressor.instr_o[31:0]
+@29
+riscv_top.riscv_core.decoder.decompressor.compressed_inst_o
+@28
+riscv_top.riscv_core.decoder.decompressor.illegal_inst_o
 @200
 -LSU
 @28
@@ -85,9 +97,7 @@ riscv_top.riscv_core.lsu.wdata_i[31:0]
 riscv_top.riscv_core.lsu.sign_extend_i
 riscv_top.riscv_core.lsu.err_o
 riscv_top.riscv_core.lsu.misaligned
-@29
 riscv_top.riscv_core.lsu.out_of_bounds
-@28
 riscv_top.riscv_core.lsu.done_o
 @22
 riscv_top.riscv_core.lsu.rdata_o[31:0]

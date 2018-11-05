@@ -98,7 +98,7 @@ typedef enum logic[1 : 0] {
 typedef enum logic[2 : 0] {
 	FUNC3_CLW   	  = 3'b010,
 	FUNC3_CSW   	  = 3'b110,
-	FUNC3_CADDI4SPN   = 3'b000,
+	FUNC3_CADDI4SPN   = 3'b000
 
 } rvc0_func3_t;
 
@@ -110,21 +110,15 @@ typedef enum logic[2 : 0] {
 	FUNC3_CLI   		 = 3'b010,
 	FUNC3_CLUI_ADDI16SP  = 3'b011,
 	FUNC3_CADDI 		 = 3'b000,
-	FUNC3_MISC_ALU 		 = 3'b100,
+	FUNC3_MISC_ALU 		 = 3'b100
 
 } rvc1_func3_t;
-
-typedef enum logic[1 : 0] {
-	FUNC2_CSRLI  		 = 2'b00,
-	FUNC2_CSRAI  		 = 2'b01,
-} rvc1_func2_t;
-
 
 typedef enum logic[2 : 0] {
 	FUNC3_CLWSP  	= 3'b010,
 	FUNC3_CSWSP  	= 3'b110,
 	FUNC3_CJR_JALR  = 3'b100,
-	FUNC3_CSLLI  	= 3'b000,
+	FUNC3_CSLLI  	= 3'b000
 
 } rvc2_func3_t;
 

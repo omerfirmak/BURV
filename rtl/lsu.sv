@@ -44,7 +44,7 @@ module lsu (
 	end
 
 	assign dmem_we_o = w_en_i == 1'b1 ? dmem_we : 4'h0;
-	assign out_of_bounds = |addr_i[31 : 12];
+	assign out_of_bounds = |addr_i[31 : 14];
 	assign err_o = misaligned | out_of_bounds;
 
 	always_comb begin
@@ -68,7 +68,7 @@ module lsu (
 			{1'b1, 2'b01, DATA_BYTE}:		rdata_o = {{24{dmem_rdata_i[15]}}, dmem_rdata_i[15 : 8]};
 			{1'b1, 2'b10, DATA_BYTE}:		rdata_o = {{24{dmem_rdata_i[23]}}, dmem_rdata_i[23 : 16]};
 			{1'b1, 2'b11, DATA_BYTE}:		rdata_o = {{24{dmem_rdata_i[31]}}, dmem_rdata_i[31 : 24]};
-			default: ; 
+			default:;
 		endcase
 	end
 

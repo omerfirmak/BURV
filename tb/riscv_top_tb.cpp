@@ -47,7 +47,7 @@ int main(int argc, char **argv, char **env) {
     top->riscv_top->dp_ram->writeWord(20,0xff5ff06f); //       j       <loop>
 */
 
-    for (int i = 0; i < 1024; ++i) {
+    for (int i = 0; i < 4096; ++i) {
         top->riscv_top->dp_ram->writeWord(4 * i++, 0);
     }
 

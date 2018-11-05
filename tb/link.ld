@@ -3,8 +3,8 @@ __DYNAMIC  =  0;
 
 MEMORY
 {
-    ram   : ORIGIN = 0, LENGTH = 3K
-    stack : ORIGIN = 3K, LENGTH = 1K
+    ram   : ORIGIN = 0, LENGTH = 15K
+    stack : ORIGIN = 15K, LENGTH = 1K
 }
 
 /* Stack information variables */
@@ -12,7 +12,7 @@ _min_stack      = 0x0400;   /* 1K - minimum stack space to reserve */
 _stack_len     = LENGTH(stack);
 _stack_end     = ORIGIN(stack);
 _stack_start   = ORIGIN(stack) + LENGTH(stack);
-__global_pointer$ = 0x800; /* 2K */
+__global_pointer$ = 0; /* 2K */
 
 /* We have to align each sector to word boundaries as our current s19->slm
  * conversion scripts are not able to handle non-word aligned sections. */

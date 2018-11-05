@@ -1,4 +1,4 @@
-module dp_ram
+ module dp_ram
 #(
     parameter ADDR_WIDTH = RISCV_ADDR_WIDTH
 )(
@@ -22,7 +22,7 @@ module dp_ram
     output logic [RISCV_WORD_WIDTH - 1 : 0] b_rdata_o
 );
 
-    localparam words = 1024;
+    localparam words = 4096;
 
     logic [3:0][7:0] mem[words];
 
