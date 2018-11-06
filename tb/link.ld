@@ -4,11 +4,11 @@ __DYNAMIC  =  0;
 MEMORY
 {
     ram   : ORIGIN = 0, LENGTH = 15K
-    stack : ORIGIN = 15K, LENGTH = 1K
+    stack : ORIGIN = 15K, LENGTH = 1K-4
 }
 
 /* Stack information variables */
-_min_stack      = 0x0400;   /* 1K - minimum stack space to reserve */
+_min_stack      = 0x03FC;   /* (1K - 4) minimum stack space to reserve */
 _stack_len     = LENGTH(stack);
 _stack_end     = ORIGIN(stack);
 _stack_start   = ORIGIN(stack) + LENGTH(stack);

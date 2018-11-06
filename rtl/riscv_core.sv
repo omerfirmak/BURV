@@ -111,7 +111,7 @@ module riscv_core (
 		.clk 		   (clk),
 		.rst_n		   (rst_n),
 
-		.retired_inst_len_i (retire_curr_inst ? (2'b10 ^ 2'(compressed_inst)) : 0),
+		.retired_inst_len_i (retire_curr_inst ? (2'b10 ^ {2{compressed_inst}}) : 0),
 
 		.req_i		   (1'b1),
 		.target_addr_i (target_addr),

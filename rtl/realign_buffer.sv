@@ -53,17 +53,6 @@ module realign_buffer (
 			end
 
 		end else begin
-			if (write_en_i && !full_o) begin
-				mem_valid_h[write_index] <= 1;
-				mem_high[write_index] <= instr_i[RISCV_WORD_WIDTH - 1 : (RISCV_WORD_WIDTH / 2)];
-
-				mem_valid_l[write_index] <= 1;
-				mem_low[write_index]  <= instr_i[(RISCV_WORD_WIDTH / 2) - 1 : 0];
-				
-				mem_addr[write_index] <= addr_i;
-				write_index <= write_index_inc;
-			end
-
 			unique case (read_en_i)
 				2'b01: begin // Retire RVC instruction
 					swap_high_low <= ~swap_high_low;
@@ -72,6 +61,7 @@ module realign_buffer (
 						read_index_low <= read_index_low_inc;
 					end else begin
 						mem_valid_h[read_index_high] <= 0;
+						mem_valid_l[read_index_high] <= 0;
 						read_index_high <= read_index_high_inc;
 					end
 				end
@@ -84,12 +74,23 @@ module realign_buffer (
 				end
 				default:;
 			endcase
+
+			if (write_en_i && !full_o) begin
+				mem_valid_h[write_index] <= 1;
+				mem_high[write_index] <= instr_i[RISCV_WORD_WIDTH - 1 : (RISCV_WORD_WIDTH / 2)];
+
+				mem_valid_l[write_index] <= 1;
+				mem_low[write_index]  <= instr_i[(RISCV_WORD_WIDTH / 2) - 1 : 0];
+				
+				mem_addr[write_index] <= addr_i;
+				write_index <= write_index_inc;
+			end
 		end
 	end
 	
 	assign instr_o = swap_high_low ? {mem_low[read_index_low] ,mem_high[read_index_high]} : {mem_high[read_index_high], mem_low[read_index_low]};
 	assign addr_o  = {mem_addr[swap_high_low ? read_index_high : read_index_low][RISCV_ADDR_WIDTH - 1 : 2], swap_high_low,  1'd0};
-	assign full_o  = (mem_valid_l[write_index] == 1) || (mem_valid_h[write_index] == 1);
+	assign full_o  = (mem_valid_h[write_index] == 1);
 	assign empty_o = (mem_valid_l[read_index_low] == 0) || (mem_valid_h[read_index_high] == 0);
 
 endmodule

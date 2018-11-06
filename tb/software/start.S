@@ -1,3 +1,7 @@
+
+.option push
+.option norvc
+
 .section .text
 .global _start
 _start:
@@ -6,6 +10,8 @@ _start:
 	J illegal_inst_handler	# illegal inst
 	J interrupt_handler		# ISR
 	J mem_fault_handler		# memory fault
+
+.option pop
 
 
 reset_handler:

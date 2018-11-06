@@ -38,14 +38,6 @@ int main(int argc, char **argv, char **env) {
 
     top->clk = 0;
     top->irq = 0;
-/*
-    top->riscv_top->dp_ram->writeWord(0, 0x3fc00093); //       li      x1,1020
-    top->riscv_top->dp_ram->writeWord(4, 0x0000a023); //       sw      x0,0(x1)
-    top->riscv_top->dp_ram->writeWord(8, 0x0000a103); // loop: lw      x2,0(x1)
-    top->riscv_top->dp_ram->writeWord(12,0x00110113); //       addi    x2,x2,1
-    top->riscv_top->dp_ram->writeWord(16,0x0020a023); //       sw      x2,0(x1)
-    top->riscv_top->dp_ram->writeWord(20,0xff5ff06f); //       j       <loop>
-*/
 
     for (int i = 0; i < 4096; ++i) {
         top->riscv_top->dp_ram->writeWord(4 * i++, 0);
@@ -59,7 +51,7 @@ int main(int argc, char **argv, char **env) {
         top->riscv_top->dp_ram->writeWord(4 * index++, tmp);
     }
 
-    for (int i=0; i<10000; i++) {
+    for (int i=0;; i++) {
         top->rst_n = i > 2;
         clock(1);
         if (Verilated::gotFinish()) break;

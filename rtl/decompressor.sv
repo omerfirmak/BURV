@@ -37,7 +37,7 @@ module decompressor (
 					FUNC3_CJ,
 					FUNC3_CJAL: decompressed_instr = {instr_i[12], instr_i[8], instr_i[10 : 9], instr_i[6], instr_i[7], instr_i[2], instr_i[11], instr_i[5 : 3], { 9 {instr_i[12]} }, 4'b0, ~instr_i[15], OPCODE_JAL};
 					FUNC3_CBEQZ,
-					FUNC3_CBNEZ:  instr_o = { {4 {instr_i[12]}}, instr_i[6 : 5], instr_i[2], 7'b1, instr_i[9 : 7], 2'b00, instr_i[13], instr_i[11 : 10], instr_i[4 : 3], instr_i[12], OPCODE_BRANCH};
+					FUNC3_CBNEZ:  decompressed_instr = { {4 {instr_i[12]}}, instr_i[6 : 5], instr_i[2], 7'b1, instr_i[9 : 7], 2'b00, instr_i[13], instr_i[11 : 10], instr_i[4 : 3], instr_i[12], OPCODE_BRANCH};
 					FUNC3_CLI: begin
  						decompressed_instr = {{6 {instr_i[12]}}, instr_i[12], instr_i[6 : 2], 8'b0, instr_i[11 : 7], OPCODE_OPIMM};
 						illegal_inst_o = instr_i[11 : 7] == 5'b0;
