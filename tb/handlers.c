@@ -1,3 +1,4 @@
+
 __attribute__ ((interrupt))
 void ecall_handler(void)
 {

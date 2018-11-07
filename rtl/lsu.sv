@@ -44,7 +44,7 @@ module lsu (
 	end
 
 	assign dmem_we_o = w_en_i == 1'b1 ? dmem_we : 4'h0;
-	assign out_of_bounds = |addr_i[31 : 14];
+	assign out_of_bounds = |addr_i[31 : 20];
 	assign err_o = misaligned | out_of_bounds;
 
 	always_comb begin

@@ -8,6 +8,8 @@
 #include "verilated.h"
 #include "verilated_vcd_c.h"
 
+#define DUMP_TRACE 1
+
 int clk_count = 0;
 VerilatedVcdC* tfp;
 Vriscv_top* top;
@@ -18,11 +20,15 @@ void clock(int times)
     {
         top->clk = 0;
         top->eval ();
+#if DUMP_TRACE == 1
         tfp->dump(clk_count);
+#endif
         clk_count++;
         top->clk = 1;
         top->eval ();
+#if DUMP_TRACE == 1
         tfp->dump(clk_count);
+#endif
         clk_count++;
     }
 }
@@ -32,9 +38,11 @@ int main(int argc, char **argv, char **env) {
     top = new Vriscv_top;
 
     Verilated::traceEverOn(true);
+#if DUMP_TRACE == 1
     tfp = new VerilatedVcdC;
     top->trace (tfp, 99);
     tfp->open ("Vriscv_top.vcd");
+#endif
 
     top->clk = 0;
     top->irq = 0;
@@ -51,12 +59,14 @@ int main(int argc, char **argv, char **env) {
         top->riscv_top->dp_ram->writeWord(4 * index++, tmp);
     }
 
-    for (int i=0;; i++) {
+    for (int i=0;;i++) {
         top->rst_n = i > 2;
         clock(1);
         if (Verilated::gotFinish()) break;
     }
 
+#if DUMP_TRACE == 1
     tfp->close();
+#endif
     exit(!(top->riscv_top->riscv_core->reg_file->readReg(11) == 'O' && top->riscv_top->riscv_core->reg_file->readReg(12) == 'K'));
 }

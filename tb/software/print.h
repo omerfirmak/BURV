@@ -5,7 +5,10 @@
 // binary, for any purpose, commercial or non-commercial, and by any
 // means.
 
-#define OUTPORT 0x3FFF
+#ifndef _BOUN_PRINT_H_
+#define _BOUN_PRINT_H_
+
+#define OUTPORT (0x100000 - 1)
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -39,3 +42,5 @@ void print_hex(unsigned int val, int digits)
 	for (int i = (4*digits)-4; i >= 0; i -= 4)
 		*((volatile uint8_t*)OUTPORT) = "0123456789ABCDEF"[(val >> i) % 16];
 }
+
+#endif

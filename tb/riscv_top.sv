@@ -46,7 +46,7 @@ module riscv_top (
   	);
 
 	always @(negedge clk) begin
-		if (dmem_ready && dmem_addr == 32'h00003FFF /* && dmem_we != 0  */) begin
+		if (dmem_ready && dmem_addr == 32'h000fffff /* && dmem_we != 0  */) begin
 			$write("%c", dmem_wdata[31:24]); //dmem_wdata[7:0]);
 		end
 	end

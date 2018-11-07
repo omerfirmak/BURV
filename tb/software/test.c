@@ -2,7 +2,7 @@
 
 int main()
 {
-   int n = 32, i = 3, count, c;
+   int n = 100, i = 3, count, c;
  
    if ( n >= 1 )
    {
@@ -17,7 +17,7 @@ int main()
          if ( i%c == 0 )
             break;
       }
-zaaxd:      if ( c == i )
+	  if ( c == i )
       {
         print_dec(i);
 	     print_chr('\n');
@@ -25,6 +25,6 @@ zaaxd:      if ( c == i )
       }
       i++;
      }
- 
-   return i;
+
+      return i;
 }

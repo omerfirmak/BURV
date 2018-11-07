@@ -303,6 +303,9 @@ module decoder (
 					endcase
 
 					operand_a_sel_o = sub_func_3[2] ? ALU_OP_SEL_IMM : ALU_OP_SEL_RF_1;
+
+					rf_we_o = 1;
+					rf_write_sel_o = RF_WRITE_CSR_OUT;
 				end;
 			end
 			default: illegal_inst = 1'b1;

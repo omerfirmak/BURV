@@ -70,6 +70,7 @@ module realign_buffer (
 					read_index_low <= read_index_low_inc;
 
 					mem_valid_h[read_index_high] <= 0;
+					mem_valid_l[read_index_high] <= 0;
 					read_index_high <= read_index_high_inc;
 				end
 				default:;

@@ -37,7 +37,7 @@ lint:
 	verilator -I../rtl/include --lint-only $(VERILOG_SRC)
 
 compile_soft:
-	riscv32-unknown-elf-gcc -g0 -march=rv32ec -mabi=ilp32e -nostartfiles -T link.ld software/start.S software/handlers.c software/$(SRC) -o test.elf
+	riscv32-unknown-elf-gcc -O2 -g0 -march=rv32ec -mabi=ilp32e -nostartfiles -T link.ld software/start.S software/handlers.c $(SRC) -o test.elf
 	riscv32-unknown-elf-objdump --disassembler-options=no-aliases,numeric -D test.elf > test.dump
 	riscv32-unknown-elf-objcopy -O binary test.elf test.bin
 
