@@ -16,6 +16,8 @@ VERILOG_SRC = 	../rtl/include/alu_defines.sv 		\
 				riscv_top.sv
 
 TESTNAMES = $(wildcard ./tests/*.S)
+DUMP_TRACE=0
+MODE=soft
 
 all: sim
 
@@ -28,7 +30,7 @@ clean:
 	rm -f *.vcd test.elf test.bin test.dump test.result
 
 verilate: clean
-	verilator --cc --trace $(VERILOG_SRC) -I../rtl/include --exe $(MODULE)_tb.cpp --top-module $(MODULE)
+	verilator +define+DUMP_TRACE=$(DUMP_TRACE) --cc --trace $(VERILOG_SRC) -I../rtl/include --exe $(MODULE)_tb.cpp --top-module $(MODULE)
 
 compile_sim: verilate
 	make -j -C obj_dir/ -f V$(MODULE).mk V$(MODULE)
@@ -50,3 +52,7 @@ compile_test:
 	riscv32-unknown-elf-gcc -march=rv32ec -mabi=ilp32e -nostdlib -nostartfiles -T link.ld tests/$(SRC).S -o test.elf
 	riscv32-unknown-elf-objdump --disassembler-options=no-aliases,numeric -D test.elf > test.dump
 	riscv32-unknown-elf-objcopy -O binary test.elf test.bin
+
+.PHONY: dhrystone 
+dhrystone:
+	make MODE=soft SRC="dhrystone/dhrystone.c dhrystone/dhrystone_main.c"

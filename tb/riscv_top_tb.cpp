@@ -8,8 +8,6 @@
 #include "verilated.h"
 #include "verilated_vcd_c.h"
 
-#define DUMP_TRACE 1
-
 int clk_count = 0;
 VerilatedVcdC* tfp;
 Vriscv_top* top;
