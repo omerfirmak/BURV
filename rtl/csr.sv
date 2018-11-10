@@ -1,6 +1,7 @@
 `timescale 1ns / 1ps
 
 `include "riscv_defines.sv"
+`include "alu_defines.sv"
 
 module csr (
 	input logic clk,    // Clock

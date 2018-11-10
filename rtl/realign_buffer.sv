@@ -1,6 +1,7 @@
 `timescale 1ns / 1ps
 
 `include "riscv_defines.sv"
+`include "alu_defines.sv"
 
 module realign_buffer (
 	input logic clk,    // Clock
@@ -21,8 +22,8 @@ module realign_buffer (
 	output logic empty_o
 );
 
-	logic [1 : 0]  read_index_low;
-	logic [1 : 0]  read_index_high;
+	logic [1 : 0]  read_index_low,  read_index_low_n;
+	logic [1 : 0]  read_index_high, read_index_high_n;
 
 	logic [1 : 0]  read_index_low_inc;
 	logic [1 : 0]  read_index_high_inc;
@@ -30,24 +31,86 @@ module realign_buffer (
 	logic [1 : 0]  write_index;
 	logic [1 : 0]  write_index_inc; 
  
-	logic		   swap_high_low;
+	logic swap_high_low;
+	logic swap_high_low_n;
 
-	logic [(RISCV_WORD_WIDTH / 2) - 1 : 0] mem_high[4], 	mem_low [4]; 
-	logic 								   mem_valid_h[4],	mem_valid_l[4];
+	logic [(RISCV_WORD_WIDTH / 2) - 1 : 0] mem_high[4], 	  mem_low [4]; 
+	logic [1 : 0]						   mem_valid_even[2], mem_valid_odd[2];
+
 	logic [RISCV_ADDR_WIDTH - 1 : 0] 	   mem_addr[4];
+
+	logic [1 : 0] mem_valid_h_row, mem_valid_l_row;
+	logic [1 : 0] mem_valid_h_row_n, mem_valid_l_row_n;
+
+	logic mem_valid_h, mem_valid_l;
+
+	integer i;
 
 	assign write_index_inc = write_index + 1;
 	assign read_index_low_inc = read_index_low + 1;
 	assign read_index_high_inc = read_index_high + 1;
 
+	assign mem_valid_h_row = read_index_high[0] == 1'b0 ? mem_valid_even[read_index_high[2 : 1]] : mem_valid_odd[read_index_high[2 : 1]];
+	assign mem_valid_l_row = read_index_low[0] == 1'b0 ? mem_valid_even[read_index_low[2 : 1]] : mem_valid_odd[read_index_high[2 : 1]];
+	assign mem_valid_h = mem_valid_h_row[1];
+	assign mem_valid_l = mem_valid_l_row[0];
+
+	always_comb begin
+		swap_high_low_n = swap_high_low;
+
+		read_index_high_n = read_index_high;
+		read_index_low_n = read_index_low;
+
+		mem_valid_h_row_n = mem_valid_h_row;
+		mem_valid_l_row_n = mem_valid_l_row;
+
+		unique case (read_en_i)
+			2'b01: begin // Retire RVC instruction
+				swap_high_low_n = ~swap_high_low;
+
+				if (read_index_low == read_index_high) begin
+					mem_valid_l_row_n = mem_valid_l_row & 2'b10;
+					read_index_low_n = read_index_low_inc;
+				end else begin
+					mem_valid_h_row_n = 2'h0;
+					read_index_high_n = read_index_high_inc;
+				end
+			end
+			2'b10: begin
+				mem_valid_l[read_index_low] <= 0;
+				read_index_low <= read_index_low_inc;
+
+				mem_valid_h[read_index_high] <= 0;
+				mem_valid_l[read_index_high] <= 0;
+				read_index_high <= read_index_high_inc;
+			end
+			default:;
+		endcase
+
+		if (write_en_i && !full_o) begin
+			mem_valid_h[write_index] <= 1;
+			mem_high[write_index] <= instr_i[RISCV_WORD_WIDTH - 1 : (RISCV_WORD_WIDTH / 2)];
+
+			mem_valid_l[write_index] <= 1;
+			mem_low[write_index]  <= instr_i[(RISCV_WORD_WIDTH / 2) - 1 : 0];
+			
+			mem_addr[write_index] <= addr_i;
+			write_index <= write_index_inc;
+		end	
+	end
+
+
+
+
+
 	always_ff @(posedge clk or negedge rst_n) begin
 		if(!rst_n | clear_i) begin
 			read_index_high <= 0;
-			read_index_low  <= 2'(read_offset_i);
+			//read_index_low  <= {1'b0, read_offset_i};
 			write_index <= 0;
 			swap_high_low <= read_offset_i;
 
-			for (int i = 0; i < 4; i++) begin
+			for (i = 0; i < 4; i++) begin
 				mem_valid_h[i] <= 0;
 				mem_valid_l[i] <= 0;
 			end
@@ -58,7 +121,7 @@ module realign_buffer (
 					swap_high_low <= ~swap_high_low;
 					if (read_index_low == read_index_high) begin
 						mem_valid_l[read_index_low] <= 0;
-						read_index_low <= read_index_low_inc;
+						//read_index_low <= read_index_low_inc;
 					end else begin
 						mem_valid_h[read_index_high] <= 0;
 						mem_valid_l[read_index_high] <= 0;
@@ -67,7 +130,7 @@ module realign_buffer (
 				end
 				2'b10: begin
 					mem_valid_l[read_index_low] <= 0;
-					read_index_low <= read_index_low_inc;
+					//read_index_low <= read_index_low_inc;
 
 					mem_valid_h[read_index_high] <= 0;
 					mem_valid_l[read_index_high] <= 0;

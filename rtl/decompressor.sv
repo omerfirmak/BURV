@@ -1,6 +1,7 @@
 `timescale 1ns / 1ps
 
 `include "riscv_defines.sv"
+`include "alu_defines.sv"
 
 module decompressor (
 	input clk,    // Clock
@@ -8,8 +9,8 @@ module decompressor (
 	
 	input  logic [RISCV_WORD_WIDTH -1 : 0] instr_i,
 	output logic [RISCV_WORD_WIDTH -1 : 0] instr_o,
-	output 							 	   compressed_inst_o,
-	output 							 	   illegal_inst_o
+	output logic    				 	   compressed_inst_o,
+	output logic           			 	   illegal_inst_o
 );
 
 	logic [RISCV_WORD_WIDTH -1 : 0] decompressed_instr;
