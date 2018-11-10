@@ -12,6 +12,8 @@ int clk_count = 0;
 VerilatedVcdC* tfp;
 Vriscv_top* top;
 
+#define DUMP_TRACE 1
+
 void clock(int times)
 {
     for (int i = 0; i < times; ++i)
