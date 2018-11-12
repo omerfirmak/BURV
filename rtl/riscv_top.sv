@@ -1,8 +1,16 @@
-/* verilator lint_off UNOPTFLAT */ 
+`timescale 1ns / 1ps
+
+`include "riscv_defines.sv"
+`include "alu_defines.sv"
+
 module riscv_top (
 	input clk,    // Clock
 	input rst_n,   // Asynchronous reset active low
-	input irq
+	input irq,
+
+
+	output logic [3 : 0] 					dmem_we_o
+
 );
 	// Instruction memory interface
 	logic imem_valid;
@@ -45,11 +53,13 @@ module riscv_top (
 		.b_rdata_o(dmem_rdata)
   	);
 
+`ifdef VERILATOR
 	always @(negedge clk) begin
 		if (dmem_ready && dmem_addr == 32'h000fffff /* && dmem_we != 0  */) begin
 			$write("%c", dmem_wdata[31:24]); //dmem_wdata[7:0]);
 		end
 	end
+`endif
 
 	riscv_core riscv_core
 	(
@@ -77,5 +87,7 @@ module riscv_top (
         .irq_i       (irq)
 
 	);
+
+	assign dmem_we_o = dmem_we;
 
 endmodule

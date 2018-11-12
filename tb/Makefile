@@ -12,8 +12,8 @@ VERILOG_SRC = 	../rtl/include/alu_defines.sv 		\
 				../rtl/csr.sv			\
 				../rtl/fetch_stage.sv		\
 				../rtl/realign_buffer.sv		\
-				ip/dp_ram.sv				\
-				riscv_top.sv
+				../rtl/dp_ram.sv				\
+				../rtl/riscv_top.sv
 
 TESTNAMES = $(wildcard ./tests/*.S)
 DUMP_TRACE=0

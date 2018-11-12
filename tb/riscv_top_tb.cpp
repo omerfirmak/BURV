@@ -12,6 +12,8 @@ int clk_count = 0;
 VerilatedVcdC* tfp;
 Vriscv_top* top;
 
+#define DUMP_TRACE 1
+
 void clock(int times)
 {
     for (int i = 0; i < times; ++i)
@@ -57,7 +59,7 @@ int main(int argc, char **argv, char **env) {
         top->riscv_top->dp_ram->writeWord(4 * index++, tmp);
     }
 
-    for (int i=0;;i++) {
+    for (int i=0; i< 10e4; i++) {
         top->rst_n = i > 2;
         clock(1);
         if (Verilated::gotFinish()) break;

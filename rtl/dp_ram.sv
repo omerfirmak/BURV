@@ -1,4 +1,9 @@
- module dp_ram
+ `timescale 1ns / 1ps
+
+`include "riscv_defines.sv"
+`include "alu_defines.sv"
+
+module dp_ram
 #(
     parameter ADDR_WIDTH = RISCV_ADDR_WIDTH
 )(
@@ -22,29 +27,29 @@
     output logic [RISCV_WORD_WIDTH - 1 : 0] b_rdata_o
 );
 
-    localparam words = 262144;
+    localparam words = 1024;
 
-    logic [3:0][7:0] mem[words];
+    logic [31:0] mem[words];
 
     always @(posedge clk) begin
         a_ready_o <= 0;
         b_ready_o <= 0;
         
         if (a_valid_i && !a_ready_o) begin
-            if (a_we_i[0]) mem[a_addr_i >> 2][0] <= a_wdata_i[7:0];
-            if (a_we_i[1]) mem[a_addr_i >> 2][1] <= a_wdata_i[15:8];
-            if (a_we_i[2]) mem[a_addr_i >> 2][2] <= a_wdata_i[23:16];
-            if (a_we_i[3]) mem[a_addr_i >> 2][3] <= a_wdata_i[31:24];
+            if (a_we_i[0]) mem[a_addr_i >> 2][7 : 0] <= a_wdata_i[7 : 0];
+            if (a_we_i[1]) mem[a_addr_i >> 2][15 : 8] <= a_wdata_i[15 : 8];
+            if (a_we_i[2]) mem[a_addr_i >> 2][23 : 16] <= a_wdata_i[23 : 16];
+            if (a_we_i[3]) mem[a_addr_i >> 2][31 : 24] <= a_wdata_i[31 : 24];
 
             a_rdata_o <= mem[a_addr_i >> 2];
             a_ready_o <= 1;
         end
 
         if (b_valid_i && !b_ready_o) begin
-            if (b_we_i[0]) mem[b_addr_i >> 2][0] <= b_wdata_i[7:0];
-            if (b_we_i[1]) mem[b_addr_i >> 2][1] <= b_wdata_i[15:8];
-            if (b_we_i[2]) mem[b_addr_i >> 2][2] <= b_wdata_i[23:16];
-            if (b_we_i[3]) mem[b_addr_i >> 2][3] <= b_wdata_i[31:24];
+            if (b_we_i[0]) mem[b_addr_i >> 2][7 : 0] <= b_wdata_i[7 : 0];
+            if (b_we_i[1]) mem[b_addr_i >> 2][15 : 8] <= b_wdata_i[15 : 8];
+            if (b_we_i[2]) mem[b_addr_i >> 2][23 : 16] <= b_wdata_i[23 : 16];
+            if (b_we_i[3]) mem[b_addr_i >> 2][31 : 24] <= b_wdata_i[31 : 24];
 
             b_rdata_o <= mem[b_addr_i >> 2];
             b_ready_o <= 1;
