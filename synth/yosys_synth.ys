@@ -11,9 +11,9 @@ read_verilog -sv -I../rtl/include ../rtl/realign_buffer.sv
 read_verilog -sv -I../rtl/include ../rtl/dp_ram.sv
 
 synth -top riscv_core
-dfflibmap -liberty osu018_stdcells.lib
-abc -liberty osu018_stdcells.lib
+dfflibmap -liberty ../tech/osu018/osu018_stdcells.lib
+abc -liberty ../tech/osu018/osu018_stdcells.lib
 clean
 
-stat
+stat -liberty ../tech/osu018/osu018_stdcells.lib
 write_verilog synth.v

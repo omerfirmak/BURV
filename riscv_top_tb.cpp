@@ -12,7 +12,7 @@ int clk_count = 0;
 VerilatedVcdC* tfp;
 Vriscv_top* top;
 
-#define DUMP_TRACE 1
+#define DUMP_TRACE 0
 
 void clock(int times)
 {
@@ -47,10 +47,6 @@ int main(int argc, char **argv, char **env) {
     top->clk = 0;
     top->irq = 0;
 
-    for (int i = 0; i < 4096; ++i) {
-        top->riscv_top->dp_ram->writeWord(4 * i++, 0);
-    }
-
     FILE *ptr;
     uint32_t tmp, index = 0;
     ptr = fopen("test.bin","rb");
@@ -59,7 +55,7 @@ int main(int argc, char **argv, char **env) {
         top->riscv_top->dp_ram->writeWord(4 * index++, tmp);
     }
 
-    for (int i=0; i< 10e4; i++) {
+    for (int i=0;;i++) {
         top->rst_n = i > 2;
         clock(1);
         if (Verilated::gotFinish()) break;

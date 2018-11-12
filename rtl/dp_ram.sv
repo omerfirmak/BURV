@@ -27,7 +27,7 @@ module dp_ram
     output logic [RISCV_WORD_WIDTH - 1 : 0] b_rdata_o
 );
 
-    localparam words = 1024;
+    localparam words = 262144;
 
     logic [31:0] mem[words];
 
