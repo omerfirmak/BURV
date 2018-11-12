@@ -1,4 +1,7 @@
+`timescale 1ns / 1ps
+
 `include "riscv_defines.sv"
+`include "alu_defines.sv"
 
 module lsu (
 	input clk,    // Clock
@@ -48,7 +51,7 @@ module lsu (
 	assign err_o = misaligned | out_of_bounds;
 
 	always_comb begin
-		rdata_o = RISCV_WORD_WIDTH'(1'bx);
+		rdata_o = 'bx;
 		unique case ({sign_extend_i, addr_i[1 : 0], type_i})
 			{1'b0, 2'b00, DATA_WORD},
 			{1'b1, 2'b00, DATA_WORD}:		rdata_o = dmem_rdata_i;
@@ -74,7 +77,7 @@ module lsu (
 
 
 	always_comb begin
-		dmem_wdata_o = RISCV_WORD_WIDTH'(1'bx);
+		dmem_wdata_o = 'bx;
 		unique case ({addr_i[1 : 0], type_i})
 			{2'b00, DATA_WORD}:		dmem_wdata_o = wdata_i;
 			{2'b00, DATA_HALF_WORD}:dmem_wdata_o = {16'h0, wdata_i[15 : 0]};

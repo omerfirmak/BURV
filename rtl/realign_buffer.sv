@@ -21,77 +21,85 @@ module realign_buffer (
 	output logic empty_o
 );
 
-	logic [1 : 0]  read_index_low;
-	logic [1 : 0]  read_index_high;
+	logic [RISCV_WORD_WIDTH - 1 : 0] mem[3],		mem_n[3], 		mem_shadow[3]; 
+	logic [2 : 0]					 mem_valid,		mem_valid_n,	mem_valid_shadow;
+	logic [RISCV_ADDR_WIDTH - 1 : 0] mem_addr[3],	mem_addr_n[3],	mem_addr_shadow[3];
 
-	logic [1 : 0]  read_index_low_inc;
-	logic [1 : 0]  read_index_high_inc;
+	logic [2 : 0]					 mem_valid_inc;
+	logic [2 : 0]					 mem_we;
 
-	logic [1 : 0]  write_index;
-	logic [1 : 0]  write_index_inc; 
- 
-	logic		   swap_high_low;
+	logic							 unaligned, unaligned_n;
+	integer 						 i;
 
-	logic [(RISCV_WORD_WIDTH / 2) - 1 : 0] mem_high[4], 	mem_low [4]; 
-	logic 								   mem_valid_h[4],	mem_valid_l[4];
-	logic [RISCV_ADDR_WIDTH - 1 : 0] 	   mem_addr[4];
+	assign unaligned_n =  unaligned ^ read_en_i[0];
+	assign mem_valid_inc = mem_valid + 1;
+	assign mem_we = (~mem_valid) & mem_valid_inc;
 
-	assign write_index_inc = write_index + 1;
-	assign read_index_low_inc = read_index_low + 1;
-	assign read_index_high_inc = read_index_high + 1;
-
-	always_ff @(posedge clk or negedge rst_n) begin
-		if(!rst_n | clear_i) begin
-			read_index_high <= 0;
-			read_index_low  <= 2'(read_offset_i);
-			write_index <= 0;
-			swap_high_low <= read_offset_i;
-
-			for (int i = 0; i < 4; i++) begin
-				mem_valid_h[i] <= 0;
-				mem_valid_l[i] <= 0;
+	always_comb begin
+		for (i = 0; i < 3; i++) begin
+			mem_shadow[i] = mem[i];
+			mem_valid_shadow[i] = mem_valid[i];
+			mem_addr_shadow[i] = mem_addr[i];
+		
+			if (write_en_i & mem_we[i]) begin
+				mem_shadow[i] = instr_i;
+				mem_valid_shadow[i] = 1'b1;
+				mem_addr_shadow[i] = addr_i;
 			end
+		end
 
+		unique case ({read_en_i, unaligned})
+			3'b011,
+			3'b100,
+			3'b101: 
+			begin
+				for (i = 0; i < 2; i++) begin
+					mem_n[i] = mem_shadow[i + 1];
+					mem_valid_n[i] = mem_valid_shadow[i + 1];
+					mem_addr_n[i] = mem_addr_shadow[i + 1];
+				end
+
+				mem_n[2] = 0;
+				mem_valid_n[2] = 0;
+				mem_addr_n[2] = 0;
+			end
+			default:
+			begin
+				for (i = 0; i < 3; i++) begin
+					mem_n[i] = mem_shadow[i];
+					mem_valid_n[i] = mem_valid_shadow[i];
+					mem_addr_n[i] = mem_addr_shadow[i];
+				end
+			end
+		endcase
+
+	end
+
+
+	always_ff @(posedge clk or negedge rst_n) begin : proc_
+		if(~rst_n) begin
+			mem_valid <= 0;
+			unaligned <= read_offset_i;
 		end else begin
-			unique case (read_en_i)
-				2'b01: begin // Retire RVC instruction
-					swap_high_low <= ~swap_high_low;
-					if (read_index_low == read_index_high) begin
-						mem_valid_l[read_index_low] <= 0;
-						read_index_low <= read_index_low_inc;
-					end else begin
-						mem_valid_h[read_index_high] <= 0;
-						mem_valid_l[read_index_high] <= 0;
-						read_index_high <= read_index_high_inc;
-					end
+			if (clear_i) begin
+				mem_valid <= 0;
+				unaligned <= read_offset_i;
+			end else begin
+				unaligned <= unaligned_n;
+
+				for (i = 0; i < 3; i++) begin
+					mem[i] 	<= mem_n[i];
+					mem_valid[i] <= mem_valid_n[i];
+					mem_addr[i] <= mem_addr_n[i];
 				end
-				2'b10: begin
-					mem_valid_l[read_index_low] <= 0;
-					read_index_low <= read_index_low_inc;
-
-					mem_valid_h[read_index_high] <= 0;
-					mem_valid_l[read_index_high] <= 0;
-					read_index_high <= read_index_high_inc;
-				end
-				default:;
-			endcase
-
-			if (write_en_i && !full_o) begin
-				mem_valid_h[write_index] <= 1;
-				mem_high[write_index] <= instr_i[RISCV_WORD_WIDTH - 1 : (RISCV_WORD_WIDTH / 2)];
-
-				mem_valid_l[write_index] <= 1;
-				mem_low[write_index]  <= instr_i[(RISCV_WORD_WIDTH / 2) - 1 : 0];
-				
-				mem_addr[write_index] <= addr_i;
-				write_index <= write_index_inc;
 			end
 		end
 	end
-	
-	assign instr_o = swap_high_low ? {mem_low[read_index_low] ,mem_high[read_index_high]} : {mem_high[read_index_high], mem_low[read_index_low]};
-	assign addr_o  = {mem_addr[swap_high_low ? read_index_high : read_index_low][RISCV_ADDR_WIDTH - 1 : 2], swap_high_low,  1'd0};
-	assign full_o  = (mem_valid_h[write_index] == 1);
-	assign empty_o = (mem_valid_l[read_index_low] == 0) || (mem_valid_h[read_index_high] == 0);
+
+	assign full_o = &mem_valid;
+	assign empty_o = unaligned ? ~mem_valid[1] : ~mem_valid[0];
+
+	assign instr_o = unaligned ? {mem[1][15 : 0], mem[0][31 : 16]} : mem[0];
+	assign addr_o = {mem_addr[0][31 : 2], unaligned, 1'b0};
 
 endmodule

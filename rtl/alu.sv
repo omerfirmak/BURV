@@ -43,12 +43,11 @@ module alu (
         
         always_comb
         begin
-            shift_out = 'x;
+            shift_out = 'bx;
             unique case (alu_op_i)
                 ALU_SRA: shift_out = operand_a_i_signed >>> operand_b_i_signed[4 : 0];
                 ALU_SRL: shift_out = operand_a_i >> operand_b_i[4 : 0];
                 ALU_SLL: shift_out = operand_a_i << operand_b_i[4 : 0];
-                default: ;
             endcase
         end
         
@@ -61,13 +60,13 @@ module alu (
         logic [RISCV_WORD_WIDTH - 1 : 0] is_greater;
         logic [RISCV_WORD_WIDTH - 1 : 0] is_greater_signed;
 
-        assign is_equal = RISCV_WORD_WIDTH'(operand_a_i == operand_b_i);
-        assign is_greater = RISCV_WORD_WIDTH'(operand_a_i > operand_b_i);
-        assign is_greater_signed = RISCV_WORD_WIDTH'(operand_a_i_signed > operand_b_i_signed);
+        assign is_equal = {31'd0, operand_a_i == operand_b_i}; 
+        assign is_greater = {31'd0, operand_a_i > operand_b_i};  //RISCV_WORD_WIDTH'(operand_a_i > operand_b_i);
+        assign is_greater_signed = {31'd0, operand_a_i_signed > operand_b_i_signed}; //RISCV_WORD_WIDTH'(operand_a_i_signed > operand_b_i_signed);
                 
         always_comb
         begin
-             comp_result = 'x;
+             comp_result = 'bx;
              unique case (alu_op_i)
                 ALU_EQ:  comp_result = is_equal;
                 ALU_NE:  comp_result = ~is_equal;
@@ -75,7 +74,6 @@ module alu (
                 ALU_GEU: comp_result = is_greater | is_equal;
                 ALU_LTS: comp_result = ~(is_greater_signed | is_equal);
                 ALU_LTU: comp_result = ~(is_greater | is_equal);
-                default:;
              endcase
         end
 
@@ -85,7 +83,7 @@ module alu (
          */
         always_comb
         begin
-             alu_result_o = 'x;
+             alu_result_o = 'bx;
              unique case (alu_op_i)
                 ALU_PASS: alu_result_o = operand_a_i;
                 ALU_ADD,
@@ -105,7 +103,6 @@ module alu (
                 ALU_GEU,
                 ALU_LTS,
                 ALU_LTU: alu_result_o = {31'd0, comp_result[0]};
-                default:;
              endcase
         end
 endmodule

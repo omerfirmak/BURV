@@ -1,6 +1,7 @@
 `timescale 1ns / 1ps
 
 `include "riscv_defines.sv"
+`include "alu_defines.sv"
 
 module reg_file (
                     input logic clk,
@@ -18,19 +19,25 @@ module reg_file (
         );
 
     logic [RISCV_WORD_WIDTH - 1 : 0] mem[GP_REG_COUNT];
+    logic                            mem_we[GP_REG_COUNT];
+    integer i;
 
     assign read_data_1_o = mem[read_addr_1_i];
     assign read_data_2_o = mem[read_addr_2_i];
 
-    always_ff @(posedge clk or negedge rst_n) begin : proc_
-        if(!rst_n) begin
-            for (integer index = 0; index < GP_REG_COUNT; ++index) begin
-                mem[index] = 0;
-            end
-        end else begin
-            if ( write_en_i && (write_addr_i != 0) ) begin
-                mem[write_addr_i] <= write_data_i;
-            end
+    always_comb begin
+        for (i = 0; i < GP_REG_COUNT; i++) begin
+            if (write_addr_i != 0 && write_addr_i == i[$clog2(GP_REG_COUNT) - 1 : 0])
+                mem_we[i] = write_en_i;
+            else
+                mem_we[i] = 1'b0;
+        end
+    end
+
+    always_ff @(posedge clk) begin : proc_
+        for (i = 0; i < GP_REG_COUNT; i++) begin
+            if (mem_we[i] == 1'b1)
+                mem[i] <= write_data_i;
         end
     end
 

@@ -1,6 +1,7 @@
 `timescale 1ns / 1ps
 
 `include "riscv_defines.sv"
+`include "alu_defines.sv"
 
 module controller (
 	input clk,    // Clock
@@ -33,8 +34,10 @@ module controller (
 
 
 );
+	localparam IDLE = 1'b0;
+	localparam MULTI_CYCLE_OP = 1'b1;
 
-	enum logic { IDLE, MULTI_CYCLE_OP } CS, NS;
+	logic CS, NS;
 
 	always_comb 
 	begin
@@ -108,7 +111,9 @@ module controller (
 							ebreak_inst_i:
 							begin
 								retire_o = 0;
-								$finish;
+								`ifdef VERILATOR
+									$finish;
+								`endif
 							end
 							default: NS = IDLE;
 						endcase

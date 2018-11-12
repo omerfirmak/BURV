@@ -6,7 +6,11 @@
 module riscv_top (
 	input clk,    // Clock
 	input rst_n,   // Asynchronous reset active low
-	input irq
+	input irq,
+
+
+	output logic [3 : 0] 					dmem_we_o
+
 );
 	// Instruction memory interface
 	logic imem_valid;
@@ -83,5 +87,7 @@ module riscv_top (
         .irq_i       (irq)
 
 	);
+
+	assign dmem_we_o = dmem_we;
 
 endmodule

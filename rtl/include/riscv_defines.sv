@@ -6,122 +6,91 @@ parameter RISCV_ADDR_WIDTH = 32;
 
 parameter GP_REG_COUNT = 16;
 
-typedef enum logic[2 : 0] {
-	FUNC3_ADDI		  = 3'h0,
-	FUNC3_SLTI		  = 3'h2,
-	FUNC3_SLTIU		  = 3'h3,
-	FUNC3_XORI		  = 3'h4,
-	FUNC3_ORI		  = 3'h6,
-	FUNC3_ANDI		  = 3'h7,
-	FUNC3_SLLI		  = 3'h1,
-	FUNC3_SRI		  = 3'h5	
-} opimm_func3_t;
+parameter FUNC3_ADDI		  = 3'h0;
+parameter FUNC3_SLTI		  = 3'h2;
+parameter FUNC3_SLTIU		  = 3'h3;
+parameter FUNC3_XORI		  = 3'h4;
+parameter FUNC3_ORI		  = 3'h6;
+parameter FUNC3_ANDI		  = 3'h7;
+parameter FUNC3_SLLI		  = 3'h1;
+parameter FUNC3_SRI		  = 3'h5;
 
-typedef enum logic[2 : 0] {
-	FUNC3_ADD_SUB	  = 3'h0,
-	FUNC3_SLL		  = 3'h1,
-	FUNC3_SLT		  = 3'h2,
-	FUNC3_SLTU		  = 3'h3,
-	FUNC3_XOR		  = 3'h4,
-	FUNC3_SR		  = 3'h5,
-	FUNC3_OR		  = 3'h6,
-	FUNC3_AND		  = 3'h7
-} op_func3_t;
+parameter FUNC3_ADD_SUB	  = 3'h0;
+parameter FUNC3_SLL		  = 3'h1;
+parameter FUNC3_SLT		  = 3'h2;
+parameter FUNC3_SLTU		  = 3'h3;
+parameter FUNC3_XOR		  = 3'h4;
+parameter FUNC3_SR		  = 3'h5;
+parameter FUNC3_OR		  = 3'h6;
+parameter FUNC3_AND		  = 3'h7;
 
-typedef enum logic[2 : 0] {
-	FUNC3_BEQ  = 3'h0,
-	FUNC3_BNE  = 3'h1,
-	FUNC3_BLT  = 3'h4,
-	FUNC3_BGE  = 3'h5,
-	FUNC3_BLTU = 3'h6,
-	FUNC3_BGEU = 3'h7
-} branch_func3_t;
+parameter FUNC3_BEQ  = 3'h0;
+parameter FUNC3_BNE  = 3'h1;
+parameter FUNC3_BLT  = 3'h4;
+parameter FUNC3_BGE  = 3'h5;
+parameter FUNC3_BLTU = 3'h6;
+parameter FUNC3_BGEU = 3'h7;
 
 
-typedef enum logic[6 : 0] {
-	OPCODE_OPIMM      = 7'h13,
-	OPCODE_SYSTEM     = 7'h73,
-	OPCODE_FENCE      = 7'h0f,
-	OPCODE_OP         = 7'h33,
-	OPCODE_STORE      = 7'h23,
-	OPCODE_LOAD       = 7'h03,
-	OPCODE_BRANCH     = 7'h63,
-	OPCODE_JALR       = 7'h67,
-	OPCODE_JAL        = 7'h6f,
-	OPCODE_AUIPC      = 7'h17,
-	OPCODE_LUI        = 7'h37
-} opcode_t;
+parameter OPCODE_OPIMM      = 7'h13;
+parameter OPCODE_SYSTEM     = 7'h73;
+parameter OPCODE_FENCE      = 7'h0f;
+parameter OPCODE_OP         = 7'h33;
+parameter OPCODE_STORE      = 7'h23;
+parameter OPCODE_LOAD       = 7'h03;
+parameter OPCODE_BRANCH     = 7'h63;
+parameter OPCODE_JALR       = 7'h67;
+parameter OPCODE_JAL        = 7'h6f;
+parameter OPCODE_AUIPC      = 7'h17;
+parameter OPCODE_LUI        = 7'h37;
 
-typedef enum logic[2 : 0] {
-	IMM_I = 3'h0,
-	IMM_IZ,
-	IMM_S,
-	IMM_SB,
-	IMM_U,
-	IMM_UJ,
-	IMM_SHAMT,
-	IMM_PC_INC
-} imm_sel_t;
+parameter IMM_I = 3'h0;
+parameter IMM_IZ = 3'h1;
+parameter IMM_S = 3'h2;
+parameter IMM_SB = 3'h3;
+parameter IMM_U = 3'h4;
+parameter IMM_UJ = 3'h5;
+parameter IMM_SHAMT = 3'h6;
+parameter IMM_PC_INC = 3'h7;
 
-typedef enum logic[1 : 0] {
-	ALU_OP_SEL_RF_1 = 2'h0,
-	ALU_OP_SEL_RF_2,
-	ALU_OP_SEL_IMM,
-	ALU_OP_SEL_PC
-} alu_operand_sel_t;
+parameter ALU_OP_SEL_RF_1 = 2'h0;
+parameter ALU_OP_SEL_RF_2 = 2'h1;
+parameter ALU_OP_SEL_IMM = 2'h2;
+parameter ALU_OP_SEL_PC = 2'h3;
 
-typedef enum logic[1 : 0] {
-	RF_WRITE_ALU_OUT = 1'h0,
-	RF_WRITE_LSU_OUT,
-	RF_WRITE_CSR_OUT	
-} rf_write_sel_t;
+parameter RF_WRITE_ALU_OUT = 2'h0;
+parameter RF_WRITE_LSU_OUT = 2'h1;
+parameter RF_WRITE_CSR_OUT = 2'h2;
 
-typedef enum logic[1 : 0] {
-	DATA_WORD = 2'h0,
-	DATA_HALF_WORD,
-	DATA_BYTE
-} data_type_t;
+parameter DATA_WORD = 2'h0;
+parameter DATA_HALF_WORD = 2'h1;
+parameter DATA_BYTE = 2'h2;
 
-typedef enum logic[1 : 0] {
-	CSR_OP_NONE = 2'h0,
-	CSR_OP_WRITE,
-	CSR_OP_SET,
-	CSR_OP_CLEAR
-} csr_op_t;
+parameter CSR_OP_NONE = 2'h0;
+parameter CSR_OP_WRITE = 2'h1;
+parameter CSR_OP_SET = 2'h2;
+parameter CSR_OP_CLEAR = 2'h3;
 
-typedef enum logic[1 : 0] {
-	PC_BRANCH_JUMP = 2'h0,
-	PC_EXCEPTION,
-	PC_EPC
-} pc_mux_sel_t;
+parameter PC_BRANCH_JUMP = 2'h0;
+parameter PC_EXCEPTION = 2'h1;
+parameter PC_EPC = 2'h2;
 
-typedef enum logic[2 : 0] {
-	FUNC3_CLW   	  = 3'b010,
-	FUNC3_CSW   	  = 3'b110,
-	FUNC3_CADDI4SPN   = 3'b000
+parameter FUNC3_CLW   	  = 3'b010;
+parameter FUNC3_CSW   	  = 3'b110;
+parameter FUNC3_CADDI4SPN   = 3'b000;
 
-} rvc0_func3_t;
+parameter FUNC3_CJ    		 = 3'b101;
+parameter FUNC3_CJAL  		 = 3'b001;
+parameter FUNC3_CBEQZ 		 = 3'b110;
+parameter FUNC3_CBNEZ 		 = 3'b111;
+parameter FUNC3_CLI   		 = 3'b010;
+parameter FUNC3_CLUI_ADDI16SP  = 3'b011;
+parameter FUNC3_CADDI 		 = 3'b000;
+parameter FUNC3_MISC_ALU 		 = 3'b100;
 
-typedef enum logic[2 : 0] {
-	FUNC3_CJ    		 = 3'b101,
-	FUNC3_CJAL  		 = 3'b001,
-	FUNC3_CBEQZ 		 = 3'b110,
-	FUNC3_CBNEZ 		 = 3'b111,
-	FUNC3_CLI   		 = 3'b010,
-	FUNC3_CLUI_ADDI16SP  = 3'b011,
-	FUNC3_CADDI 		 = 3'b000,
-	FUNC3_MISC_ALU 		 = 3'b100
-
-} rvc1_func3_t;
-
-typedef enum logic[2 : 0] {
-	FUNC3_CLWSP  	= 3'b010,
-	FUNC3_CSWSP  	= 3'b110,
-	FUNC3_CJR_JALR  = 3'b100,
-	FUNC3_CSLLI  	= 3'b000
-
-} rvc2_func3_t;
-
-
+parameter FUNC3_CLWSP  	= 3'b010;
+parameter FUNC3_CSWSP  	= 3'b110;
+parameter FUNC3_CJR_JALR  = 3'b100;
+parameter FUNC3_CSLLI  	= 3'b000;
 
 `endif

@@ -1,6 +1,7 @@
 `timescale 1ns / 1ps
 
 `include "riscv_defines.sv"
+`include "alu_defines.sv"
 
 module decoder (
 	input clk,    // Clock
@@ -48,7 +49,7 @@ module decoder (
 	logic [6 : 0] sub_func_7;
 
 	// Immediate decoding and sign extension
-	imm_sel_t imm_sel;
+	logic [2 : 0] imm_sel;
 	logic [RISCV_WORD_WIDTH - 1 : 0] imm_i_type;
 	logic [RISCV_WORD_WIDTH - 1 : 0] imm_iz_type;
 	logic [RISCV_WORD_WIDTH - 1 : 0] imm_s_type;
@@ -81,9 +82,9 @@ module decoder (
 	assign imm_u_type  = { instr[31 : 12], 12'b0 };
 	assign imm_uj_type = { {12 {instr[31]}}, instr[19 : 12], instr[20], instr[30 : 21], 1'b0 };
 
-	assign rf_rs1_addr_o = $clog2(GP_REG_COUNT)'(instr[19 : 15]);
-	assign rf_rs2_addr_o = $clog2(GP_REG_COUNT)'(instr[24 : 20]);
-	assign rf_rd_addr_o  = $clog2(GP_REG_COUNT)'(instr[11 : 7]);
+	assign rf_rs1_addr_o = instr[18 : 15];
+	assign rf_rs2_addr_o = instr[23 : 20];
+	assign rf_rd_addr_o  = instr[10 : 7];
 
 	assign sub_func_3 = instr[14 : 12];
 	assign sub_func_7 = instr[31 : 25];
@@ -320,7 +321,7 @@ module decoder (
 			IMM_SB:     imm_o = imm_sb_type;
 			IMM_U:      imm_o = imm_u_type;
 			IMM_UJ:     imm_o = imm_uj_type;
-			IMM_SHAMT:  imm_o = RISCV_WORD_WIDTH'(instr[24 : 20]);
+			IMM_SHAMT:  imm_o = {27'd0 ,instr[24 : 20]};
 			IMM_PC_INC: imm_o = compressed_inst_o ? 2 : 4;
 			default:    imm_o = imm_i_type;
 		endcase
