@@ -67,3 +67,6 @@ COREMARK_SRC = "coremark/core_list_join.c \
 
 coremark:
 	make sim_verilator MODE=soft SRC=$(COREMARK_SRC)
+
+iverilog:
+	iverilog $(VERILOG_SRC) riscv_top_tb.sv

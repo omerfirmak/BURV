@@ -1,6 +1,6 @@
-tb/obj_dir
-tb/*.vcd
-tb/test.*
-tb/*.o
+obj_dir
+*.vcd
+test.*
+*.o
 *.pdf
 *.bkp
