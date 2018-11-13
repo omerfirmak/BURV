@@ -12,7 +12,7 @@ int clk_count = 0;
 VerilatedVcdC* tfp;
 Vriscv_top* top;
 
-#define DUMP_TRACE 0
+#define DUMP_TRACE 1
 
 void clock(int times)
 {
@@ -41,7 +41,7 @@ int main(int argc, char **argv, char **env) {
 #if DUMP_TRACE == 1
     tfp = new VerilatedVcdC;
     top->trace (tfp, 99);
-    tfp->open ("Vriscv_top.vcd");
+    tfp->open ("riscv_top.vcd");
 #endif
 
     top->clk = 0;

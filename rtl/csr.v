@@ -1,35 +1,35 @@
-`timescale 1ns / 1ps
+`timescale 1ns / 10ps
 
-`include "riscv_defines.sv"
-`include "alu_defines.sv"
+`include "riscv_defines.v"
+`include "alu_defines.v"
 
 module csr (
-	input logic clk,    // Clock
-	input logic rst_n,  // Asynchronous reset active low
+	input wire clk,    // Clock
+	input wire rst_n,  // Asynchronous reset active low
 	
-	input  logic [1 : 0]  op_i,
-	input  logic [11 : 0] addr_i,
-	input  logic [31 : 0] wdata_i,
-	output logic [31 : 0] rdata_o,
+	input  wire [1 : 0]  op_i,
+	input  wire [11 : 0] addr_i,
+	input  wire [31 : 0] wdata_i,
+	output reg  [31 : 0] rdata_o,
 
-	input  logic 		  save_epc_i,
-	input  logic [31 : 0] pc_i,
-	output logic [31 : 0] epc_o
+	input  wire 		 save_epc_i,
+	input  wire [31 : 0] pc_i,
+	output wire [31 : 0] epc_o
 
 );
 
-	logic [31 : 0] mepc, mepc_n;
-	logic [31 : 0] mcycle, mcycle_n;
-	logic [1 : 0]  mstatus, mstatus_n;
+	reg  [31 : 0] mepc,    mepc_n;
+	reg  [31 : 0] mcycle,  mcycle_n;
+	reg  [1 : 0]  mstatus, mstatus_n;
 
 	`define MSTATUS_MIE  0
 	`define MSTATUS_MPIE 1
 	`define MSTATUS_MPP  2'b11
 
-	always_comb
+	always @* 
 	begin
 		rdata_o = 0;
-		unique case (addr_i)
+		case (addr_i)
 			12'h300: rdata_o = {19'h0, `MSTATUS_MPP, 3'h0, mstatus[`MSTATUS_MPIE], 3'h0, mstatus[`MSTATUS_MIE], 3'h0};
 			12'h341: rdata_o = mepc;
 			12'hB00: rdata_o = mcycle;
@@ -37,25 +37,25 @@ module csr (
 		endcase
 	end
 
-	logic [31 : 0] wdata;
+	reg [31 : 0] wdata;
 
-	always_comb
+	always @* 
 	begin
-		unique case (op_i)
-			CSR_OP_NONE:  wdata = rdata_o;
-			CSR_OP_WRITE: wdata = wdata_i;
-			CSR_OP_SET:	  wdata = rdata_o | wdata_i;
-			CSR_OP_CLEAR: wdata = rdata_o & ~(wdata_i);
+		case (op_i)
+			`CSR_OP_NONE:  wdata = rdata_o;
+			`CSR_OP_WRITE: wdata = wdata_i;
+			`CSR_OP_SET:   wdata = rdata_o | wdata_i;
+			`CSR_OP_CLEAR: wdata = rdata_o & ~(wdata_i);
 		endcase
 	end
 
-	always_comb
+	always @* 
 	begin
 		mepc_n = mepc;
 		mstatus_n = mstatus;
 		mcycle_n = mcycle + 1;
 
-		unique case (addr_i)
+		case (addr_i)
 			12'h300: mstatus_n = {wdata[7], wdata[3]};
 			12'h341: mepc_n = wdata;
 			12'hB00: mcycle_n = wdata;
@@ -68,7 +68,7 @@ module csr (
 		end
 	end
 
-	always_ff @(posedge clk or negedge rst_n) begin : proc_
+	always @(posedge clk or negedge rst_n) begin : proc_
 		if(~rst_n) begin
 			mepc <= 0;
 			mstatus <= 0;

@@ -1,34 +1,30 @@
-`timescale 1ns / 1ps
+`timescale 1ns / 10ps
 
-`include "riscv_defines.sv"
-`include "alu_defines.sv"
+`include "riscv_defines.v"
+`include "alu_defines.v"
 
 module riscv_top (
-	input clk,    // Clock
-	input rst_n,   // Asynchronous reset active low
-	input irq,
-
-
-	output logic [3 : 0] 					dmem_we_o
-
+	input wire clk,    // Clock
+	input wire rst_n,   // Asynchronous reset active low
+	input wire irq
 );
 	// Instruction memory interface
-	logic imem_valid;
-	logic imem_ready;
+	wire imem_valid;
+	wire imem_ready;
 
-	logic [RISCV_ADDR_WIDTH - 1 : 0] imem_addr;
-	logic [RISCV_WORD_WIDTH - 1 : 0] imem_wdata;
-	logic [3 : 0] 					  imem_we;
-	logic [RISCV_WORD_WIDTH - 1 : 0] imem_rdata;
+	wire [`RISCV_ADDR_WIDTH - 1 : 0] imem_addr;
+	wire [`RISCV_WORD_WIDTH - 1 : 0] imem_wdata;
+	wire [3 : 0] 					  imem_we;
+	wire [`RISCV_WORD_WIDTH - 1 : 0] imem_rdata;
 
 	// Data memory interface
-	logic dmem_valid;
-	logic dmem_ready;
+	wire dmem_valid;
+	wire dmem_ready;
 
-	logic [RISCV_ADDR_WIDTH - 1 : 0] dmem_addr;
-	logic [RISCV_WORD_WIDTH - 1 : 0] dmem_wdata;
-	logic [3 : 0] 					  dmem_we;
-	logic [RISCV_WORD_WIDTH - 1 : 0] dmem_rdata;
+	wire [`RISCV_ADDR_WIDTH - 1 : 0] dmem_addr;
+	wire [`RISCV_WORD_WIDTH - 1 : 0] dmem_wdata;
+	wire [3 : 0] 					  dmem_we;
+	wire [`RISCV_WORD_WIDTH - 1 : 0] dmem_rdata;
 
 	dp_ram dp_ram
 	(
@@ -53,13 +49,11 @@ module riscv_top (
 		.b_rdata_o(dmem_rdata)
   	);
 
-`ifdef VERILATOR
 	always @(negedge clk) begin
 		if (dmem_ready && dmem_addr == 32'h000fffff /* && dmem_we != 0  */) begin
 			$write("%c", dmem_wdata[31:24]); //dmem_wdata[7:0]);
 		end
 	end
-`endif
 
 	riscv_core riscv_core
 	(
@@ -87,7 +81,4 @@ module riscv_top (
         .irq_i       (irq)
 
 	);
-
-	assign dmem_we_o = dmem_we;
-
 endmodule

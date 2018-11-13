@@ -1,19 +1,19 @@
-read_verilog -sv -I../rtl/include ../rtl/alu.sv 
-read_verilog -sv -I../rtl/include ../rtl/reg_file.sv
-read_verilog -sv -I../rtl/include ../rtl/riscv_core.sv
-read_verilog -sv -I../rtl/include ../rtl/decoder.sv
-read_verilog -sv -I../rtl/include ../rtl/decompressor.sv
-read_verilog -sv -I../rtl/include ../rtl/controller.sv
-read_verilog -sv -I../rtl/include ../rtl/lsu.sv
-read_verilog -sv -I../rtl/include ../rtl/csr.sv
-read_verilog -sv -I../rtl/include ../rtl/fetch_stage.sv
-read_verilog -sv -I../rtl/include ../rtl/realign_buffer.sv
-read_verilog -sv -I../rtl/include ../rtl/dp_ram.sv
+read_verilog -I./rtl/include ./rtl/alu.v 
+read_verilog -I./rtl/include ./rtl/reg_file.v
+read_verilog -I./rtl/include ./rtl/riscv_core.v
+read_verilog -I./rtl/include ./rtl/decoder.v
+read_verilog -I./rtl/include ./rtl/decompressor.v
+read_verilog -I./rtl/include ./rtl/controller.v
+read_verilog -I./rtl/include ./rtl/lsu.v
+read_verilog -I./rtl/include ./rtl/csr.v
+read_verilog -I./rtl/include ./rtl/fetch_stage.v
+read_verilog -I./rtl/include ./rtl/realign_buffer.v
+read_verilog -I./rtl/include ./rtl/dp_ram.v
 
 synth -top riscv_core
-dfflibmap -liberty ../tech/osu018/osu018_stdcells.lib
-abc -liberty ../tech/osu018/osu018_stdcells.lib
+dfflibmap -liberty ./tech/osu018/osu018_stdcells.lib
+abc -liberty ./tech/osu018/osu018_stdcells.lib
 clean
 
-stat -liberty ../tech/osu018/osu018_stdcells.lib
-write_verilog synth.v
+stat -liberty ./tech/osu018/osu018_stdcells.lib
+write_verilog ./synth/synth.v

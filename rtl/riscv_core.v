@@ -1,50 +1,90 @@
-`timescale 1ns / 1ps
+`timescale 1ns / 10ps
 
-`include "riscv_defines.sv"
-`include "alu_defines.sv"
+`include "riscv_defines.v"
+`include "alu_defines.v"
 
 module riscv_core (
-	input logic clk,    // Clock
-	input logic rst_n,  // Asynchronous reset active low
+	input wire clk,    // Clock
+	input wire rst_n,  // Asynchronous reset active low
 
 	// Instruction memory interface
-	output logic imem_valid_o,
-	input  logic imem_ready_i,
+	output wire imem_valid_o,
+	input  wire imem_ready_i,
 
-	output logic [RISCV_ADDR_WIDTH - 1 : 0] imem_addr_o,
-	output logic [RISCV_WORD_WIDTH - 1 : 0] imem_wdata_o,
-	output logic [3 : 0] 					 imem_we_o,
-	input  logic [RISCV_WORD_WIDTH - 1 : 0] imem_rdata_i,
+	output wire [`RISCV_ADDR_WIDTH - 1 : 0] imem_addr_o,
+	output wire [`RISCV_WORD_WIDTH - 1 : 0] imem_wdata_o,
+	output wire [3 : 0] 					 imem_we_o,
+	input  wire [`RISCV_WORD_WIDTH - 1 : 0] imem_rdata_i,
 
 	// Data memory interface
-	output logic dmem_valid_o,
-	input  logic dmem_ready_i,
+	output wire dmem_valid_o,
+	input  wire dmem_ready_i,
 
-	output logic [RISCV_ADDR_WIDTH - 1 : 0] dmem_addr_o,
-	output logic [RISCV_WORD_WIDTH - 1 : 0] dmem_wdata_o,
-	output logic [3 : 0] 					dmem_we_o,
-	input  logic [RISCV_WORD_WIDTH - 1 : 0] dmem_rdata_i,
+	output wire [`RISCV_ADDR_WIDTH - 1 : 0] dmem_addr_o,
+	output wire [`RISCV_WORD_WIDTH - 1 : 0] dmem_wdata_o,
+	output wire [3 : 0] 					dmem_we_o,
+	input  wire [`RISCV_WORD_WIDTH - 1 : 0] dmem_rdata_i,
 
-	input  logic irq_i
+	input  wire irq_i
 );
 
 	// ALU signals
-	logic [ALU_OP_WIDTH -1 : 0]      		alu_op;
-	logic [RISCV_WORD_WIDTH - 1 : 0] 		alu_operand_a;
-	logic [1 : 0] 							alu_operand_a_sel;
-	logic [RISCV_WORD_WIDTH - 1 : 0] 		alu_operand_b;
-	logic [1 : 0] 							alu_operand_b_sel;
-	logic [RISCV_WORD_WIDTH - 1 : 0] 		alu_result;
+	wire [`ALU_OP_WIDTH -1 : 0]      		alu_op;
+	reg  [`RISCV_WORD_WIDTH - 1 : 0] 		alu_operand_a;
+	wire [1 : 0] 							alu_operand_a_sel;
+	reg  [`RISCV_WORD_WIDTH - 1 : 0] 		alu_operand_b;
+	wire [1 : 0] 							alu_operand_b_sel;
+	wire [`RISCV_WORD_WIDTH - 1 : 0] 		alu_result;
 
 	// Register File signals
-	logic [RISCV_WORD_WIDTH - 1 : 0] 		rf_write_data;
-	logic [$clog2(GP_REG_COUNT) - 1 : 0] 	rf_write_addr;
-	logic 									rf_write_en;
-	logic [1 : 0]							rf_write_sel;
-	logic [$clog2(GP_REG_COUNT) - 1 : 0] 	rf_read_addr_1;
-	logic [$clog2(GP_REG_COUNT) - 1 : 0] 	rf_read_addr_2;
-	logic [RISCV_WORD_WIDTH - 1 : 0] 		rf_read_data_1;
-	logic [RISCV_WORD_WIDTH - 1 : 0] 		rf_read_data_2;
+	reg  [`RISCV_WORD_WIDTH - 1 : 0] 		rf_write_data;
+	wire [$clog2(`GP_REG_COUNT) - 1 : 0] 	rf_write_addr;
+	wire 									rf_write_en;
+	wire [1 : 0]							rf_write_sel;
+	wire [$clog2(`GP_REG_COUNT) - 1 : 0] 	rf_read_addr_1;
+	wire [$clog2(`GP_REG_COUNT) - 1 : 0] 	rf_read_addr_2;
+	wire [`RISCV_WORD_WIDTH - 1 : 0] 		rf_read_data_1;
+	wire [`RISCV_WORD_WIDTH - 1 : 0] 		rf_read_data_2;
+
+
+	reg  [`RISCV_ADDR_WIDTH - 1 : 0] 		target_addr;
+	wire 									target_valid;
+
+	wire [`RISCV_WORD_WIDTH - 1 : 0] 		instr;
+	wire [`RISCV_ADDR_WIDTH - 1 : 0] 		instr_addr;
+	wire                         	 		instr_valid;
+	wire [`RISCV_WORD_WIDTH - 1 : 0] 		imm_val;
+
+	wire                         	 		illegal_inst;
+	wire                         	 		ecall_inst;
+	wire                         	 		ebreak_inst;
+	wire                         	 		mret_inst;
+	wire                         	 		compressed_inst;
+	wire                         	 		jump_inst;
+	wire                         	 		branch_inst;
+
+	wire                         	 		cycle_counter;
+
+	wire [1 : 0]					   		pc_mux_sel;
+	wire [`RISCV_ADDR_WIDTH - 1 : 0] 		exc_pc;
+	wire							   		save_epc;
+	wire							   		retire_curr_inst;
+	wire 							   		deassert_rf_wen_n;
+
+	wire [1 : 0]  							csr_op;
+	wire [11 : 0] 							csr_addr;
+	wire [`RISCV_WORD_WIDTH - 1 : 0] 		csr_rdata;
+	wire [`RISCV_ADDR_WIDTH - 1 : 0] 		epc;
+
+	wire 									lsu_en;
+	wire [`RISCV_WORD_WIDTH - 1 : 0] 		lsu_rdata;
+
+	wire 									lsu_w_en;
+	wire 									lsu_r_en; 	
+	wire [1 : 0] 							lsu_data_type;
+	wire 									lsu_sign_extend;
+	wire 									lsu_done;
+	wire 									lsu_err;
 
 	alu alu
 	(
@@ -54,27 +94,28 @@ module riscv_core (
 		.alu_result_o	(alu_result)
 	);
 
-	always_comb begin
-		unique case (alu_operand_a_sel)
-			ALU_OP_SEL_RF_1: alu_operand_a = rf_read_data_1;
-			ALU_OP_SEL_RF_2: alu_operand_a = rf_read_data_2;
-			ALU_OP_SEL_IMM:  alu_operand_a = imm_val;
-			ALU_OP_SEL_PC:   alu_operand_a = instr_addr;
+	always @*
+	begin
+		case (alu_operand_a_sel)
+			`ALU_OP_SEL_RF_1: alu_operand_a = rf_read_data_1;
+			`ALU_OP_SEL_RF_2: alu_operand_a = rf_read_data_2;
+			`ALU_OP_SEL_IMM:  alu_operand_a = imm_val;
+			`ALU_OP_SEL_PC:   alu_operand_a = instr_addr;
 			default: 		 alu_operand_a = rf_read_data_1;
 		endcase
 		
-		unique case (alu_operand_b_sel)
-			ALU_OP_SEL_RF_1: alu_operand_b = rf_read_data_1;
-			ALU_OP_SEL_RF_2: alu_operand_b = rf_read_data_2;
-			ALU_OP_SEL_IMM:  alu_operand_b = imm_val;
-			ALU_OP_SEL_PC:   alu_operand_b = instr_addr;
+		case (alu_operand_b_sel)
+			`ALU_OP_SEL_RF_1: alu_operand_b = rf_read_data_1;
+			`ALU_OP_SEL_RF_2: alu_operand_b = rf_read_data_2;
+			`ALU_OP_SEL_IMM:  alu_operand_b = imm_val;
+			`ALU_OP_SEL_PC:   alu_operand_b = instr_addr;
 			default: 		 alu_operand_b = rf_read_data_2;
 		endcase
 
-		unique case (rf_write_sel)
-			RF_WRITE_ALU_OUT: rf_write_data = alu_result;
-			RF_WRITE_LSU_OUT: rf_write_data = lsu_rdata;
-			RF_WRITE_CSR_OUT: rf_write_data = csr_rdata;
+		case (rf_write_sel)
+			`RF_WRITE_ALU_OUT: rf_write_data = alu_result;
+			`RF_WRITE_LSU_OUT: rf_write_data = lsu_rdata;
+			`RF_WRITE_CSR_OUT: rf_write_data = csr_rdata;
 			default: 		  rf_write_data = alu_result;
 		endcase
 	end
@@ -95,15 +136,13 @@ module riscv_core (
 		.read_data_2_o	(rf_read_data_2)
 	);
 
-	logic [RISCV_ADDR_WIDTH - 1 : 0] target_addr;
-	logic target_valid;
-
-	always_comb begin
-		unique case (pc_mux_sel)
-			PC_BRANCH_JUMP: target_addr = alu_result;
-			PC_EXCEPTION:   target_addr = exc_pc;
-			PC_EPC:			target_addr = epc;
-			default:		target_addr = 0;
+	always @*
+	begin
+		case (pc_mux_sel)
+			`PC_BRANCH_JUMP: target_addr = alu_result;
+			`PC_EXCEPTION:   target_addr = exc_pc;
+			`PC_EPC:		 target_addr = epc;
+			default:		 target_addr = 0;
 		endcase	
 	end
 
@@ -112,7 +151,7 @@ module riscv_core (
 		.clk 		   (clk),
 		.rst_n		   (rst_n),
 
-		.retired_inst_len_i (retire_curr_inst ? (2'b10 ^ {2{compressed_inst}}) : 0),
+		.retired_inst_len_i (retire_curr_inst ? (2'b10 ^ {2{compressed_inst}}) : 2'h0),
 
 		.req_i		   (1'b1),
 		.target_addr_i (target_addr),
@@ -131,21 +170,6 @@ module riscv_core (
 		.imem_we_o     (imem_we_o),
 		.imem_rdata_i  (imem_rdata_i)
     );
-
-	logic [RISCV_WORD_WIDTH - 1 : 0] instr;
-	logic [RISCV_ADDR_WIDTH - 1 : 0] instr_addr;
-	logic                         	 instr_valid;
-	logic [RISCV_WORD_WIDTH - 1 : 0] imm_val;
-
-	logic                         	 illegal_inst;
-	logic                         	 ecall_inst;
-	logic                         	 ebreak_inst;
-	logic                         	 mret_inst;
-	logic                         	 compressed_inst;
-	logic                         	 jump_inst;
-	logic                         	 branch_inst;
-
-	logic                         	 cycle_counter;
 
 	decoder decoder 
 	(
@@ -188,12 +212,6 @@ module riscv_core (
 
 	);
 
-	logic	[1 : 0]					   pc_mux_sel;
-	logic	[RISCV_ADDR_WIDTH - 1 : 0] exc_pc;
-	logic							   save_epc;
-	logic							   retire_curr_inst;
-	logic 							   deassert_rf_wen_n;
-
 	controller controller
 	(
 		.clk 		      (clk),
@@ -224,11 +242,6 @@ module riscv_core (
 		.target_valid_o     (target_valid)
 	);
 
-	logic	[1 : 0]  csr_op;
-	logic	[11 : 0] csr_addr;
-	logic	[RISCV_WORD_WIDTH - 1 : 0] csr_rdata;
-	logic	[RISCV_ADDR_WIDTH - 1 : 0] epc;
-
 	csr csr (
 		.clk       (clk),
 		.rst_n     (rst_n),
@@ -243,18 +256,7 @@ module riscv_core (
 		.epc_o     (epc)
 	);
 
-	logic lsu_en;
 	assign lsu_en = lsu_w_en | lsu_r_en;
-
-	logic lsu_w_en;
-	logic lsu_r_en; 	
-	logic [1 : 0] lsu_data_type;
-	logic lsu_sign_extend;
-	logic lsu_done;
-	logic lsu_err;
-
-
-	logic [RISCV_WORD_WIDTH - 1 : 0] lsu_rdata;
 
 	lsu lsu
 	(

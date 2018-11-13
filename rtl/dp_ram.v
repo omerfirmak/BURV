@@ -1,35 +1,35 @@
- `timescale 1ns / 1ps
+`timescale 1ns / 10ps
 
-`include "riscv_defines.sv"
-`include "alu_defines.sv"
+`include "riscv_defines.v"
+`include "alu_defines.v"
 
 module dp_ram
 #(
-    parameter ADDR_WIDTH = RISCV_ADDR_WIDTH
+    parameter ADDR_WIDTH = `RISCV_ADDR_WIDTH
 )(
     // Clock and Reset
-    input  logic clk,
+    input  wire clk,
 
-    input  logic a_valid_i,
-    output logic a_ready_o,
+    input  wire a_valid_i,
+    output reg  a_ready_o,
 
-    input  logic [RISCV_ADDR_WIDTH - 1 : 0] a_addr_i,
-    input  logic [RISCV_WORD_WIDTH - 1 : 0] a_wdata_i,
-    input  logic [3 : 0]                    a_we_i,
-    output logic [RISCV_WORD_WIDTH - 1 : 0] a_rdata_o,
+    input  wire [`RISCV_ADDR_WIDTH - 1 : 0] a_addr_i,
+    input  wire [`RISCV_WORD_WIDTH - 1 : 0] a_wdata_i,
+    input  wire [3 : 0]                     a_we_i,
+    output reg  [`RISCV_WORD_WIDTH - 1 : 0] a_rdata_o,
 
-    input  logic b_valid_i,
-    output logic b_ready_o,
+    input  wire b_valid_i,
+    output reg  b_ready_o,
 
-    input  logic [RISCV_ADDR_WIDTH - 1 : 0] b_addr_i,
-    input  logic [RISCV_WORD_WIDTH - 1 : 0] b_wdata_i,
-    input  logic [3 : 0]                    b_we_i,
-    output logic [RISCV_WORD_WIDTH - 1 : 0] b_rdata_o
+    input  wire [`RISCV_ADDR_WIDTH - 1 : 0] b_addr_i,
+    input  wire [`RISCV_WORD_WIDTH - 1 : 0] b_wdata_i,
+    input  wire [3 : 0]                     b_we_i,
+    output reg  [`RISCV_WORD_WIDTH - 1 : 0] b_rdata_o
 );
 
     localparam words = 262144;
 
-    logic [31:0] mem[words];
+    reg [31:0] mem[words];
 
     always @(posedge clk) begin
         a_ready_o <= 0;

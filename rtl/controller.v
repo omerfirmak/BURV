@@ -1,45 +1,45 @@
-`timescale 1ns / 1ps
+`timescale 1ns / 10ps
 
-`include "riscv_defines.sv"
-`include "alu_defines.sv"
+`include "riscv_defines.v"
+`include "alu_defines.v"
 
 module controller (
-	input clk,    // Clock
-	input rst_n,   // Asynchronous reset active low
+	input wire clk,    // Clock
+	input wire rst_n,   // Asynchronous reset active low
 	
-	input logic inst_valid_i,
-	input logic jump_inst_i,
-	input logic branch_inst_i,
+	input wire inst_valid_i,
+	input wire jump_inst_i,
+	input wire branch_inst_i,
 
-	input logic ecall_inst_i,
-	input logic ebreak_inst_i,
-	input logic mret_inst_i,
-	input logic illegal_inst_i,
-	input logic irq_i,
+	input wire ecall_inst_i,
+	input wire ebreak_inst_i,
+	input wire mret_inst_i,
+	input wire illegal_inst_i,
+	input wire irq_i,
 
-	input logic lsu_en_i,
-	input logic lsu_done_i,
-	input logic lsu_err_i,
+	input wire lsu_en_i,
+	input wire lsu_done_i,
+	input wire lsu_err_i,
 
-	input logic comp_result_i,
+	input wire comp_result_i,
 
-	output logic cycle_counter_o,
-	output logic deassert_rf_wen_n_o,
-	output logic retire_o,
+	output reg cycle_counter_o,
+	output reg deassert_rf_wen_n_o,
+	output reg retire_o,
 
-	output logic [1 : 0] pc_mux_sel_o,
-	output logic [RISCV_ADDR_WIDTH - 1 : 0] exc_pc_o,
-	output logic save_epc_o,
-	output logic target_valid_o
+	output reg [1 : 0] pc_mux_sel_o,
+	output reg [`RISCV_ADDR_WIDTH - 1 : 0] exc_pc_o,
+	output reg save_epc_o,
+	output reg target_valid_o
 
 
 );
 	localparam IDLE = 1'b0;
 	localparam MULTI_CYCLE_OP = 1'b1;
 
-	logic CS, NS;
+	reg CS, NS;
 
-	always_comb 
+	always @* 
 	begin
 		NS = CS;
 		exc_pc_o = 0;
@@ -47,26 +47,26 @@ module controller (
 		deassert_rf_wen_n_o = 0;
 		retire_o = inst_valid_i & ~illegal_inst_i;
 		target_valid_o = 0;
-		pc_mux_sel_o = PC_BRANCH_JUMP;
+		pc_mux_sel_o = `PC_BRANCH_JUMP;
 
 		if (inst_valid_i) begin
 			deassert_rf_wen_n_o = 1;
-			unique case (CS)
+			case (CS)
 				IDLE:
 				begin
 					if (irq_i) begin
 						deassert_rf_wen_n_o = 0;
-						pc_mux_sel_o = PC_EXCEPTION;
+						pc_mux_sel_o = `PC_EXCEPTION;
 						exc_pc_o = 12;
 						target_valid_o = 1;
 						save_epc_o = 1;
 					end else begin
-						unique case (1'b1)
+						case (1'b1)
 							lsu_en_i:
 							begin
 								if (lsu_err_i) begin
 									deassert_rf_wen_n_o = 0;
-									pc_mux_sel_o = PC_EXCEPTION;
+									pc_mux_sel_o = `PC_EXCEPTION;
 									exc_pc_o = 16;
 									target_valid_o = 1;
 									save_epc_o = 1;
@@ -89,13 +89,13 @@ module controller (
 							mret_inst_i:
 							begin
 								deassert_rf_wen_n_o = 0;
-								pc_mux_sel_o = PC_EPC;
+								pc_mux_sel_o = `PC_EPC;
 								target_valid_o = 1;
 							end
 							ecall_inst_i:
 							begin
 								deassert_rf_wen_n_o = 0;
-								pc_mux_sel_o = PC_EXCEPTION;
+								pc_mux_sel_o = `PC_EXCEPTION;
 								exc_pc_o = 4;
 								target_valid_o = 1;
 								save_epc_o = 1;
@@ -103,7 +103,7 @@ module controller (
 							illegal_inst_i:
 							begin
 								deassert_rf_wen_n_o = 0;
-								pc_mux_sel_o = PC_EXCEPTION;
+								pc_mux_sel_o = `PC_EXCEPTION;
 								exc_pc_o = 8;
 								target_valid_o = 1;
 								save_epc_o = 1;
@@ -111,9 +111,9 @@ module controller (
 							ebreak_inst_i:
 							begin
 								retire_o = 0;
-								`ifdef VERILATOR
-									$finish;
-								`endif
+								// synopsys translate_off
+								$finish;
+								// synopsys translate_on
 							end
 							default: NS = IDLE;
 						endcase
@@ -136,7 +136,7 @@ module controller (
 	end
 
 
-	always_ff @(posedge clk or negedge rst_n) begin
+	always @(posedge clk or negedge rst_n) begin
 		if(~rst_n) begin
 			CS <= IDLE;
 			cycle_counter_o <= 0;
