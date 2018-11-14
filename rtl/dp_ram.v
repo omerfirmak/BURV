@@ -35,7 +35,7 @@ module dp_ram
         a_ready_o <= 0;
         b_ready_o <= 0;
         
-        if (a_valid_i && !a_ready_o) begin
+        if (a_valid_i) begin
             if (a_we_i[0]) mem[a_addr_i >> 2][7 : 0] <= a_wdata_i[7 : 0];
             if (a_we_i[1]) mem[a_addr_i >> 2][15 : 8] <= a_wdata_i[15 : 8];
             if (a_we_i[2]) mem[a_addr_i >> 2][23 : 16] <= a_wdata_i[23 : 16];
@@ -45,7 +45,7 @@ module dp_ram
             a_ready_o <= 1;
         end
 
-        if (b_valid_i && !b_ready_o) begin
+        if (b_valid_i) begin
             if (b_we_i[0]) mem[b_addr_i >> 2][7 : 0] <= b_wdata_i[7 : 0];
             if (b_we_i[1]) mem[b_addr_i >> 2][15 : 8] <= b_wdata_i[15 : 8];
             if (b_we_i[2]) mem[b_addr_i >> 2][23 : 16] <= b_wdata_i[23 : 16];

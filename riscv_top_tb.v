@@ -14,7 +14,7 @@ module riscv_top_tb (
 
 	initial begin
 		rst_n = 0;
-		#200ns;
+		#10;
 		rst_n = 1;
 	end
 
@@ -29,8 +29,8 @@ module riscv_top_tb (
 	begin
 		$dumpfile("riscv_top.vcd");
 		$dumpvars(0,riscv_top_tb);
-//		for (i = 0; i < 16; i = i + 1)
-//		    $dumpvars(0, riscv_top.riscv_core.reg_file.mem[i]);
+		for (i = 0; i < 16; i = i + 1)
+		    $dumpvars(0, riscv_top.riscv_core.reg_file.mem[i]);
 
 		firm_file = $fopen("test.bin", "rb");
 		if (firm_file != 0) begin
