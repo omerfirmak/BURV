@@ -65,7 +65,7 @@ compile_test:
 	riscv32-unknown-elf-objcopy -O binary test.elf test.bin
 
 dhrystone:
-	make sim_iverilog MODE=soft SRC="dhrystone/dhrystone.c dhrystone/dhrystone_main.c"
+	make sim_verilator MODE=soft SRC="dhrystone/dhrystone.c dhrystone/dhrystone_main.c"
 
 
 COREMARK_SRC = "coremark/core_list_join.c \
@@ -78,7 +78,7 @@ COREMARK_SRC = "coremark/core_list_join.c \
 				coremark/ee_printf.c"
 
 coremark:
-	make sim_iverilog MODE=soft SRC=$(COREMARK_SRC)
+	make sim_verilator MODE=soft SRC=$(COREMARK_SRC)
 
 sim_iverilog: compile_iverilog compile_$(MODE)
 	vvp iv_exec

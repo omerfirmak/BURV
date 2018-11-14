@@ -34,6 +34,7 @@ module fetch_stage (
 	wire realign_buffer_full,
 		 realign_buffer_empty;
 	reg [`RISCV_ADDR_WIDTH - 1 : 0] instr_addr, instr_addr_inc;
+	wire [`RISCV_ADDR_WIDTH - 1 : 0] target_addr;
 
 	realign_buffer buffer
 	(
@@ -56,13 +57,15 @@ module fetch_stage (
 
 	assign instr_valid_o = !realign_buffer_empty;
 
-	assign imem_valid_o = req_i & !realign_buffer_full & rst_n & !target_valid_i;
-	assign imem_addr_o  = imem_ready_i ? instr_addr_inc : instr_addr;
+	assign imem_valid_o = req_i & !realign_buffer_full & rst_n;
+	assign imem_addr_o  = target_valid_i ?  target_addr : (imem_ready_i ? instr_addr_inc : instr_addr);
 	
 	assign imem_wdata_o = 0;
 	assign imem_we_o 	= 0;
 
 	assign instr_addr_inc = instr_addr + 4;
+	assign target_addr = {target_addr_i[`RISCV_WORD_WIDTH - 1 : 2], 2'b00};
+
 
 	always @(posedge clk or negedge rst_n) begin
 		if(!rst_n) begin
@@ -73,7 +76,7 @@ module fetch_stage (
 			end
 
 			if (target_valid_i) begin
-				instr_addr <= {target_addr_i[`RISCV_WORD_WIDTH - 1 : 2], 2'b00};
+				instr_addr <= target_addr;
 			end
 		end
 	end
