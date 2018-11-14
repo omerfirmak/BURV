@@ -57,7 +57,7 @@ module fetch_stage (
 
 	assign instr_valid_o = !realign_buffer_empty;
 
-	assign imem_valid_o = req_i & !realign_buffer_full & rst_n;
+	assign imem_valid_o = ((req_i & !realign_buffer_full) | target_valid_i) & rst_n;
 	assign imem_addr_o  = target_valid_i ?  target_addr : (imem_ready_i ? instr_addr_inc : instr_addr);
 	
 	assign imem_wdata_o = 0;

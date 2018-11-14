@@ -1,7 +1,5 @@
 `timescale 1ns / 10ps
 
-`define DUMP_TRACE 1
-
 module riscv_top_tb (	
 );
 
@@ -29,12 +27,10 @@ module riscv_top_tb (
 
 	initial
 	begin
-`if DUMP_TRACE == 1
 		$dumpfile("riscv_top.vcd");
 		$dumpvars(0,riscv_top_tb);
 		for (i = 0; i < 16; i = i + 1)
 		    $dumpvars(0, riscv_top.riscv_core.reg_file.mem[i]);
-`endif
 		firm_file = $fopen("test.bin", "rb");
 		if (firm_file != 0) begin
 			i = 0;
