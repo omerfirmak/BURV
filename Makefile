@@ -1,28 +1,21 @@
 MODULE = riscv_top
 
-COMMON_SRC = ./rtl/dp_ram.v ./rtl/riscv_top.v
+COMMON_SRC = ./source/dp_ram.v ./source/riscv_top.v
 
 POST_SYNTH=false
 
-VERILOG_SRC = 	./rtl/alu.v 				\
-				./rtl/reg_file.v			\
-				./rtl/riscv_core.v			\
-				./rtl/decoder.v			\
-				./rtl/decompressor.v			\
-				./rtl/controller.v			\
-				./rtl/lsu.v			\
-				./rtl/csr.v			\
-				./rtl/fetch_stage.v		\
-				./rtl/realign_buffer.v
+VERILOG_SRC = 	./source/alu.v 				\
+				./source/reg_file.v			\
+				./source/riscv_core.v			\
+				./source/decoder.v			\
+				./source/decompressor.v			\
+				./source/controller.v			\
+				./source/lsu.v			\
+				./source/csr.v			\
+				./source/fetch_stage.v		\
+				./source/realign_buffer.v
 
-POST_SYNTH_SRC = ./synth/synth.v \
-			  	 ./tech/osu018/osu018_stdcells.v	
-
-ifeq ($(POST_SYNTH),false)
-	SIM_SRC = $(VERILOG_SRC)
-else
-	SIM_SRC = $(POST_SYNTH_SRC)
-endif
+SIM_SRC = $(VERILOG_SRC)
 
 TESTNAMES = $(wildcard ./tests/*.S)
 MODE=soft
@@ -41,13 +34,13 @@ clean:
 	rm -f synth/*.v
 
 verilate: clean
-	verilator --cc --trace $(SIM_SRC) $(COMMON_SRC) -I./rtl/include --exe $(MODULE)_tb.cpp --top-module $(MODULE)
+	verilator --cc --trace $(SIM_SRC) $(COMMON_SRC) -I./source --exe $(MODULE)_tb.cpp --top-module $(MODULE)
 
 compile_sim_verilator: verilate
 	make -j -C obj_dir/ -f V$(MODULE).mk V$(MODULE)
 
 lint:
-	verilator -I./rtl/include --lint-only $(SIM_SRC) $(COMMON_SRC)
+	verilator -I./source --lint-only $(SIM_SRC) $(COMMON_SRC)
 
 compile_soft:
 	riscv32-unknown-elf-gcc -I./software -O3 -g0 -march=rv32ec -mabi=ilp32e -nostartfiles -T software/link.ld software/start.S software/handlers.c $(SRC) -o test.elf
@@ -85,7 +78,7 @@ sim_iverilog: compile_iverilog compile_$(MODE)
 	gtkwave $(MODULE).vcd
 
 compile_iverilog:
-	iverilog -g2012 -I./rtl/include $(SIM_SRC) $(COMMON_SRC) riscv_top_tb.v -o iv_exec
+	iverilog -g2012 -I./source $(SIM_SRC) $(COMMON_SRC) riscv_top_tb.v -o iv_exec
 
 synth:
 	yosys ./synth/yosys_synth.ys
