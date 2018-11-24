@@ -79,7 +79,7 @@ compile_iverilog:
 	iverilog -g2012 -I./source $(SIM_SRC) $(COMMON_SRC) riscv_top_tb.v -o iv_exec
 
 synth:
-	qflow synthesize --tech osu018 riscv_core > synth.out
+	qflow synthesize --tech osu018 riscv_core > /dev/null
 
 sta:
-	qflow sta --tech osu018 riscv_core > sta.out
+	qflow sta --tech osu018 riscv_core > /dev/null
