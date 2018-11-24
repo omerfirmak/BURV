@@ -29,9 +29,7 @@ sim_verilator: compile_sim_verilator compile_$(MODE)
 	gtkwave $(MODULE).vcd
 
 clean:
-	rm -rf obj_dir
-	rm -f *.vcd test.elf test.bin test.dump test.result iv_exec
-	rm -f synth/*.v
+	rm -rf $(shell (cat .gitignore))
 
 verilate: clean
 	verilator --cc --trace $(SIM_SRC) $(COMMON_SRC) -I./source --exe $(MODULE)_tb.cpp --top-module $(MODULE)
@@ -81,4 +79,7 @@ compile_iverilog:
 	iverilog -g2012 -I./source $(SIM_SRC) $(COMMON_SRC) riscv_top_tb.v -o iv_exec
 
 synth:
-	yosys ./synth/yosys_synth.ys
+	qflow synthesize --tech osu018 riscv_core > synth.out
+
+sta:
+	qflow sta --tech osu018 riscv_core > sta.out
