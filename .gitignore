@@ -1,6 +1,8 @@
 obj_dir
 log
 reports
+layout
+synthesis
 
 .magicrc
 iv_exec
