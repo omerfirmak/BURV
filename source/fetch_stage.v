@@ -33,7 +33,8 @@ module fetch_stage (
 
 	wire realign_buffer_full,
 		 realign_buffer_empty;
-	reg [`RISCV_ADDR_WIDTH - 1 : 0] instr_addr, instr_addr_inc;
+	reg [`RISCV_ADDR_WIDTH - 1 : 0] instr_addr;
+	wire [`RISCV_ADDR_WIDTH - 1 : 0] instr_addr_inc;
 	wire [`RISCV_ADDR_WIDTH - 1 : 0] target_addr;
 
 	realign_buffer buffer

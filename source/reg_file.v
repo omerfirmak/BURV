@@ -18,9 +18,9 @@ module reg_file (
     output wire [`RISCV_WORD_WIDTH - 1 : 0] 	read_data_2_o
 );
 
-    wire [`RISCV_WORD_WIDTH - 1 : 0] mem_o[`GP_REG_COUNT];
-    reg  [`RISCV_WORD_WIDTH - 1 : 0] mem[`GP_REG_COUNT];
-    reg                              mem_we[`GP_REG_COUNT];
+    wire [`RISCV_WORD_WIDTH - 1 : 0] mem_o[`GP_REG_COUNT -1 : 0];
+    reg  [`RISCV_WORD_WIDTH - 1 : 0] mem[`GP_REG_COUNT -1 : 0];
+    reg                              mem_we[`GP_REG_COUNT -1 : 0];
     integer i;
 
     assign read_data_1_o = mem_o[read_addr_1_i];

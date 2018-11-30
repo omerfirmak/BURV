@@ -29,7 +29,7 @@ module dp_ram
 
     localparam words = 262144;
 
-    reg [31:0] mem[words];
+    reg [31:0] mem[words -1 : 0];
 
     always @(posedge clk) begin
         a_ready_o <= 0;

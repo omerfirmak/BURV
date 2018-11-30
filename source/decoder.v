@@ -34,7 +34,7 @@ module decoder (
 
 	output reg  [`RISCV_WORD_WIDTH - 1 : 0] imm_o,
 
-	output reg compressed_inst_o,
+	output wire compressed_inst_o,
 	output reg jump_inst_o,
 	output reg branch_inst_o,
 	output reg ecall_inst_o,

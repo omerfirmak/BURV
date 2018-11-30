@@ -22,9 +22,9 @@ module realign_buffer (
 	output wire empty_o
 );
 
-	reg [`RISCV_WORD_WIDTH - 1 : 0] mem[3],			mem_n[3], 		mem_shadow[3]; 
-	reg [2 : 0]					 	mem_valid,		mem_valid_n,	mem_valid_shadow;
-	reg [`RISCV_ADDR_WIDTH - 1 : 0] mem_addr[3],	mem_addr_n[3],	mem_addr_shadow[3];
+	reg [`RISCV_WORD_WIDTH - 1 : 0] mem[2 : 0],			mem_n[2 : 0], 		mem_shadow[2 : 0]; 
+	reg [2 : 0]					 	mem_valid,		    mem_valid_n,	    mem_valid_shadow;
+	reg [`RISCV_ADDR_WIDTH - 1 : 0] mem_addr[2 : 0],	mem_addr_n[2 : 0],	mem_addr_shadow[2 : 0];
 
 	wire [2 : 0]					mem_valid_inc;
 	wire [2 : 0]					mem_we;
@@ -39,7 +39,7 @@ module realign_buffer (
 
 	always @*
 	begin
-		for (i = 0; i < 3; i++) begin
+		for (i = 0; i < 3; i = i + 1) begin
 			mem_shadow[i] = mem[i];
 			mem_valid_shadow[i] = mem_valid[i];
 			mem_addr_shadow[i] = mem_addr[i];
@@ -56,7 +56,7 @@ module realign_buffer (
 			3'b100,
 			3'b101: 
 			begin
-				for (i = 0; i < 2; i++) begin
+				for (i = 0; i < 2; i = i + 1) begin
 					mem_n[i] = mem_shadow[i + 1];
 					mem_valid_n[i] = mem_valid_shadow[i + 1];
 					mem_addr_n[i] = mem_addr_shadow[i + 1];
@@ -68,7 +68,7 @@ module realign_buffer (
 			end
 			default:
 			begin
-				for (i = 0; i < 3; i++) begin
+				for (i = 0; i < 3; i = i + 1) begin
 					mem_n[i] = mem_shadow[i];
 					mem_valid_n[i] = mem_valid_shadow[i];
 					mem_addr_n[i] = mem_addr_shadow[i];
@@ -84,7 +84,7 @@ module realign_buffer (
 			mem_valid <= 0;
 			unaligned <= 0;
 
-			for (i = 0; i < 3; i++) begin
+			for (i = 0; i < 3; i = i + 1) begin
 				mem[i] = 0;
 				mem_addr[i] = 0;
 			end
@@ -95,7 +95,7 @@ module realign_buffer (
 			end else begin
 				unaligned <= unaligned_n;
 
-				for (i = 0; i < 3; i++) begin
+				for (i = 0; i < 3; i = i + 1) begin
 					mem[i] 	<= mem_n[i];
 					mem_valid[i] <= mem_valid_n[i];
 					mem_addr[i] <= mem_addr_n[i];
