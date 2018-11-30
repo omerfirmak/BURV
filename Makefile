@@ -7,13 +7,15 @@ POST_SYNTH=false
 VERILOG_SRC = 	./source/alu.v 				\
 				./source/reg_file.v			\
 				./source/riscv_core.v			\
+				./source/riscv_core_axi.v			\
 				./source/decoder.v			\
 				./source/decompressor.v			\
 				./source/controller.v			\
 				./source/lsu.v			\
 				./source/csr.v			\
 				./source/fetch_stage.v		\
-				./source/realign_buffer.v
+				./source/realign_buffer.v 	\
+				./source/axilite_master.v
 
 SIM_SRC = $(VERILOG_SRC)
 
@@ -38,7 +40,7 @@ compile_sim_verilator: verilate
 	make -j -C obj_dir/ -f V$(MODULE).mk V$(MODULE)
 
 lint:
-	verilator -I./source --lint-only $(SIM_SRC) $(COMMON_SRC)
+	verilator -I./source --lint-only $(SIM_SRC) $(COMMON_SRC) --top-module $(MODULE)
 
 compile_soft:
 	riscv32-unknown-elf-gcc -I./software -O3 -g0 -march=rv32ec -mabi=ilp32e -nostartfiles -T software/link.ld software/start.S software/handlers.c $(SRC) -o test.elf
