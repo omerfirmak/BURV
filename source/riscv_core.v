@@ -59,9 +59,11 @@ module riscv_core (
 	wire                         	 		ecall_inst;
 	wire                         	 		ebreak_inst;
 	wire                         	 		mret_inst;
-	wire                         	 		compressed_inst;
 	wire                         	 		jump_inst;
 	wire                         	 		branch_inst;
+
+	wire                         	 		compressed_inst;
+	wire                         	 		illegal_compressed_inst;
 
 	wire                         	 		cycle_counter;
 
@@ -151,15 +153,17 @@ module riscv_core (
 		.clk 		   (clk),
 		.rst_n		   (rst_n),
 
-		.retired_inst_len_i (retire_curr_inst ? (2'b10 ^ {2{compressed_inst}}) : 2'h0),
+		.retire_inst_i (retire_curr_inst),
 
 		.req_i		   (1'b1),
 		.target_addr_i (target_addr),
 		.target_valid_i(target_valid),
 
-		.instr_o       (instr),
-		.instr_addr_o  (instr_addr),
-		.instr_valid_o (instr_valid),
+		.instr_o       				(instr),
+		.instr_addr_o  				(instr_addr),
+		.instr_valid_o 				(instr_valid),
+		.compressed_inst_o        	(compressed_inst),
+		.illegal_compressed_inst_o	(illegal_compressed_inst),
 
 		// Instruction memory interface
 		.imem_valid_o  (imem_valid_o),
@@ -176,8 +180,10 @@ module riscv_core (
 		.clk 		    (clk),
 		.rst_n		    (rst_n),
 
-		.instr_i        (instr),
-		.instr_addr_i   (instr_addr),
+		.instr_i        			(instr),
+		.instr_addr_i   			(instr_addr),
+		.compressed_inst_i  		(compressed_inst),
+		.illegal_compressed_inst_i	(illegal_compressed_inst),
 
 		.cycle_counter_i(cycle_counter),
 
@@ -202,7 +208,6 @@ module riscv_core (
 
 		.imm_o            (imm_val),
 
-		.compressed_inst_o  (compressed_inst),
 		.jump_inst_o        (jump_inst),
 		.branch_inst_o      (branch_inst),
 		.ecall_inst_o       (ecall_inst),

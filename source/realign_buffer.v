@@ -22,6 +22,9 @@ module realign_buffer (
 	output wire empty_o
 );
 
+	wire valid_aligned, valid_unaligned;
+	wire [`RISCV_WORD_WIDTH - 1 : 0] instr_aligned, instr_unaligned;
+
 	reg [`RISCV_WORD_WIDTH - 1 : 0] mem[2 : 0],			mem_n[2 : 0], 		mem_shadow[2 : 0]; 
 	reg [2 : 0]					 	mem_valid,		    mem_valid_n,	    mem_valid_shadow;
 	reg [`RISCV_ADDR_WIDTH - 1 : 0] mem_addr[2 : 0],	mem_addr_n[2 : 0],	mem_addr_shadow[2 : 0];
@@ -104,10 +107,16 @@ module realign_buffer (
 		end
 	end
 
-	assign full_o = &mem_valid;
-	assign empty_o = unaligned ? ~mem_valid[1] : ~mem_valid[0];
+	assign valid_aligned   = mem_valid[0] || write_en_i;
+	assign valid_unaligned = mem_valid[1] || (mem_valid[0] && write_en_i);
 
-	assign instr_o = unaligned ? {mem[1][15 : 0], mem[0][31 : 16]} : mem[0];
-	assign addr_o = {mem_addr[0][31 : 2], unaligned, 1'b0};
+	assign instr_aligned   = mem_valid[0] ? mem[0] : instr_i;
+	assign instr_unaligned = {(mem_valid[1] ? mem[1][15 : 0] : instr_i[15 : 0]), mem[0][31 : 16]};
+
+	assign full_o = &mem_valid;
+	assign empty_o = ~(unaligned ? valid_unaligned : valid_aligned);
+
+	assign instr_o = unaligned ? instr_unaligned : instr_aligned;
+	assign addr_o = {(mem_valid[0] ? mem_addr[0][31 : 2] : addr_i[31 : 2]), unaligned, 1'b0};
 
 endmodule
