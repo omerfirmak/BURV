@@ -59,6 +59,8 @@ module axilite_master (
 	always @(posedge clk or negedge rst_n) begin
 		if (!rst_n) begin
 			ack_awvalid <= 0;
+			ack_arvalid <= 0;
+			ack_wvalid <= 0;
 		end else begin
 			xfer_done <= valid_i && ready_o;
 			if (axi_awready && axi_awvalid)
