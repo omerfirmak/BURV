@@ -38,7 +38,7 @@ module fetch_stage (
 	wire realign_buffer_full,
 		 realign_buffer_empty;
 
-	wire tmp;
+	wire take_next;
 
 	reg [`RISCV_ADDR_WIDTH - 1 : 0]  fetch_addr;
 	wire [`RISCV_ADDR_WIDTH - 1 : 0] fetch_addr_inc;
@@ -51,11 +51,11 @@ module fetch_stage (
 		.clear_i      	(target_valid_i),
 		.read_offset_i	(target_addr_i[1]),
 
-		.write_en_i 	(imem_ready_i & imem_valid_o),
+		.write_en_i 	(imem_ready_i),
 		.instr_i 		(imem_rdata_i),
 		.addr_i   		(fetch_addr),
 	
-		.read_en_i 		(tmp ? (2'b10 ^ {2{compressed_inst}}) : 2'h0),
+		.read_en_i 		(take_next ? (2'b10 ^ {2{compressed_inst}}) : 2'h0),
 		.instr_o		(instr),
 		.addr_o   		(instr_addr),
 
@@ -72,7 +72,7 @@ module fetch_stage (
 	assign fetch_addr_inc = fetch_addr + 4;
 	assign target_addr = {target_addr_i[`RISCV_WORD_WIDTH - 1 : 2], 2'b00};
 
-	assign tmp = ~realign_buffer_empty && (~instr_valid_o || retire_inst_i);
+	assign take_next = ~realign_buffer_empty && (~instr_valid_o || retire_inst_i);
 
 
 	always @(posedge clk or negedge rst_n) begin
@@ -95,7 +95,7 @@ module fetch_stage (
 				instr_addr_o <= 0;
 				compressed_inst_o <= 0;
 				illegal_compressed_inst_o <= 0;
-			end else if (tmp) begin
+			end else if (take_next) begin
 				instr_valid_o <= ~realign_buffer_empty;
 				instr_o <= instr_decompressed;
 				instr_addr_o <= instr_addr;
