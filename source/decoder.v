@@ -24,7 +24,7 @@ module decoder (
 
 	output reg [`ALU_OP_WIDTH -1 : 0] alu_op_o,
     output reg [1 : 0] 			   	  operand_a_sel_o,
-    output reg [1 : 0] 			      operand_b_sel_o,
+    output reg  			      	  operand_b_sel_o,
 
 	output reg lsu_w_en_o,
 	output reg lsu_r_en_o, 	
@@ -91,8 +91,8 @@ module decoder (
 		
 		alu_op_o = `ALU_AND;
 		imm_sel = `IMM_I;
-		operand_a_sel_o = `ALU_OP_SEL_RF_1;
-		operand_b_sel_o = `ALU_OP_SEL_RF_2;
+		operand_a_sel_o = `ALU_OP_SEL_RF;
+		operand_b_sel_o = `ALU_OP_SEL_RF;
 		
 		rf_write_sel_o  = `RF_WRITE_ALU_OUT;
 		rf_we_o = 0;
@@ -186,7 +186,7 @@ module decoder (
 					end
 					1: 	
 					begin
-						operand_a_sel_o = `ALU_OP_SEL_RF_1;
+						operand_a_sel_o = `ALU_OP_SEL_RF;
 						imm_sel = `IMM_I;
 					end
 					default: illegal_inst = 1'b1;
@@ -213,7 +213,6 @@ module decoder (
 			`OPCODE_LOAD:
 			begin
 				alu_op_o = `ALU_ADD;
-				operand_a_sel_o = `ALU_OP_SEL_RF_1;
 				imm_sel = `IMM_I;
 				operand_b_sel_o = `ALU_OP_SEL_IMM;
 
@@ -232,7 +231,6 @@ module decoder (
 			`OPCODE_STORE:
 			begin
 				alu_op_o = `ALU_ADD;
-				operand_a_sel_o = `ALU_OP_SEL_RF_1;
 				imm_sel = `IMM_S;
 				operand_b_sel_o = `ALU_OP_SEL_IMM;
 
@@ -247,8 +245,6 @@ module decoder (
 			`OPCODE_BRANCH:
 			begin
 				branch_inst_o = 1;
-				operand_a_sel_o = `ALU_OP_SEL_RF_1;
-				operand_b_sel_o = `ALU_OP_SEL_RF_2;
 
 				case (cycle_counter_i)
 					0:
@@ -293,7 +289,7 @@ module decoder (
 						default: illegal_inst = 1'b1;
 					endcase
 
-					operand_a_sel_o = sub_func_3[2] ? `ALU_OP_SEL_IMM : `ALU_OP_SEL_RF_1;
+					operand_a_sel_o = sub_func_3[2] ? `ALU_OP_SEL_IMM : `ALU_OP_SEL_RF;
 
 					rf_we_o = 1;
 					rf_write_sel_o = `RF_WRITE_CSR_OUT;

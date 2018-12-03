@@ -53,10 +53,9 @@
 `define IMM_SHAMT  3'h6
 `define IMM_PC_INC  3'h7
 
-`define ALU_OP_SEL_RF_1  2'h0
-`define ALU_OP_SEL_RF_2  2'h1
-`define ALU_OP_SEL_IMM  2'h2
-`define ALU_OP_SEL_PC  2'h3
+`define ALU_OP_SEL_RF  0
+`define ALU_OP_SEL_IMM  1
+`define ALU_OP_SEL_PC  2
 
 `define RF_WRITE_ALU_OUT  2'h0
 `define RF_WRITE_LSU_OUT  2'h1

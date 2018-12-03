@@ -33,7 +33,7 @@ module riscv_core (
 	reg  [`RISCV_WORD_WIDTH - 1 : 0] 		alu_operand_a;
 	wire [1 : 0] 							alu_operand_a_sel;
 	reg  [`RISCV_WORD_WIDTH - 1 : 0] 		alu_operand_b;
-	wire [1 : 0] 							alu_operand_b_sel;
+	wire 									alu_operand_b_sel;
 	wire [`RISCV_WORD_WIDTH - 1 : 0] 		alu_result;
 
 	// Register File signals
@@ -99,18 +99,15 @@ module riscv_core (
 	always @*
 	begin
 		case (alu_operand_a_sel)
-			`ALU_OP_SEL_RF_1: alu_operand_a = rf_read_data_1;
-			`ALU_OP_SEL_RF_2: alu_operand_a = rf_read_data_2;
+			`ALU_OP_SEL_RF: alu_operand_a = rf_read_data_1;
 			`ALU_OP_SEL_IMM:  alu_operand_a = imm_val;
 			`ALU_OP_SEL_PC:   alu_operand_a = instr_addr;
 			default: 		 alu_operand_a = rf_read_data_1;
 		endcase
 		
 		case (alu_operand_b_sel)
-			`ALU_OP_SEL_RF_1: alu_operand_b = rf_read_data_1;
-			`ALU_OP_SEL_RF_2: alu_operand_b = rf_read_data_2;
+			`ALU_OP_SEL_RF: alu_operand_b = rf_read_data_2;
 			`ALU_OP_SEL_IMM:  alu_operand_b = imm_val;
-			`ALU_OP_SEL_PC:   alu_operand_b = instr_addr;
 			default: 		 alu_operand_b = rf_read_data_2;
 		endcase
 

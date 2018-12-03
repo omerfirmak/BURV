@@ -1,7 +1,7 @@
 `ifndef _ALU_DEFINES_
 `define _ALU_DEFINES_
 
-`define ALU_OP_WIDTH  5
+`define ALU_OP_WIDTH  4
 
 `define ALU_PASS  0
 `define ALU_ADD  1

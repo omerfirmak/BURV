@@ -29,12 +29,12 @@ module lsu (
 );
 	reg [3 : 0] dmem_we;
 	reg 		misaligned;
-	wire		out_of_bounds;
-
+	
 	always @*
 	begin
 		misaligned = 1'b0;
 		dmem_we = 4'h0;
+		
 		case ({addr_i[1 : 0], type_i})
 			{2'b00, `DATA_WORD}:		dmem_we = 4'b1111;
 			{2'b00, `DATA_HALF_WORD}:	dmem_we = 4'b0011;
@@ -48,8 +48,7 @@ module lsu (
 	end
 
 	assign dmem_we_o = w_en_i == 1'b1 ? dmem_we : 4'h0;
-	assign out_of_bounds = |addr_i[31 : 20];
-	assign err_o = misaligned | out_of_bounds;
+	assign err_o = misaligned;
 
 	always @*
 	begin
