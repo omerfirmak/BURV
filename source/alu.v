@@ -23,7 +23,10 @@ module alu (
      */
     reg [`RISCV_WORD_WIDTH : 0] adder_in_a,
                                 adder_in_b,
-                                adder_out;
+                                adder_result;
+
+    reg [`RISCV_WORD_WIDTH -1 : 0] adder_out;
+
     reg negate_op_b;
 
     always @*
@@ -31,7 +34,8 @@ module alu (
         negate_op_b = alu_op_i == `ALU_SUB;
         adder_in_a = {operand_a_i, 1'b1};
         adder_in_b = {operand_b_i ^ {32{negate_op_b}}, negate_op_b};
-        adder_out = adder_in_a + adder_in_b;
+        adder_result = adder_in_a + adder_in_b;
+        adder_out = adder_result[`RISCV_WORD_WIDTH : 1];
     end
     
     /*
@@ -69,8 +73,8 @@ module alu (
             `ALU_NE:  comp_result = ~is_equal;
             `ALU_GES: comp_result = is_greater_signed | is_equal;
             `ALU_GEU: comp_result = is_greater | is_equal;
-            `ALU_LTS: comp_result = ~(is_greater_signed | is_equal);
-            `ALU_LTU: comp_result = ~(is_greater | is_equal);
+            `ALU_LTS: comp_result = ~is_greater_signed && ~is_equal;
+            `ALU_LTU: comp_result = ~is_greater && ~is_equal;
             default: comp_result = 1'bx;
         endcase
     end
@@ -84,7 +88,7 @@ module alu (
          case (alu_op_i)
             `ALU_PASS: alu_result_o = operand_a_i;
             `ALU_ADD,
-            `ALU_SUB: alu_result_o = adder_out[`RISCV_WORD_WIDTH : 1];
+            `ALU_SUB: alu_result_o = adder_out;
             
             `ALU_SRA, 
             `ALU_SRL, 

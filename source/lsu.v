@@ -35,14 +35,27 @@ module lsu (
 		misaligned = 1'b0;
 		dmem_we = 4'h0;
 		
-		case ({addr_i[1 : 0], type_i})
-			{2'b00, `DATA_WORD}:		dmem_we = 4'b1111;
-			{2'b00, `DATA_HALF_WORD}:	dmem_we = 4'b0011;
-			{2'b10, `DATA_HALF_WORD}:	dmem_we = 4'b1100;
-			{2'b00, `DATA_BYTE}:		dmem_we = 4'b0001;
-			{2'b01, `DATA_BYTE}:		dmem_we = 4'b0010;
-			{2'b10, `DATA_BYTE}:		dmem_we = 4'b0100;
-			{2'b11, `DATA_BYTE}:		dmem_we = 4'b1000;
+		case (type_i)
+			`DATA_WORD:
+			begin
+				dmem_we = 4'b1111;
+				if (addr_i[1 : 0] != 2'b0) misaligned = 1'b1;
+			end
+			`DATA_HALF_WORD: begin
+				case (addr_i[1 : 0])
+					2'b00:		dmem_we = 4'b0011;
+					2'b10:		dmem_we = 4'b1100;
+					default: 	misaligned = 1'b1;		
+				endcase
+			end
+			`DATA_BYTE: begin
+				case (addr_i[1 : 0])
+					2'b00:		dmem_we = 4'b0001;
+					2'b01:		dmem_we = 4'b0010;
+					2'b10:		dmem_we = 4'b0100;
+					2'b11:		dmem_we = 4'b1000;
+				endcase
+			end
 			default: misaligned = 1'b1;
 		endcase
 	end
@@ -52,7 +65,6 @@ module lsu (
 
 	always @*
 	begin
-		rdata_o = 'bx;
 		case ({sign_extend_i, addr_i[1 : 0], type_i})
 			{1'b0, 2'b00, `DATA_WORD},
 			{1'b1, 2'b00, `DATA_WORD}:		rdata_o = dmem_rdata_i;
@@ -72,23 +84,22 @@ module lsu (
 			{1'b1, 2'b01, `DATA_BYTE}:		rdata_o = {{24{dmem_rdata_i[15]}}, dmem_rdata_i[15 : 8]};
 			{1'b1, 2'b10, `DATA_BYTE}:		rdata_o = {{24{dmem_rdata_i[23]}}, dmem_rdata_i[23 : 16]};
 			{1'b1, 2'b11, `DATA_BYTE}:		rdata_o = {{24{dmem_rdata_i[31]}}, dmem_rdata_i[31 : 24]};
-			default:;
+			default: rdata_o = 'bx;
 		endcase
 	end
 
 
 	always @*
 	begin
-		dmem_wdata_o = 'bx;
 		case ({addr_i[1 : 0], type_i})
 			{2'b00, `DATA_WORD}:		dmem_wdata_o = wdata_i;
-			{2'b00, `DATA_HALF_WORD}:dmem_wdata_o = {16'h0, wdata_i[15 : 0]};
-			{2'b10, `DATA_HALF_WORD}:dmem_wdata_o = {wdata_i[15 : 0], 16'h0};
+			{2'b00, `DATA_HALF_WORD}:	dmem_wdata_o = {16'h0, wdata_i[15 : 0]};
+			{2'b10, `DATA_HALF_WORD}:	dmem_wdata_o = {wdata_i[15 : 0], 16'h0};
 			{2'b00, `DATA_BYTE}:		dmem_wdata_o = {24'h0, wdata_i[7 : 0]};
 			{2'b01, `DATA_BYTE}:		dmem_wdata_o = {16'h0, wdata_i[7 : 0], 8'h0};
 			{2'b10, `DATA_BYTE}:		dmem_wdata_o = {8'h0, wdata_i[7 : 0], 16'h0};
 			{2'b11, `DATA_BYTE}:		dmem_wdata_o = {wdata_i[7 : 0], 24'h0};
-			default :;
+			default: dmem_wdata_o = 'bx;
 		endcase
 	end
 
