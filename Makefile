@@ -43,7 +43,7 @@ lint:
 	verilator -I./source --lint-only $(SIM_SRC) $(COMMON_SRC) --top-module $(MODULE)
 
 compile_soft:
-	riscv32-unknown-elf-gcc -I./software -O3 -g0 -march=rv32ec -mabi=ilp32e -nostartfiles -T software/link.ld software/start.S software/handlers.c $(SRC) -o test.elf
+	riscv32-unknown-elf-gcc -I./software -O3 -g0 -falign-functions=16 -funroll-all-loops -march=rv32ec -mabi=ilp32e -nostartfiles -T software/link.ld software/start.S software/handlers.c $(SRC) -o test.elf
 	riscv32-unknown-elf-objdump --disassembler-options=no-aliases,numeric -D test.elf > test.dump
 	riscv32-unknown-elf-objcopy -O binary test.elf test.bin
 

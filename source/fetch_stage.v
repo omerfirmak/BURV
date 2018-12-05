@@ -54,8 +54,8 @@ module fetch_stage (
 		.write_en_i 	(imem_ready_i),
 		.instr_i 		(imem_rdata_i),
 		.addr_i   		(fetch_addr),
-	
-		.read_en_i 		(take_next ? (2'b10 ^ {2{compressed_inst}}) : 2'h0),
+
+		.read_en_i 		((take_next && ~realign_buffer_empty) ? (2'b10 ^ {2{compressed_inst}}) : 2'h0),
 		.instr_o		(instr),
 		.addr_o   		(instr_addr),
 
@@ -72,7 +72,7 @@ module fetch_stage (
 	assign fetch_addr_inc = fetch_addr + 4;
 	assign target_addr = {target_addr_i[`RISCV_WORD_WIDTH - 1 : 2], 2'b00};
 
-	assign take_next = ~realign_buffer_empty && (~instr_valid_o || retire_inst_i);
+	assign take_next = ~instr_valid_o || retire_inst_i;
 
 
 	always @(posedge clk or negedge rst_n) begin
