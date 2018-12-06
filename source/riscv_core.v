@@ -77,6 +77,7 @@ module riscv_core (
 	wire [11 : 0] 							csr_addr;
 	wire [`RISCV_WORD_WIDTH - 1 : 0] 		csr_rdata;
 	wire [`RISCV_ADDR_WIDTH - 1 : 0] 		epc;
+	wire 									interrupt_enable;
 
 	wire 									lsu_en;
 	wire [`RISCV_WORD_WIDTH - 1 : 0] 		lsu_rdata;
@@ -226,7 +227,7 @@ module riscv_core (
 		.ebreak_inst_i    (ebreak_inst),
 		.mret_inst_i      (mret_inst),
 		.illegal_inst_i   (illegal_inst),
-		.irq_i            (irq_i),
+		.irq_i            (irq_i & interrupt_enable),
 
 		.lsu_en_i         (lsu_en),
 		.lsu_done_i       (lsu_done),
@@ -255,7 +256,8 @@ module riscv_core (
 
 		.save_epc_i(save_epc),
 		.pc_i      (instr_addr),
-		.epc_o     (epc)
+		.epc_o     (epc),
+		.interrupt_enable_o (interrupt_enable)
 	);
 
 	assign lsu_en = lsu_w_en | lsu_r_en;

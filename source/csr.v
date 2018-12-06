@@ -14,8 +14,9 @@ module csr (
 
 	input  wire 		 save_epc_i,
 	input  wire [31 : 0] pc_i,
-	output wire [31 : 0] epc_o
+	output wire [31 : 0] epc_o,
 
+	output wire 		 interrupt_enable_o
 );
 
 	reg  [31 : 0] mepc,    mepc_n;
@@ -81,5 +82,6 @@ module csr (
 	end
 
 	assign epc_o = mepc;
+	assign interrupt_enable_o = mstatus[`MSTATUS_MIE];
 
 endmodule
