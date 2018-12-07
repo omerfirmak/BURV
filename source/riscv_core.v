@@ -176,7 +176,6 @@ module riscv_core (
 	decoder decoder 
 	(
 		.instr_i        			(instr),
-		.instr_addr_i   			(instr_addr),
 		.compressed_inst_i  		(compressed_inst),
 		.illegal_compressed_inst_i	(illegal_compressed_inst),
 

@@ -88,8 +88,8 @@ module realign_buffer (
 			unaligned <= 0;
 
 			for (i = 0; i < 3; i = i + 1) begin
-				mem[i] = 0;
-				mem_addr[i] = 0;
+				mem[i] <= 0;
+				mem_addr[i] <= 0;
 			end
 		end else begin
 			if (clear_i) begin

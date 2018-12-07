@@ -6,7 +6,6 @@
 module decoder (
 	// From fetch stage
 	input wire [`RISCV_WORD_WIDTH - 1 : 0] instr_i,
-	input wire [`RISCV_ADDR_WIDTH - 1 : 0] instr_addr_i,
 	input wire compressed_inst_i,
 	input wire illegal_compressed_inst_i,
 
