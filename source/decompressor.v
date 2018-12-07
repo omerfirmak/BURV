@@ -4,9 +4,6 @@
 `include "alu_defines.v"
 
 module decompressor (
-	input wire clk,    // Clock
-	input wire rst_n,  // Asynchronous reset active low
-	
 	input  wire [`RISCV_WORD_WIDTH -1 : 0] instr_i,
 	output wire [`RISCV_WORD_WIDTH -1 : 0] instr_o,
 	output wire    				 	       compressed_inst_o,

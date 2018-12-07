@@ -4,9 +4,6 @@
 `include "alu_defines.v"
 
 module decoder (
-	input wire clk,    // Clock
-	input wire rst_n,  // Asynchronous reset active low
-
 	// From fetch stage
 	input wire [`RISCV_WORD_WIDTH - 1 : 0] instr_i,
 	input wire [`RISCV_ADDR_WIDTH - 1 : 0] instr_addr_i,
