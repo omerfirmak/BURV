@@ -4,9 +4,6 @@
 `include "alu_defines.v"
 
 module lsu (
-	input wire clk,    // Clock
-	input wire rst_n,  // Asynchronous reset active low
-	
 	input wire w_en_i,
 	input wire r_en_i, 	
 	input wire [1 : 0] type_i,

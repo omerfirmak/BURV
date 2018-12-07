@@ -175,9 +175,6 @@ module riscv_core (
 
 	decoder decoder 
 	(
-		.clk 		    (clk),
-		.rst_n		    (rst_n),
-
 		.instr_i        			(instr),
 		.instr_addr_i   			(instr_addr),
 		.compressed_inst_i  		(compressed_inst),
@@ -264,9 +261,6 @@ module riscv_core (
 
 	lsu lsu
 	(
-		.clk 		  (clk),
-		.rst_n		  (rst_n),
-
 		.w_en_i       (lsu_w_en & instr_valid & ~save_epc),
 		.r_en_i       (lsu_r_en & instr_valid & ~save_epc),
 		.type_i       (lsu_data_type),

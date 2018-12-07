@@ -107,16 +107,10 @@ module fetch_stage (
 
 	decompressor decompressor 
 	(
-		.clk              (clk),
-		.rst_n            (rst_n),		
 		.instr_i          (instr),
 		.instr_o          (instr_decompressed),
 		.compressed_inst_o(compressed_inst),
 		.illegal_inst_o   (illegal_compressed_inst)
 	);
-
-
-
-
 
 endmodule
