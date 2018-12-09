@@ -1,6 +1,6 @@
 MODULE = riscv_top
 
-COMMON_SRC = ./source/dp_ram.v ./source/riscv_top.v
+COMMON_SRC = ./source/mem_bus_arbiter.v ./source/dp_ram.v ./source/dp_rom.v ./source/riscv_top.v
 
 POST_SYNTH=false
 

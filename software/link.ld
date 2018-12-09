@@ -131,4 +131,3 @@ SECTIONS
         _end = .;
     } > ram
 }
-
