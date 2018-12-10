@@ -48,5 +48,49 @@ module mem_bus_arbiter
 
 	wire [1 : 0] bus_sel = s_addr_i[LOWEST_BUS_SEL_BIT + 1: LOWEST_BUS_SEL_BIT];
 
+	assign m0_addr_o = s_addr_i;
+	assign m1_addr_o = s_addr_i;
+	assign m2_addr_o = s_addr_i;
+
+	assign m0_wdata_o = s_wdata_i;
+	assign m1_wdata_o = s_wdata_i;
+	assign m2_wdata_o = s_wdata_i;
+
+	assign m0_we_o = s_we_i;
+	assign m1_we_o = s_we_i;
+	assign m2_we_o = s_we_i;
+
+	always @*
+	begin
+		m0_valid_o = 0;
+		m1_valid_o = 0;
+		m2_valid_o = 0;
+
+		case (bus_sel)
+			2'b00: 
+			begin
+				m0_valid_o = s_valid_i;
+				s_ready_o  = m0_ready_i;
+				s_rdata_o  = m0_rdata_i;
+			end
+			2'b01:
+			begin
+				m1_valid_o = s_valid_i;
+				s_ready_o  = m1_ready_i;
+				s_rdata_o  = m1_rdata_i;
+			end
+			2'b10:
+			begin
+				m2_valid_o = s_valid_i;
+				s_ready_o  = m2_ready_i;
+				s_rdata_o  = m2_rdata_i;
+			end
+			default:
+			begin
+				s_ready_o  = 1;
+				s_rdata_o  = 0;
+			end
+		endcase
+	end
 
 endmodule
