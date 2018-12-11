@@ -1,7 +1,7 @@
 #include "Vriscv_top.h"
 
 #include "Vriscv_top_riscv_top.h"
-#include "Vriscv_top_dp_ram.h"
+#include "Vriscv_top_dp_ram__S10000.h"
 #include "Vriscv_top_reg_file.h"
 #include "Vriscv_top_riscv_core.h"
 

@@ -26,8 +26,10 @@ module riscv_top (
 	wire [3 : 0] 					  dmem_we;
 	wire [`RISCV_WORD_WIDTH - 1 : 0] dmem_rdata;
 
-	dp_ram dp_ram
-	(
+	dp_ram
+	#(
+	    .SIZE_BYTES(65536)
+	) dp_ram (
 	    .clk      (clk),
 
 		// Instruction memory interface
