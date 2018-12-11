@@ -7,6 +7,8 @@ module mem_bus_arbiter
 #(
     parameter LOWEST_BUS_SEL_BIT = 11
 )(
+	input wire clk,    	// Clock
+	input wire rst_n,    // Asynchronous reset active low
 
 	// Slave Port
     input  wire s_valid_i,
@@ -45,8 +47,7 @@ module mem_bus_arbiter
 	input  wire [`RISCV_WORD_WIDTH - 1 : 0] m2_rdata_i
 
 );
-
-	wire [1 : 0] bus_sel = s_addr_i[LOWEST_BUS_SEL_BIT + 1: LOWEST_BUS_SEL_BIT];
+	reg dummy_ready;
 
 	assign m0_addr_o = s_addr_i;
 	assign m1_addr_o = s_addr_i;
@@ -66,31 +67,35 @@ module mem_bus_arbiter
 		m1_valid_o = 0;
 		m2_valid_o = 0;
 
-		case (bus_sel)
-			2'b00: 
+		s_ready_o  = (m0_ready_i || m1_ready_i || m2_ready_i);
+		s_rdata_o  = 0;
+
+		case (s_addr_i[`RISCV_ADDR_WIDTH - 1 : LOWEST_BUS_SEL_BIT])
+			0: 
 			begin
 				m0_valid_o = s_valid_i;
-				s_ready_o  = m0_ready_i;
 				s_rdata_o  = m0_rdata_i;
 			end
-			2'b01:
+			1:
 			begin
 				m1_valid_o = s_valid_i;
-				s_ready_o  = m1_ready_i;
 				s_rdata_o  = m1_rdata_i;
 			end
-			2'b10:
+			2:
 			begin
 				m2_valid_o = s_valid_i;
-				s_ready_o  = m2_ready_i;
 				s_rdata_o  = m2_rdata_i;
 			end
-			default:
-			begin
-				s_ready_o  = 1;
-				s_rdata_o  = 0;
-			end
+			default:;
 		endcase
+	end
+
+	always @(posedge clk or negedge rst_n) begin
+		if(~rst_n) begin
+			dummy_ready <= 0;
+		end else begin
+			dummy_ready <= s_valid_i;
+		end
 	end
 
 endmodule
