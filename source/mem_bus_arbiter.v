@@ -5,7 +5,7 @@
 
 module mem_bus_arbiter
 #(
-    parameter LOWEST_BUS_SEL_BIT = 11
+    parameter LOWEST_BUS_SEL_BIT = 20
 )(
 	input wire clk,    	// Clock
 	input wire rst_n,    // Asynchronous reset active low

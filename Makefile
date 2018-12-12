@@ -1,6 +1,6 @@
-MODULE = riscv_fpga_top
+MODULE = riscv_top
 
-COMMON_SRC = ./source/mem_bus_arbiter.v ./source/dp_ram.v ./source/dp_rom.v ./source/riscv_top.v  ./source/riscv_fpga_top.v
+COMMON_SRC = ./source/mem_bus_arbiter.v ./source/dp_ram.v ./source/dp_rom.v ./source/riscv_top.v
 
 POST_SYNTH=false
 
@@ -24,6 +24,10 @@ SIM_SRC = $(VERILOG_SRC)
 TESTNAMES = $(wildcard ./tests/*.S)
 MODE=soft
 
+BOOT_ADDRESS = 0
+MEM_SIZE = 65536
+DEFINE_FLAGS = -DBOOT_ADDRESS=$(BOOT_ADDRESS) -DMEM_SIZE=$(MEM_SIZE)
+
 .PHONY: coremark dhrystone synth
 
 all: sim_iverilog
@@ -36,13 +40,13 @@ clean:
 	rm -rf $(shell (cat .gitignore))
 
 verilate: clean
-	verilator --cc --trace $(SIM_SRC) $(COMMON_SRC) -I./source --exe $(MODULE)_tb.cpp --top-module $(MODULE)
+	verilator $(DEFINE_FLAGS) --cc --trace $(SIM_SRC) $(COMMON_SRC) -I./source --exe $(MODULE)_tb.cpp --top-module $(MODULE)
 
 compile_sim_verilator: verilate
 	make -j -C obj_dir/ -f V$(MODULE).mk V$(MODULE)
 
 lint:
-	verilator -I./source --lint-only $(SIM_SRC) $(COMMON_SRC) --top-module $(MODULE)
+	verilator $(DEFINE_FLAGS) -I./source --lint-only $(SIM_SRC) $(COMMON_SRC) --top-module $(MODULE)
 
 compile_soft:
 	riscv32-unknown-elf-gcc -I./software -O3 -g0 -falign-functions=16 -funroll-all-loops -march=rv32ec -mabi=ilp32e -nostartfiles -T software/link.ld software/start.S software/handlers.c $(SRC) -o test.elf
@@ -80,7 +84,7 @@ sim_iverilog: compile_iverilog compile_$(MODE)
 	gtkwave $(MODULE).vcd
 
 compile_iverilog:
-	iverilog -g2012 -I./source $(SIM_SRC) $(COMMON_SRC) riscv_top_tb.v -o iv_exec
+	iverilog $(DEFINE_FLAGS)  -g2012 -I./source $(SIM_SRC) $(COMMON_SRC) riscv_top_tb.v -o iv_exec
 
 synth:
 	qflow synthesize --tech osu018 riscv_core > /dev/null

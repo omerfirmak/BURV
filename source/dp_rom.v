@@ -24,11 +24,11 @@ module dp_rom
     input  wire [`RISCV_ADDR_WIDTH - 1 : 0] b_addr_i,
     output reg  [`RISCV_WORD_WIDTH - 1 : 0] b_rdata_o
 );
-
+/*
     initial begin
         $readmemb(INIT_FILE_BIN, mem);
     end
-
+*/
     reg [31:0] mem[(SIZE_BYTES/4) -1 : 0];
 
     always @(posedge clk) begin

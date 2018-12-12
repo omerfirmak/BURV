@@ -20,20 +20,10 @@ module riscv_top_tb (
 		rst_n = 1;
 	end
 
-/*
 	riscv_top riscv_top 
 	(
 		.clk      (clk),    // Clock
 		.rst_n    (rst_n),   // Asynchronous reset active low
-		.irq      (1'b0)
-	);
-*/
-
-	riscv_fpga_top riscv_top 
-	(
-		.clk      (clk),    // Clock
-		.rst_n    (rst_n),   // Asynchronous reset active low
-		.irq      (1'b0),
 		
 		.uart_rx_i(uart),
 		.uart_tx_o(uart)

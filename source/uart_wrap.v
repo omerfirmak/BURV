@@ -1,9 +1,6 @@
 module uart_wrap (
 	input clk,    // Clock
 	input rst_n,  // Asynchronous reset active low
-	
-	input  wire rx_i,
-	output wire tx_o,
 
 	input  wire valid_i,
 	output reg  ready_o,
@@ -11,7 +8,12 @@ module uart_wrap (
 	input  wire [`RISCV_ADDR_WIDTH - 1 : 0] addr_i,
 	input  wire [`RISCV_WORD_WIDTH - 1 : 0] wdata_i,
 	input  wire [3 : 0]                     we_i,
-	output reg  [`RISCV_WORD_WIDTH - 1 : 0] rdata_o
+	output reg  [`RISCV_WORD_WIDTH - 1 : 0] rdata_o,
+
+	input  wire rx_i,
+	output wire tx_o,
+
+	output wire irq
 );
 	
 	localparam TX_DATA_REG = 4'h0; // W only
@@ -34,7 +36,7 @@ module uart_wrap (
 
 	reg  [`RISCV_WORD_WIDTH - 1 : 0] rdata_n;
 
-
+	assign irq = received;
 	assign tx_byte = wdata_i[7 : 0];
 
 	uart uart_core(

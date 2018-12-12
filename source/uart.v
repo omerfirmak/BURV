@@ -35,7 +35,7 @@ module uart(
     output recv_error // Indicates error in receiving packet.
     );
  
-parameter CLOCK_DIVIDE = 109; // clock rate (50Mhz) / (baud rate (9600) * 4)
+parameter CLOCK_DIVIDE = 109; // clock rate (50Mhz) / (baud rate (115200) * 4)
  
 // States for the receiving state machine.
 // These are just constants, not parameters to override.
@@ -87,12 +87,12 @@ always @(posedge clk) begin
    // Countdown timers for the receiving and transmitting
 	// state machines are decremented.
 	rx_clk_divider = rx_clk_divider - 1;
-	if (!rx_clk_divider) begin
+	if (rx_clk_divider == 0) begin
 		rx_clk_divider = CLOCK_DIVIDE;
 		rx_countdown = rx_countdown - 1;
 	end
 	tx_clk_divider = tx_clk_divider - 1;
-	if (!tx_clk_divider) begin
+	if (tx_clk_divider == 0) begin
 		tx_clk_divider = CLOCK_DIVIDE;
 		tx_countdown = tx_countdown - 1;
 	end
@@ -111,7 +111,7 @@ always @(posedge clk) begin
 			end
 		end
 		RX_CHECK_START: begin
-			if (!rx_countdown) begin
+			if (rx_countdown == 0) begin
 				// Check the pulse is still there
 				if (!rx) begin
 					// Pulse still there - good
@@ -128,18 +128,18 @@ always @(posedge clk) begin
 			end
 		end
 		RX_READ_BITS: begin
-			if (!rx_countdown) begin
+			if (rx_countdown == 0) begin
 				// Should be half-way through a bit pulse here.
 				// Read this bit in, wait for the next if we
 				// have more to get.
 				rx_data = {rx, rx_data[7:1]};
 				rx_countdown = 4;
 				rx_bits_remaining = rx_bits_remaining - 1;
-				recv_state = rx_bits_remaining ? RX_READ_BITS : RX_CHECK_STOP;
+				recv_state = rx_bits_remaining != 0 ? RX_READ_BITS : RX_CHECK_STOP;
 			end
 		end
 		RX_CHECK_STOP: begin
-			if (!rx_countdown) begin
+			if (rx_countdown == 0) begin
 				// Should resume half-way through the stop bit
 				// This should be high - if not, reject the
 				// transmission and signal an error.
@@ -149,7 +149,7 @@ always @(posedge clk) begin
 		RX_DELAY_RESTART: begin
 			// Waits a set number of cycles before accepting
 			// another transmission.
-			recv_state = rx_countdown ? RX_DELAY_RESTART : RX_IDLE;
+			recv_state = rx_countdown != 0 ? RX_DELAY_RESTART : RX_IDLE;
 		end
 		RX_ERROR: begin
 			// There was an error receiving.
@@ -186,8 +186,8 @@ always @(posedge clk) begin
 			end
 		end
 		TX_SENDING: begin
-			if (!tx_countdown) begin
-				if (tx_bits_remaining) begin
+			if (tx_countdown == 0) begin
+				if (tx_bits_remaining != 0) begin
 					tx_bits_remaining = tx_bits_remaining - 1;
 					tx_out = tx_data[0];
 					tx_data = {1'b0, tx_data[7:1]};
@@ -205,7 +205,7 @@ always @(posedge clk) begin
 			// Wait until tx_countdown reaches the end before
 			// we send another transmission. This covers the
 			// "stop bit" delay.
-			tx_state = tx_countdown ? TX_DELAY_RESTART : TX_IDLE;
+			tx_state = tx_countdown != 0 ? TX_DELAY_RESTART : TX_IDLE;
 		end
 	endcase
 end

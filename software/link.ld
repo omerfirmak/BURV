@@ -3,8 +3,8 @@ __DYNAMIC  =  0;
 
 MEMORY
 {
-    ram   : ORIGIN = 0, LENGTH = 1536
-    stack : ORIGIN = 1536, LENGTH = 512
+    ram   : ORIGIN = 0, LENGTH = 60K
+    stack : ORIGIN = 60K, LENGTH = 4K
 }
 
 /* Stack information variables */
