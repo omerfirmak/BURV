@@ -7,6 +7,8 @@ module riscv_top_tb (
 	reg [31 : 0] tmp;
 	reg clk, rst_n;
 
+	wire uart;
+
 	initial begin
 		clk = 0;
 		forever begin #10; clk = ~clk; end
@@ -33,8 +35,8 @@ module riscv_top_tb (
 		.rst_n    (rst_n),   // Asynchronous reset active low
 		.irq      (1'b0),
 		
-		.uart_rx_i(),
-		.uart_tx_o()
+		.uart_rx_i(uart),
+		.uart_tx_o(uart)
 	);
 
 	initial
