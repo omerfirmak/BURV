@@ -29,7 +29,7 @@ module riscv_top (
 	dp_ram
 	#(
 	    .SIZE_BYTES(65536)
-	) dp_ram (
+	) ram (
 	    .clk      (clk),
 
 		// Instruction memory interface

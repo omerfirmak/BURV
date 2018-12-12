@@ -6,7 +6,10 @@
 module riscv_fpga_top (
 	input wire clk,    // Clock
 	input wire rst_n,   // Asynchronous reset active low
-	input wire irq
+	input wire irq,
+
+	input  wire uart_rx_i,
+	output wire uart_tx_o
 );
 	// Instruction memory interface
 	wire imem_valid;
@@ -74,7 +77,11 @@ module riscv_fpga_top (
 	wire [3 : 0] 					 dmem_s2_we;
 	wire [`RISCV_WORD_WIDTH - 1 : 0] dmem_s2_rdata;
 
-	riscv_core riscv_core
+	riscv_core 
+/*	#(
+		.BOOT_ADRESS(32'h800)
+	)
+*/	riscv_core
 	(
 		.clk 		 (clk),
 		.rst_n		 (rst_n),
@@ -142,6 +149,10 @@ module riscv_fpga_top (
 		.m2_rdata_i	(imem_s2_rdata)
 	);
 
+	assign imem_s2_ready = 0;
+	assign imem_s2_rdata = 0;
+
+
 	mem_bus_arbiter dmem_arbiter
 	(
 		.clk 		 (clk),
@@ -184,10 +195,9 @@ module riscv_fpga_top (
 		.m2_rdata_i	(dmem_s2_rdata)
 	);
 
-
-	dp_ram dp_ram
+	dp_ram ram
 	(
-	    .clk      (clk),
+		.clk      (clk),
 
 		// Instruction memory interface
 		.a_valid_i(imem_s0_valid),
@@ -206,12 +216,45 @@ module riscv_fpga_top (
 		.b_wdata_i(dmem_s0_wdata),
 		.b_we_i   (dmem_s0_we),
 		.b_rdata_o(dmem_s0_rdata)
-  	);
+	);
 
-	always @(negedge clk) begin
-		if (dmem_ready && dmem_addr == 32'h000fffff /* && dmem_we != 0  */) begin
-			$write("%c", dmem_wdata[31:24]); //dmem_wdata[7:0]);
-		end
-	end
+	dp_rom 
+	#(
+		.INIT_FILE_BIN("")
+	)
+	bootrom 
+	(
+		.clk      (clk),
+
+		// Instruction memory interface
+		.a_valid_i(imem_s1_valid),
+		.a_ready_o(imem_s1_ready),
+
+		.a_addr_i (imem_s1_addr),
+		.a_rdata_o(imem_s1_rdata),
+
+		// Data memory interface
+		.b_valid_i(dmem_s1_valid),
+		.b_ready_o(dmem_s1_ready),
+
+		.b_addr_i (dmem_s1_addr),
+		.b_rdata_o(dmem_s1_rdata)
+	);
+
+	uart_wrap uart (
+		.clk 	(clk),
+		.rst_n	(rst_n),
+
+		.rx_i   (uart_rx_i),
+		.tx_o   (uart_tx_o),
+
+		.valid_i(dmem_s2_valid),
+		.ready_o(dmem_s2_ready),
+
+		.addr_i (dmem_s2_addr),
+		.wdata_i(dmem_s2_wdata),
+		.we_i   (dmem_s2_we),
+		.rdata_o(dmem_s2_rdata)
+	);
 
 endmodule

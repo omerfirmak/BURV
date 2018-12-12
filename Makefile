@@ -1,6 +1,6 @@
-MODULE = riscv_top
+MODULE = riscv_fpga_top
 
-COMMON_SRC = ./source/mem_bus_arbiter.v ./source/dp_ram.v ./source/dp_rom.v ./source/riscv_top.v
+COMMON_SRC = ./source/mem_bus_arbiter.v ./source/dp_ram.v ./source/dp_rom.v ./source/riscv_top.v  ./source/riscv_fpga_top.v
 
 POST_SYNTH=false
 
@@ -15,7 +15,9 @@ VERILOG_SRC = 	./source/alu.v 				\
 				./source/csr.v			\
 				./source/fetch_stage.v		\
 				./source/realign_buffer.v 	\
-				./source/axilite_master.v
+				./source/axilite_master.v   \
+				./source/uart.v   \
+				./source/uart_wrap.v
 
 SIM_SRC = $(VERILOG_SRC)
 

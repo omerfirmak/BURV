@@ -8,7 +8,8 @@
 #ifndef _BOUN_PRINT_H_
 #define _BOUN_PRINT_H_
 
-#define OUTPORT (0x100000 - 1)
+#define OUTPORT 0x1000
+//#define OUTPORT (0x100000 - 1)
 
 #include <stdint.h>
 #include <stdbool.h>

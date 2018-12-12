@@ -3,12 +3,11 @@ __DYNAMIC  =  0;
 
 MEMORY
 {
-    ram   : ORIGIN = 0, LENGTH = 512K
-    stack : ORIGIN = 512K, LENGTH = 512K - 4
+    ram   : ORIGIN = 0, LENGTH = 1536
+    stack : ORIGIN = 1536, LENGTH = 512
 }
 
 /* Stack information variables */
-_min_stack      = 0x03FC;   /* (1K - 4) minimum stack space to reserve */
 _stack_len     = LENGTH(stack);
 _stack_end     = ORIGIN(stack);
 _stack_start   = ORIGIN(stack) + LENGTH(stack);
@@ -105,15 +104,6 @@ SECTIONS
         *(COMMON)
         _bss_end = .;
     } > ram
-
-    /* ensure there is enough room for stack */
-    .stack (NOLOAD): {
-        . = ALIGN(4);
-        . = . + _min_stack ;
-        . = ALIGN(4);
-        stack = . ;
-        _stack = . ;
-    } > stack
 
     .stab  0 (NOLOAD) :
     {

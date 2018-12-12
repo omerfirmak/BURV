@@ -3,7 +3,10 @@
 `include "riscv_defines.v"
 `include "alu_defines.v"
 
-module riscv_core (
+module riscv_core 
+#(
+	parameter BOOT_ADDRESS = 32'h0
+)(
 	input wire clk,    // Clock
 	input wire rst_n,  // Asynchronous reset active low
 
@@ -146,7 +149,11 @@ module riscv_core (
 		endcase	
 	end
 
-    fetch_stage fetch_stage
+    fetch_stage 
+    #(
+    	.BOOT_ADDRESS(BOOT_ADDRESS)
+    )
+    fetch_stage
     (
 		.clk 		   (clk),
 		.rst_n		   (rst_n),

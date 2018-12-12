@@ -20,7 +20,7 @@ module mem_bus_arbiter
     output reg  [`RISCV_WORD_WIDTH - 1 : 0] s_rdata_o,
 
 	// Master Port 1
-	output wire m0_valid_o,
+	output reg  m0_valid_o,
 	input  wire m0_ready_i,
 
 	output wire [`RISCV_ADDR_WIDTH - 1 : 0] m0_addr_o,
@@ -29,7 +29,7 @@ module mem_bus_arbiter
 	input  wire [`RISCV_WORD_WIDTH - 1 : 0] m0_rdata_i,
 
 	// Master Port 2
-	output wire m1_valid_o,
+	output reg  m1_valid_o,
 	input  wire m1_ready_i,
 
 	output wire [`RISCV_ADDR_WIDTH - 1 : 0] m1_addr_o,
@@ -38,7 +38,7 @@ module mem_bus_arbiter
 	input  wire [`RISCV_WORD_WIDTH - 1 : 0] m1_rdata_i,
 
 	// Master Port 3
-	output wire m2_valid_o,
+	output reg  m2_valid_o,
 	input  wire m2_ready_i,
 
 	output wire [`RISCV_ADDR_WIDTH - 1 : 0] m2_addr_o,
