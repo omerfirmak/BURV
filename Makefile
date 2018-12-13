@@ -24,26 +24,17 @@ SIM_SRC = $(VERILOG_SRC)
 TESTNAMES = $(wildcard ./tests/*.S)
 MODE=soft
 
+DUMP_TRACE = 1
 BOOT_ADDRESS = 0
 MEM_SIZE = 65536
-DEFINE_FLAGS = -DBOOT_ADDRESS=$(BOOT_ADDRESS) -DMEM_SIZE=$(MEM_SIZE)
+DEFINE_FLAGS = -DBOOT_ADDRESS=$(BOOT_ADDRESS) -DMEM_SIZE=$(MEM_SIZE) -DDUMP_TRACE=$(DUMP_TRACE)
 
 .PHONY: coremark dhrystone synth
 
 all: sim_iverilog
 
-sim_verilator: compile_sim_verilator compile_$(MODE)
-	-./obj_dir/V$(MODULE)
-	gtkwave $(MODULE).vcd
-
 clean:
 	rm -rf $(shell (cat .gitignore))
-
-verilate: clean
-	verilator $(DEFINE_FLAGS) --cc --trace $(SIM_SRC) $(COMMON_SRC) -I./source --exe $(MODULE)_tb.cpp --top-module $(MODULE)
-
-compile_sim_verilator: verilate
-	make -j -C obj_dir/ -f V$(MODULE).mk V$(MODULE)
 
 lint:
 	verilator $(DEFINE_FLAGS) -I./source --lint-only $(SIM_SRC) $(COMMON_SRC) --top-module $(MODULE)
@@ -52,19 +43,19 @@ compile_soft:
 	riscv32-unknown-elf-gcc -I./software -O3 -g0 -falign-functions=16 -funroll-all-loops -march=rv32ec -mabi=ilp32e -nostartfiles -T software/link.ld software/start.S software/handlers.c $(SRC) -o test.elf
 	riscv32-unknown-elf-objdump --disassembler-options=no-aliases,numeric -D test.elf > test.dump
 	riscv32-unknown-elf-objcopy -O binary test.elf test.bin
+	cat test.bin | od -t x4 -w4 -v -A n > test.txt
 
-test_all: clean compile_sim_verilator
-	echo $$(date) >> test.result
-	$(foreach var,$(TESTNAMES), (echo -n $(var) >> test.result; (riscv32-unknown-elf-gcc -g0 -march=rv32e -mabi=ilp32e -T software/link.ld $(var) -nostdlib -o test.elf && \
-																 riscv32-unknown-elf-objcopy -O binary test.elf test.bin && \
-																 ./obj_dir/V$(MODULE) && echo -e "\t\tOK"  >> test.result || echo -e "\t\tFAILED"  >> test.result));)
+test_all: clean
+	$(foreach var,$(TESTNAMES), make DUMP_TRACE=0 MODE=test SRC=$(var);)
+
 compile_test:
-	riscv32-unknown-elf-gcc -march=rv32ec -mabi=ilp32e -nostdlib -nostartfiles -T software/link.ld tests/$(SRC).S -o test.elf
+	riscv32-unknown-elf-gcc -march=rv32ec -mabi=ilp32e -nostdlib -nostartfiles -T software/link.ld $(SRC) -o test.elf
 	riscv32-unknown-elf-objdump --disassembler-options=no-aliases,numeric -D test.elf > test.dump
 	riscv32-unknown-elf-objcopy -O binary test.elf test.bin
+	cat test.bin | od -t x4 -w4 -v -A n > test.txt
 
 dhrystone:
-	make sim_verilator MODE=soft SRC="dhrystone/dhrystone.c dhrystone/dhrystone_main.c"
+	make MODE=soft SRC="dhrystone/dhrystone.c dhrystone/dhrystone_main.c"
 
 
 COREMARK_SRC = "coremark/core_list_join.c \
@@ -77,11 +68,10 @@ COREMARK_SRC = "coremark/core_list_join.c \
 				coremark/ee_printf.c"
 
 coremark:
-	make sim_verilator MODE=soft SRC=$(COREMARK_SRC)
+	make MODE=soft SRC=$(COREMARK_SRC)
 
-sim_iverilog: compile_iverilog compile_$(MODE)
+sim_iverilog: compile_$(MODE) compile_iverilog
 	vvp iv_exec
-	gtkwave $(MODULE).vcd
 
 compile_iverilog:
 	iverilog $(DEFINE_FLAGS)  -g2012 -I./source $(SIM_SRC) $(COMMON_SRC) riscv_top_tb.v -o iv_exec

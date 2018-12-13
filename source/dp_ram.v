@@ -6,7 +6,8 @@
 module dp_ram
 #(
     parameter ADDR_WIDTH = `RISCV_ADDR_WIDTH,
-    parameter SIZE_BYTES = 2048
+    parameter SIZE_BYTES = 2048,
+    parameter INIT_FILE_BIN  = ""
 )(
     // Clock and Reset
     input  wire clk,
@@ -27,6 +28,12 @@ module dp_ram
     input  wire [3 : 0]                     b_we_i,
     output reg  [`RISCV_WORD_WIDTH - 1 : 0] b_rdata_o
 );
+
+`ifndef VERILATOR
+    initial begin
+        if (INIT_FILE_BIN != "") $readmemh(INIT_FILE_BIN, mem);
+    end
+`endif
 
     reg [31:0] mem[(SIZE_BYTES/4) -1 : 0];
 

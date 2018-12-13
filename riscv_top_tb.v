@@ -31,11 +31,14 @@ module riscv_top_tb (
 
 	initial
 	begin
-		$dumpfile("riscv_top.vcd");
-		$dumpvars(0,riscv_top_tb);
-		for (i = 0; i < 16; i = i + 1)
-		    $dumpvars(0, riscv_top.riscv_core.reg_file.mem[i]);
-		firm_file = $fopen("test.bin", "rb");
+
+		if(`DUMP_TRACE == 1) begin
+			$dumpfile("riscv_top.vcd");
+			$dumpvars(0,riscv_top_tb);
+			for (i = 0; i < 16; i = i + 1)
+			    $dumpvars(0, riscv_top.riscv_core.reg_file.mem[i]);
+		end
+/*		firm_file = $fopen("test.bin", "rb");
 		if (firm_file != 0) begin
 			i = 0;
 			while(0 != $fread(tmp, firm_file)) begin
@@ -46,7 +49,7 @@ module riscv_top_tb (
 			$display("firm_file handle was NULL");
 			$finish;
 		end 
-	end
+*/	end
 
 
 endmodule
