@@ -71,7 +71,7 @@ module uart_wrap (
 				end
 				TX_DATA_REG:
 				begin
-					transmit_en = |we_i;
+					transmit_en = (|we_i) & ready_o;
 				end
 				default : /* default */;
 			endcase

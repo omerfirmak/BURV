@@ -3,8 +3,8 @@ __DYNAMIC  =  0;
 
 MEMORY
 {
-    ram   : ORIGIN = 0, LENGTH = 60K
-    stack : ORIGIN = 60K, LENGTH = 4K
+    mem   : ORIGIN = MEM_ORIGIN, LENGTH = MEM_LENGTH
+    stack : ORIGIN = STACK_ORIGIN, LENGTH = STACK_LENGTH
 }
 
 /* Stack information variables */
@@ -22,7 +22,7 @@ SECTIONS
     {
         . = ALIGN(4);
         KEEP(*(.vectors))
-    } > ram
+    } > mem
 
     .text : {
         . = ALIGN(4);
@@ -42,7 +42,7 @@ SECTIONS
         *(.lit)
         *(.shdata)
         _endtext = .;
-    }  > ram
+    }  > mem
 
     /*--------------------------------------------------------------------*/
     /* Global constructor/destructor segement                             */
@@ -53,7 +53,7 @@ SECTIONS
       PROVIDE_HIDDEN (__preinit_array_start = .);
       KEEP (*(.preinit_array))
       PROVIDE_HIDDEN (__preinit_array_end = .);
-    } > ram
+    } > mem
 
     .init_array     :
     {
@@ -61,7 +61,7 @@ SECTIONS
       KEEP (*(SORT(.init_array.*)))
       KEEP (*(.init_array ))
       PROVIDE_HIDDEN (__init_array_end = .);
-    } > ram
+    } > mem
 
     .fini_array     :
     {
@@ -69,19 +69,19 @@ SECTIONS
       KEEP (*(SORT(.fini_array.*)))
       KEEP (*(.fini_array ))
       PROVIDE_HIDDEN (__fini_array_end = .);
-    } > ram
+    } > mem
 
     .rodata : {
         . = ALIGN(4);
         *(.rodata);
         *(.rodata.*)
-    } > ram
+    } > mem
 
     .shbss :
     {
         . = ALIGN(4);
         *(.shbss)
-    } > ram
+    } > mem
 
     .data : {
         . = ALIGN(4);
@@ -91,7 +91,7 @@ SECTIONS
         *(.data.*)
         edata  =  .;
         _edata  =  .;
-    } > ram
+    } > mem
 
     .bss :
     {
@@ -103,7 +103,7 @@ SECTIONS
         *(.sbss.*)
         *(COMMON)
         _bss_end = .;
-    } > ram
+    } > mem
 
     .stab  0 (NOLOAD) :
     {
@@ -119,5 +119,5 @@ SECTIONS
     {
         . = ALIGN(4);
         _end = .;
-    } > ram
+    } > mem
 }
