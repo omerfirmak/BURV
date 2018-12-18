@@ -11,7 +11,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#define UART_BASE 0x200000
+#define UART_BASE ((void*)0x200000)
 
 volatile struct
 {
@@ -25,9 +25,15 @@ volatile struct
 #define UART_RECEIVE_ERR 	(1 << 2)
 #define UART_IS_XMITTING 	(1 << 3)
 
+uint8_t poll_rx()
+{
+	while((huart->status_reg & UART_RECEIVED) == 0);
+	return huart->rx_data;
+}
+
 void wait_tx()
 {
-	while((huart->status_reg & UART_IS_XMITTING) != 0);
+//	while((huart->status_reg & UART_IS_XMITTING) != 0);
 }
 
 void print_chr(char ch)

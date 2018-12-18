@@ -22,16 +22,15 @@ VERILOG_SRC = 	./source/alu.v 				\
 SIM_SRC = $(VERILOG_SRC)
 
 TESTNAMES = $(wildcard ./tests/*.S)
-MODE=soft
 
 DUMP_TRACE = 1
 BOOT_ADDRESS = 0
-MEM_SIZE = 65536
-DEFINE_FLAGS = -DBOOT_ADDRESS=$(BOOT_ADDRESS) -DMEM_SIZE=$(MEM_SIZE) -DDUMP_TRACE=$(DUMP_TRACE)
+MEM_SIZE = 131072
+DEFINE_FLAGS = -DBOOT_ADDRESS=$(BOOT_ADDRESS) -DMEM_SIZE=$(MEM_SIZE) -DDUMP_TRACE=$(DUMP_TRACE) -DMEM_ORIGIN=$(MEM_ORIGIN) -DMEM_LENGTH=$(MEM_LENGTH) -DSTACK_LENGTH=$(STACK_LENGTH) -DSTACK_ORIGIN=$(STACK_ORIGIN)
 
 .PHONY: coremark dhrystone synth
 
-all: sim_iverilog
+all: firmware sim_iverilog
 
 clean:
 	rm -rf $(shell (cat .gitignore))
@@ -39,23 +38,35 @@ clean:
 lint:
 	verilator $(DEFINE_FLAGS) -I./source --lint-only $(SIM_SRC) $(COMMON_SRC) --top-module $(MODULE)
 
-compile_soft:
-	riscv32-unknown-elf-gcc -I./software -O3 -g0 -falign-functions=16 -funroll-all-loops -march=rv32ec -mabi=ilp32e -nostartfiles -T software/link.ld software/start.S software/handlers.c $(SRC) -o test.elf
-	riscv32-unknown-elf-objdump --disassembler-options=no-aliases,numeric -D test.elf > test.dump
-	riscv32-unknown-elf-objcopy -O binary test.elf test.bin
-	cat test.bin | od -t x4 -w4 -v -A n > test.txt
+MEM_ORIGIN=0
+MEM_LENGTH=\(MEM_SIZE-STACK_LENGTH\)
+STACK_LENGTH=16192 
+STACK_ORIGIN=\(MEM_SIZE-STACK_LENGTH\)
+CFLAGS = -O3 -g0 -falign-functions=16 -funroll-all-loops
+
+bootrom: MEM_SIZE=2048
+bootrom: MEM_ORIGIN=0x100000
+bootrom: MEM_LENGTH=MEM_SIZE 
+bootrom: STACK_ORIGIN=0 
+bootrom: STACK_LENGTH=MEM_SIZE 
+bootrom: SRC=software/bootrom.c
+bootrom firmware: prepare_ld
+	riscv32-unknown-elf-gcc -I./software $(CFLAGS) -march=rv32ec -mabi=ilp32e -nostartfiles -T software/out.ld software/start.S software/handlers.c $(SRC) -o firmware.elf
+	riscv32-unknown-elf-objdump --disassembler-options=no-aliases,numeric -D firmware.elf > firmware.dump
+	riscv32-unknown-elf-objcopy -O binary firmware.elf firmware.bin
+	cat firmware.bin | od -t x4 -w4 -v -A n > firmware.txt
 
 test_all: clean
-	$(foreach var,$(TESTNAMES), make DUMP_TRACE=0 MODE=test SRC=$(var);)
+	$(foreach var,$(TESTNAMES), make DUMP_TRACE=0 SRC=$(var) test sim_iverilog;)
 
-compile_test:
+test:
 	riscv32-unknown-elf-gcc -march=rv32ec -mabi=ilp32e -nostdlib -nostartfiles -T software/link.ld $(SRC) -o test.elf
 	riscv32-unknown-elf-objdump --disassembler-options=no-aliases,numeric -D test.elf > test.dump
 	riscv32-unknown-elf-objcopy -O binary test.elf test.bin
 	cat test.bin | od -t x4 -w4 -v -A n > test.txt
 
 dhrystone:
-	make MODE=soft SRC="dhrystone/dhrystone.c dhrystone/dhrystone_main.c"
+	make SRC="dhrystone/dhrystone.c dhrystone/dhrystone_main.c" DUMP_TRACE=0 firmware sim_iverilog
 
 
 COREMARK_SRC = "coremark/core_list_join.c \
@@ -68,9 +79,9 @@ COREMARK_SRC = "coremark/core_list_join.c \
 				coremark/ee_printf.c"
 
 coremark:
-	make MODE=soft SRC=$(COREMARK_SRC)
+	make SRC=$(COREMARK_SRC) DUMP_TRACE=0 firmware sim_iverilog
 
-sim_iverilog: compile_$(MODE) compile_iverilog
+sim_iverilog: compile_iverilog
 	vvp iv_exec
 
 compile_iverilog:
@@ -81,3 +92,6 @@ synth:
 
 sta:
 	qflow sta --tech osu018 riscv_core > /dev/null
+
+prepare_ld:
+	gcc -E -x c $(DEFINE_FLAGS) software/link.ld | grep -v '^#' > software/out.ld

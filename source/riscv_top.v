@@ -198,7 +198,7 @@ module riscv_top (
 
 	dp_ram
 	#(
-		.INIT_FILE_BIN("test.txt"),
+		.INIT_FILE_BIN("firmware.txt"),
 	    .SIZE_BYTES(`MEM_SIZE)
 	) ram (
 		.clk      (clk),
