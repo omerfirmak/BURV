@@ -39,30 +39,28 @@ lint:
 
 MEM_ORIGIN=0
 MEM_LENGTH=\(MEM_SIZE-STACK_LENGTH\)
-STACK_LENGTH=16192 
+STACK_LENGTH=65536 
 STACK_ORIGIN=\(MEM_SIZE-STACK_LENGTH\)
 CFLAGS = -O3 -g0 -falign-functions=16 -funroll-all-loops
 
+COMMON_C_SRC = software/start.S software/handlers.c
+
+compile_test: CFLAGS += -nostdlib
+compile_test: COMMON_C_SRC = 
 bootrom: MEM_SIZE=2048
 bootrom: MEM_ORIGIN=0x100000
 bootrom: MEM_LENGTH=MEM_SIZE 
 bootrom: STACK_ORIGIN=0 
 bootrom: STACK_LENGTH=MEM_SIZE 
 bootrom: SRC=software/bootrom.c
-bootrom firmware: prepare_ld
-	riscv32-unknown-elf-gcc -I./software $(CFLAGS) -march=rv32ec -mabi=ilp32e -nostartfiles -T software/out.ld software/start.S software/handlers.c $(SRC) -o firmware.elf
+compile_test bootrom firmware: prepare_ld
+	riscv32-unknown-elf-gcc -I./software $(CFLAGS) -march=rv32e -mabi=ilp32e -nostartfiles -T software/out.ld $(COMMON_C_SRC) $(SRC) -o firmware.elf
 	riscv32-unknown-elf-objdump --disassembler-options=no-aliases,numeric -D firmware.elf > firmware.dump
 	riscv32-unknown-elf-objcopy -O binary firmware.elf firmware.bin
 	cat firmware.bin | od -t x4 -w4 -v -A n > firmware.txt
 
 test_all: clean
-	$(foreach var,$(TESTNAMES), make DUMP_TRACE=0 SRC=$(var) test sim_iverilog;)
-
-compile_test:
-	riscv32-unknown-elf-gcc -march=rv32ec -mabi=ilp32e -nostdlib -nostartfiles -T software/link.ld $(SRC) -o test.elf
-	riscv32-unknown-elf-objdump --disassembler-options=no-aliases,numeric -D test.elf > test.dump
-	riscv32-unknown-elf-objcopy -O binary test.elf test.bin
-	cat test.bin | od -t x4 -w4 -v -A n > test.txt
+	$(foreach var,$(TESTNAMES), echo "Test Name:$(var)"; make DUMP_TRACE=0 SRC=$(var) compile_test sim_iverilog;)
 
 COREMARK_SRC =  coremark/core_list_join.c \
 				coremark/core_main.c \
@@ -82,7 +80,7 @@ sim_iverilog: compile_iverilog
 	vvp iv_exec
 
 compile_iverilog:
-	iverilog $(DEFINE_FLAGS)  -g2012 -I./source $(SIM_SRC) $(COMMON_SRC) riscv_top_tb.v -o iv_exec
+	iverilog $(DEFINE_FLAGS) -g2012 -I./source $(SIM_SRC) $(COMMON_SRC) riscv_top_tb.v -o iv_exec
 
 synth:
 	qflow synthesize --tech osu018 riscv_core > /dev/null
