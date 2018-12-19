@@ -62,11 +62,13 @@ module uart_wrap (
 		if (valid_i)
 		begin
 			case (addr_i[3 : 0])
-				RX_DATA_REG: begin
+				RX_DATA_REG:
+				begin
 					if (received_latched) rdata_n[7 : 0] = rx_byte;
 					clear_received = 1;
 				end
-				STATUS_REG: begin
+				STATUS_REG:
+				begin
 					rdata_n[3 : 0] = {is_transmitting, recv_error, is_receiving, received_latched};
 				end
 				TX_DATA_REG:

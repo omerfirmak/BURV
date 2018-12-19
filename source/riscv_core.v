@@ -71,6 +71,7 @@ module riscv_core
 	wire                         	 		cycle_counter;
 
 	wire [1 : 0]					   		pc_mux_sel;
+	wire [`RISCV_ADDR_WIDTH - 1 : 0] 		tvec;
 	wire [`RISCV_ADDR_WIDTH - 1 : 0] 		exc_pc;
 	wire							   		save_epc;
 	wire							   		retire_curr_inst;
@@ -237,6 +238,7 @@ module riscv_core
 		.lsu_err_i        (lsu_err),
 
 		.comp_result_i    (alu_result[0]),
+		.tvec_i    		  (tvec),
 
 		.cycle_counter_o     (cycle_counter),
 		.deassert_rf_wen_n_o (deassert_rf_wen_n),
@@ -248,7 +250,12 @@ module riscv_core
 		.target_valid_o     (target_valid)
 	);
 
-	csr csr (
+	csr 
+	#(
+    	.TVEC_ADDRESS(BOOT_ADDRESS)
+    )
+	csr
+	(
 		.clk       (clk),
 		.rst_n     (rst_n),
 		
@@ -260,6 +267,7 @@ module riscv_core
 		.save_epc_i(save_epc),
 		.pc_i      (instr_addr),
 		.epc_o     (epc),
+		.tvec_o    (tvec),
 		.interrupt_enable_o (interrupt_enable)
 	);
 

@@ -22,6 +22,7 @@ module controller (
 	input wire lsu_err_i,
 
 	input wire comp_result_i,
+	input wire [`RISCV_ADDR_WIDTH - 1 : 0] tvec_i,
 
 	output reg cycle_counter_o,
 	output reg deassert_rf_wen_n_o,
@@ -31,8 +32,6 @@ module controller (
 	output reg [`RISCV_ADDR_WIDTH - 1 : 0] exc_pc_o,
 	output reg save_epc_o,
 	output reg target_valid_o
-
-
 );
 	localparam IDLE = 1'b0;
 	localparam MULTI_CYCLE_OP = 1'b1;
@@ -42,7 +41,7 @@ module controller (
 	always @* 
 	begin
 		NS = CS;
-		exc_pc_o = 0;
+		exc_pc_o = {tvec_i[`RISCV_ADDR_WIDTH - 1 : 5], 5'd0};
 		save_epc_o = 0;
 		deassert_rf_wen_n_o = 0;
 		retire_o = inst_valid_i & ~illegal_inst_i;
@@ -57,7 +56,7 @@ module controller (
 					if (irq_i) begin
 						deassert_rf_wen_n_o = 0;
 						pc_mux_sel_o = `PC_EXCEPTION;
-						exc_pc_o = 12;
+						exc_pc_o[4 : 0] = 5'd12;
 						target_valid_o = 1;
 						save_epc_o = 1;
 					end else begin
@@ -67,7 +66,7 @@ module controller (
 								if (lsu_err_i) begin
 									deassert_rf_wen_n_o = 0;
 									pc_mux_sel_o = `PC_EXCEPTION;
-									exc_pc_o = 16;
+									exc_pc_o[4 : 0] = 5'd16;
 									target_valid_o = 1;
 									save_epc_o = 1;
 								end else begin
@@ -96,7 +95,7 @@ module controller (
 							begin
 								deassert_rf_wen_n_o = 0;
 								pc_mux_sel_o = `PC_EXCEPTION;
-								exc_pc_o = 4;
+								exc_pc_o[4 : 0] = 5'd4;
 								target_valid_o = 1;
 								save_epc_o = 1;
 							end
@@ -104,7 +103,7 @@ module controller (
 							begin
 								deassert_rf_wen_n_o = 0;
 								pc_mux_sel_o = `PC_EXCEPTION;
-								exc_pc_o = 8;
+								exc_pc_o[4 : 0] = 5'd8;
 								target_valid_o = 1;
 								save_epc_o = 1;
 							end

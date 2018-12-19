@@ -31,6 +31,7 @@ DEFINE_FLAGS = -DBOOT_ADDRESS=$(BOOT_ADDRESS) -DMEM_SIZE=$(MEM_SIZE) -DDUMP_TRAC
 .PHONY: coremark dhrystone synth
 
 all: firmware sim_iverilog
+test: compile_test sim_iverilog
 
 clean:
 	rm -rf $(shell (cat .gitignore))
@@ -59,7 +60,7 @@ bootrom firmware: prepare_ld
 test_all: clean
 	$(foreach var,$(TESTNAMES), make DUMP_TRACE=0 SRC=$(var) test sim_iverilog;)
 
-test:
+compile_test:
 	riscv32-unknown-elf-gcc -march=rv32ec -mabi=ilp32e -nostdlib -nostartfiles -T software/link.ld $(SRC) -o test.elf
 	riscv32-unknown-elf-objdump --disassembler-options=no-aliases,numeric -D test.elf > test.dump
 	riscv32-unknown-elf-objcopy -O binary test.elf test.bin

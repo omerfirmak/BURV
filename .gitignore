@@ -28,4 +28,4 @@ firmware.*
 source/*.ys
 source/*.blif
 
-software/*.ld
+software/out.ld
