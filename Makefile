@@ -28,8 +28,6 @@ BOOT_ADDRESS = 0
 MEM_SIZE = 131072
 DEFINE_FLAGS = -DBOOT_ADDRESS=$(BOOT_ADDRESS) -DMEM_SIZE=$(MEM_SIZE) -DDUMP_TRACE=$(DUMP_TRACE) -DMEM_ORIGIN=$(MEM_ORIGIN) -DMEM_LENGTH=$(MEM_LENGTH) -DSTACK_LENGTH=$(STACK_LENGTH) -DSTACK_ORIGIN=$(STACK_ORIGIN)
 
-.PHONY: coremark dhrystone synth
-
 all: firmware sim_iverilog
 test: compile_test sim_iverilog
 
@@ -66,21 +64,19 @@ compile_test:
 	riscv32-unknown-elf-objcopy -O binary test.elf test.bin
 	cat test.bin | od -t x4 -w4 -v -A n > test.txt
 
-dhrystone:
-	make SRC="dhrystone/dhrystone.c dhrystone/dhrystone_main.c" DUMP_TRACE=0 firmware sim_iverilog
-
-
-COREMARK_SRC = "coremark/core_list_join.c \
+COREMARK_SRC =  coremark/core_list_join.c \
 				coremark/core_main.c \
 				coremark/core_matrix.c \
 				coremark/core_portme.c \
 				coremark/core_state.c \
 				coremark/core_util.c \
 				coremark/cvt.c \
-				coremark/ee_printf.c"
+				coremark/ee_printf.c
 
-coremark:
-	make SRC=$(COREMARK_SRC) DUMP_TRACE=0 firmware sim_iverilog
+coremark:  SRC=$(COREMARK_SRC)
+dhrystone: SRC=dhrystone/dhrystone.c dhrystone/dhrystone_main.c
+coremark dhrystone: DUMP_TRACE=0
+coremark dhrystone: firmware sim_iverilog
 
 sim_iverilog: compile_iverilog
 	vvp iv_exec
