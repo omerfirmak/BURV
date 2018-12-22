@@ -25,7 +25,7 @@ TESTNAMES = $(wildcard ./tests/*.S)
 
 DUMP_TRACE = 1
 BOOT_ADDRESS = 0
-MEM_SIZE = 131072
+MEM_SIZE = 262144
 DEFINE_FLAGS = -DBOOT_ADDRESS=$(BOOT_ADDRESS) -DMEM_SIZE=$(MEM_SIZE) -DDUMP_TRACE=$(DUMP_TRACE) -DMEM_ORIGIN=$(MEM_ORIGIN) -DMEM_LENGTH=$(MEM_LENGTH) -DSTACK_LENGTH=$(STACK_LENGTH) -DSTACK_ORIGIN=$(STACK_ORIGIN)
 
 all: firmware sim_iverilog
@@ -39,14 +39,15 @@ lint:
 
 MEM_ORIGIN=0
 MEM_LENGTH=\(MEM_SIZE-STACK_LENGTH\)
-STACK_LENGTH=65536 
+STACK_LENGTH=65536
 STACK_ORIGIN=\(MEM_SIZE-STACK_LENGTH\)
 CFLAGS = -O3 -g0 -falign-functions=16 -funroll-all-loops
 
-COMMON_C_SRC = software/start.S software/handlers.c
+COMMON_C_SRC = software/start.S software/handlers.c software/print.c
 
 compile_test: CFLAGS += -nostdlib
 compile_test: COMMON_C_SRC = 
+bootrom: CFLAGS=-Os -fdata-sections -ffunction-sections -Wl,--gc-sections
 bootrom: MEM_SIZE=2048
 bootrom: MEM_ORIGIN=0x100000
 bootrom: MEM_LENGTH=MEM_SIZE 

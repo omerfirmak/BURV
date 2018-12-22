@@ -2,5 +2,7 @@
 
 int main()
 {
-	while (1) print_str("omerfirmak\n");
+	while (1) {
+		print_str("omerfirmak\n");
+	}
 }
