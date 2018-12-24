@@ -7,14 +7,14 @@ module reg_file (
     input wire clk,
     input wire rst_n,
 
-    input wire [`RISCV_WORD_WIDTH - 1 : 0] 	write_data_i,
-    input wire [$clog2(`GP_REG_COUNT) - 1 : 0] write_addr_i,
-    input wire 				write_en_i,
+    input wire [`RISCV_WORD_WIDTH - 1 : 0] 	    write_data_i,
+    input wire [$clog2(`GP_REG_COUNT) - 1 : 0]  write_addr_i,
+    input wire 				                    write_en_i,
 
     input wire [$clog2(`GP_REG_COUNT) - 1 : 0] read_addr_1_i,
     input wire [$clog2(`GP_REG_COUNT) - 1 : 0] read_addr_2_i,
 
-    output wire [`RISCV_WORD_WIDTH - 1 : 0] 	read_data_1_o,
+    output wire [`RISCV_WORD_WIDTH - 1 : 0]     read_data_1_o,
     output wire [`RISCV_WORD_WIDTH - 1 : 0] 	read_data_2_o
 );
 
@@ -26,6 +26,7 @@ module reg_file (
     assign read_data_1_o = mem_o[read_addr_1_i];
     assign read_data_2_o = mem_o[read_addr_2_i];
 
+    // Decode write address
     always @* 
     begin
         for (i = 0; i < `GP_REG_COUNT; i = i +1) begin
@@ -36,6 +37,7 @@ module reg_file (
         end
     end
 
+    // Latch input data to actual registers
     always @(posedge clk or negedge rst_n) begin
         if (~rst_n) begin
             for (i = 0; i < `GP_REG_COUNT; i = i +1) begin
@@ -49,8 +51,10 @@ module reg_file (
         end
     end
 
+    // Hardwire r0 to 0
     assign mem_o[0] = 0;
 
+    // Map physical registers to output addresses, storage for r0 should get optimized out
     generate
         genvar j;
         for (j = 1; j < `GP_REG_COUNT; j = j + 1) begin

@@ -25,6 +25,7 @@ module realign_buffer (
 	wire valid_aligned, valid_unaligned;
 	wire [`RISCV_WORD_WIDTH - 1 : 0] instr_aligned, instr_unaligned;
 
+									// Storage			Next value 			Intermediate value								
 	reg [`RISCV_WORD_WIDTH - 1 : 0] mem[2 : 0],			mem_n[2 : 0], 		mem_shadow[2 : 0]; 
 	reg [2 : 0]					 	mem_valid,		    mem_valid_n,	    mem_valid_shadow;
 	reg [`RISCV_ADDR_WIDTH - 1 : 0] mem_addr[2 : 0],	mem_addr_n[2 : 0],	mem_addr_shadow[2 : 0];
@@ -38,10 +39,12 @@ module realign_buffer (
 
 	assign unaligned_n =  unaligned ^ read_en_i[0];
 	assign mem_valid_inc = mem_valid + 1;
-	assign mem_we = (~mem_valid) & mem_valid_inc;
+	assign mem_we = (~mem_valid) & mem_valid_inc; // First empty slot calculation
 
 	always @*
 	begin
+
+		// Write incoming word to first empty slot
 		for (i = 0; i < 3; i = i + 1) begin
 			mem_shadow[i] = mem[i];
 			mem_valid_shadow[i] = mem_valid[i];
@@ -54,11 +57,13 @@ module realign_buffer (
 			end
 		end
 
+		// Handle reads
 		case ({read_en_i, unaligned})
 			3'b011,
 			3'b100,
 			3'b101: 
 			begin
+				// Clear oldest word from buffer if no longer needed
 				for (i = 0; i < 2; i = i + 1) begin
 					mem_n[i] = mem_shadow[i + 1];
 					mem_valid_n[i] = mem_valid_shadow[i + 1];

@@ -63,8 +63,8 @@ module alu (
     wire is_greater_signed;
 
     assign is_equal = operand_a_i == operand_b_i; 
-    assign is_greater = operand_a_i > operand_b_i;  //`RISCV_WORD_WIDTH'(operand_a_i > operand_b_i);
-    assign is_greater_signed = operand_a_i_signed > operand_b_i_signed; //`RISCV_WORD_WIDTH'(operand_a_i_signed > operand_b_i_signed);
+    assign is_greater = operand_a_i > operand_b_i;
+    assign is_greater_signed = operand_a_i_signed > operand_b_i_signed;
 
     always @*
     begin

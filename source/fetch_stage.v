@@ -72,7 +72,9 @@ module fetch_stage
 	assign imem_wdata_o = 0;
 	assign imem_we_o 	= 0;
 
+	// Keep fetching word aligned 32-bit values from iMEM
 	assign fetch_addr_inc = fetch_addr + 4;
+	// Jump/Branch target address should always be word aligned.  
 	assign target_addr = {target_addr_i[`RISCV_WORD_WIDTH - 1 : 2], 2'b00};
 
 	assign take_next = ~instr_valid_o || retire_inst_i;
@@ -91,6 +93,7 @@ module fetch_stage
 				fetch_addr <= fetch_addr_inc;
 			end
 
+			// Start fetching from branch/target address
 			if (target_valid_i) begin
 				fetch_addr <= target_addr;
 				instr_valid_o <= 0;
@@ -99,6 +102,7 @@ module fetch_stage
 				compressed_inst_o <= 0;
 				illegal_compressed_inst_o <= 0;
 			end else if (take_next) begin
+				// Latch decompressed instruction and related data
 				instr_valid_o <= ~realign_buffer_empty;
 				instr_o <= instr_decompressed;
 				instr_addr_o <= instr_addr;

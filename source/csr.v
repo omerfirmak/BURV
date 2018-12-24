@@ -32,6 +32,7 @@ module csr
 	`define MSTATUS_MPIE 1
 	`define MSTATUS_MPP  2'b11
 
+	// Read requested register
 	always @* 
 	begin
 		rdata_o = 0;
@@ -46,6 +47,7 @@ module csr
 
 	reg [31 : 0] wdata;
 
+	// Prepare write data according to operation
 	always @* 
 	begin
 		case (op_i)

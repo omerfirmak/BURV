@@ -49,15 +49,18 @@ module riscv_core
 	wire [`RISCV_WORD_WIDTH - 1 : 0] 		rf_read_data_1;
 	wire [`RISCV_WORD_WIDTH - 1 : 0] 		rf_read_data_2;
 
-
+	// Control transfer signals
 	reg  [`RISCV_ADDR_WIDTH - 1 : 0] 		target_addr;
 	wire 									target_valid;
 
+	// Current instruction
 	wire [`RISCV_WORD_WIDTH - 1 : 0] 		instr;
 	wire [`RISCV_ADDR_WIDTH - 1 : 0] 		instr_addr;
 	wire                         	 		instr_valid;
+
 	wire [`RISCV_WORD_WIDTH - 1 : 0] 		imm_val;
 
+	// Decoded special instruction signals
 	wire                         	 		illegal_inst;
 	wire                         	 		ecall_inst;
 	wire                         	 		ebreak_inst;
@@ -68,8 +71,10 @@ module riscv_core
 	wire                         	 		compressed_inst;
 	wire                         	 		illegal_compressed_inst;
 
+	// For multicycle instructions
 	wire                         	 		cycle_counter;
 
+	// Controller module signals
 	wire [1 : 0]					   		pc_mux_sel;
 	wire [`RISCV_ADDR_WIDTH - 1 : 0] 		tvec;
 	wire [`RISCV_ADDR_WIDTH - 1 : 0] 		exc_pc;
@@ -77,12 +82,14 @@ module riscv_core
 	wire							   		retire_curr_inst;
 	wire 							   		deassert_rf_wen_n;
 
+	// CSR signals
 	wire [1 : 0]  							csr_op;
 	wire [11 : 0] 							csr_addr;
 	wire [`RISCV_WORD_WIDTH - 1 : 0] 		csr_rdata;
 	wire [`RISCV_ADDR_WIDTH - 1 : 0] 		epc;
 	wire 									interrupt_enable;
 
+	// LSU signals
 	wire 									lsu_en;
 	wire [`RISCV_WORD_WIDTH - 1 : 0] 		lsu_rdata;
 
