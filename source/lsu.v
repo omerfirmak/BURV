@@ -27,6 +27,7 @@ module lsu (
 	reg [3 : 0] dmem_we;
 	reg 		misaligned;
 	
+	// Generate byte write enable bits 
 	always @*
 	begin
 		misaligned = 1'b0;
@@ -60,6 +61,7 @@ module lsu (
 	assign dmem_we_o = w_en_i == 1'b1 ? dmem_we : 4'h0;
 	assign err_o = misaligned;
 
+	// Sign extension and short/byte shifting
 	always @*
 	begin
 		case ({sign_extend_i, addr_i[1 : 0], type_i})
@@ -85,7 +87,7 @@ module lsu (
 		endcase
 	end
 
-
+	// Byte/word shifting for writes
 	always @*
 	begin
 		case ({addr_i[1 : 0], type_i})

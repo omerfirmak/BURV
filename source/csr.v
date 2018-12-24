@@ -65,6 +65,7 @@ module csr
 		mtvec_n = mtvec;
 		mcycle_n = mcycle + 1;
 
+		// Handle write operations
 		case (addr_i)
 			12'h305: mtvec_n = wdata;
 			12'h300: mstatus_n = {wdata[7], wdata[3]};
@@ -93,6 +94,7 @@ module csr
 		end
 	end
 
+	// Output values that are used by controller
 	assign epc_o = mepc;
 	assign tvec_o = mtvec;
 	assign interrupt_enable_o = mstatus[`MSTATUS_MIE];

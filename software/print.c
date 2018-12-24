@@ -8,7 +8,7 @@ uint8_t poll_rx()
 
 void wait_tx()
 {
-	while((huart->status_reg & UART_IS_XMITTING) != 0);
+//	while((huart->status_reg & UART_IS_XMITTING) != 0);
 }
 
 void print_chr(char ch)

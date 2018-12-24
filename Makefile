@@ -75,7 +75,14 @@ COREMARK_SRC =  coremark/core_list_join.c \
 coremark:  SRC=$(COREMARK_SRC)
 dhrystone: SRC=dhrystone/dhrystone.c dhrystone/dhrystone_main.c
 coremark dhrystone: DUMP_TRACE=0
-coremark dhrystone: firmware sim_iverilog
+coremark dhrystone: firmware sim_verilator
+
+sim_verilator: compile_verilator
+	-./obj_dir/V$(MODULE)
+
+compile_verilator:
+	verilator $(DEFINE_FLAGS) --cc --trace $(SIM_SRC) $(COMMON_SRC) -I./source --exe $(MODULE)_tb.cpp --top-module $(MODULE)
+	make CXXFLAGS="$(DEFINE_FLAGS)" -j -C obj_dir/ -f V$(MODULE).mk V$(MODULE)
 
 sim_iverilog: compile_iverilog
 	vvp iv_exec

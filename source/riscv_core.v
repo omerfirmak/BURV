@@ -16,7 +16,7 @@ module riscv_core
 
 	output wire [`RISCV_ADDR_WIDTH - 1 : 0] imem_addr_o,
 	output wire [`RISCV_WORD_WIDTH - 1 : 0] imem_wdata_o,
-	output wire [3 : 0] 					 imem_we_o,
+	output wire [3 : 0] 					imem_we_o,
 	input  wire [`RISCV_WORD_WIDTH - 1 : 0] imem_rdata_i,
 
 	// Data memory interface

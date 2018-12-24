@@ -62,6 +62,7 @@ module reg_file (
         end
     endgenerate
 
+`ifdef VERILATOR
     function [31:0] readReg;
     /* verilator public */
     input integer reg_num;
@@ -74,5 +75,6 @@ module reg_file (
     input [31:0] val;
     mem[reg_num] = val;
     endtask
+`endif
 
 endmodule

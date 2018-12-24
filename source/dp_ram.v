@@ -29,15 +29,14 @@ module dp_ram
     output reg  [`RISCV_WORD_WIDTH - 1 : 0] b_rdata_o
 );
 
-    wire [`RISCV_ADDR_WIDTH - 3 : 0] a_addr = a_addr_i[`RISCV_ADDR_WIDTH - 1 : 2];
-    wire [`RISCV_ADDR_WIDTH - 3 : 0] b_addr = b_addr_i[`RISCV_ADDR_WIDTH - 1 : 2];
+    wire [$clog2(SIZE_BYTES/4) - 1 : 0] a_addr = a_addr_i[$clog2(SIZE_BYTES/4) + 1 : 2];
+    wire [$clog2(SIZE_BYTES/4) - 1 : 0] b_addr = b_addr_i[$clog2(SIZE_BYTES/4) + 1 : 2];
 
-
-`ifndef VERILATOR
     initial begin
+        /* verilator lint_off WIDTH */
         if (INIT_FILE_BIN != "") $readmemh(INIT_FILE_BIN, mem);
+        /* verilator lint_on WIDTH */
     end
-`endif
 
     reg [31:0] mem[(SIZE_BYTES/4) -1 : 0];
 

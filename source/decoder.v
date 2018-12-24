@@ -174,6 +174,7 @@ module decoder (
 				operand_b_sel_o = `ALU_OP_SEL_IMM;
 
 
+				// Calculate target address in first cycle, then execute the jump
 				case (cycle_counter_i)
 					0:
 					begin
@@ -196,6 +197,7 @@ module decoder (
 				operand_a_sel_o = `ALU_OP_SEL_PC;
 				operand_b_sel_o = `ALU_OP_SEL_IMM;
 
+				// Calculate target address in first cycle, then execute the jump
 				case (cycle_counter_i)
 					0:
 					begin
@@ -242,6 +244,7 @@ module decoder (
 			begin
 				branch_inst_o = 1;
 
+				// Do the branch evaluation in first cycle, execute the branch in second if branch evaluates taken
 				case (cycle_counter_i)
 					0:
 					begin

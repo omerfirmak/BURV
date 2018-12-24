@@ -76,6 +76,7 @@ module realign_buffer (
 			end
 			default:
 			begin
+				// Not done with the oldest word yet
 				for (i = 0; i < 3; i = i + 1) begin
 					mem_n[i] = mem_shadow[i];
 					mem_valid_n[i] = mem_valid_shadow[i];
@@ -97,6 +98,8 @@ module realign_buffer (
 				mem_addr[i] <= 0;
 			end
 		end else begin
+			// Clear buffer when a control instruction is executed
+			// If target address is half word aligned, start new instruction stream by serving a unaligned instruction
 			if (clear_i) begin
 				mem_valid <= 0;
 				unaligned <= read_offset_i;

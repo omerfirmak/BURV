@@ -129,7 +129,7 @@ module controller (
 					end	
 					else NS = IDLE;
 				end
-				default : NS = IDLE;
+				default: NS = IDLE;
 			endcase
 		end
 	end

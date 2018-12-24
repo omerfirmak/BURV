@@ -47,6 +47,7 @@ module fetch_stage
 	wire [`RISCV_ADDR_WIDTH - 1 : 0] fetch_addr_inc;
 	wire [`RISCV_ADDR_WIDTH - 1 : 0] target_addr;
 
+	// Fetch 32-bit values from iMEM and serve 16/32 bit instructions
 	realign_buffer buffer
 	(
 		.clk     		(clk),
