@@ -3,7 +3,10 @@
 `include "riscv_defines.v"
 `include "alu_defines.v"
 
-module fetch_stage (
+module fetch_stage 
+#(
+	parameter BOOT_ADDRESS = 32'h0
+)(
 	input wire clk,    	// Clock
 	input wire rst_n,    // Asynchronous reset active low
 
@@ -77,7 +80,7 @@ module fetch_stage (
 
 	always @(posedge clk or negedge rst_n) begin
 		if(!rst_n) begin
-			fetch_addr <= 0;
+			fetch_addr <= BOOT_ADDRESS;
 			instr_valid_o <= 0;
 			instr_o <= 0;
 			instr_addr_o <= 0;

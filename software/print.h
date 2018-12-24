@@ -8,39 +8,29 @@
 #ifndef _BOUN_PRINT_H_
 #define _BOUN_PRINT_H_
 
-#define OUTPORT (0x100000 - 1)
-
 #include <stdint.h>
 #include <stdbool.h>
 
-void print_chr(char ch)
-{
-	*((volatile uint8_t*)OUTPORT) = ch;
-}
+#define huart ((volatile uart_t * const)0x200000)
 
-void print_str(const char *p)
+typedef struct
 {
-	while (*p != 0)
-		*((volatile uint8_t*)OUTPORT) = *(p++);
-}
+	uint32_t tx_data;
+	uint32_t rx_data;
+	uint32_t status_reg;
+} uart_t;
 
-void print_dec(unsigned int val)
-{
-	char buffer[10];
-	char *p = buffer;
-	while (val || p == buffer) {
-		*(p++) = val % 10;
-		val = val / 10;
-	}
-	while (p != buffer) {
-		*((volatile uint8_t*)OUTPORT) = '0' + *(--p);
-	}
-}
+#define UART_RECEIVED 		(1 << 0)
+#define UART_IS_RECEIVING 	(1 << 1)
+#define UART_RECEIVE_ERR 	(1 << 2)
+#define UART_IS_XMITTING 	(1 << 3)
 
-void print_hex(unsigned int val, int digits)
-{
-	for (int i = (4*digits)-4; i >= 0; i -= 4)
-		*((volatile uint8_t*)OUTPORT) = "0123456789ABCDEF"[(val >> i) % 16];
-}
+
+uint8_t poll_rx();
+void wait_tx();
+void print_chr(char ch);
+void print_str(const char *p);
+void print_dec(unsigned int val);
+void print_hex(unsigned int val, int digits);
 
 #endif

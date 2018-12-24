@@ -19,6 +19,7 @@ iv_exec
 *_powerground
 *.vcd
 test.*
+firmware.*
 *.o
 *.pdf
 *.bkp
@@ -26,3 +27,5 @@ test.*
 
 source/*.ys
 source/*.blif
+
+software/out.ld

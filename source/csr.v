@@ -3,7 +3,10 @@
 `include "riscv_defines.v"
 `include "alu_defines.v"
 
-module csr (
+module csr 
+#(
+	parameter TVEC_ADDRESS = 32'h0
+)(
 	input wire clk,    // Clock
 	input wire rst_n,  // Asynchronous reset active low
 	
@@ -15,12 +18,14 @@ module csr (
 	input  wire 		 save_epc_i,
 	input  wire [31 : 0] pc_i,
 	output wire [31 : 0] epc_o,
+	output wire [31 : 0] tvec_o,
 
 	output wire 		 interrupt_enable_o
 );
 
 	reg  [31 : 0] mepc,    mepc_n;
 	reg  [31 : 0] mcycle,  mcycle_n;
+	reg  [31 : 0] mtvec,   mtvec_n;
 	reg  [1 : 0]  mstatus, mstatus_n;
 
 	`define MSTATUS_MIE  0
@@ -32,6 +37,7 @@ module csr (
 		rdata_o = 0;
 		case (addr_i)
 			12'h300: rdata_o = {19'h0, `MSTATUS_MPP, 3'h0, mstatus[`MSTATUS_MPIE], 3'h0, mstatus[`MSTATUS_MIE], 3'h0};
+			12'h305: rdata_o = mtvec;
 			12'h341: rdata_o = mepc;
 			12'hB00: rdata_o = mcycle;
 			default:;
@@ -54,9 +60,11 @@ module csr (
 	begin
 		mepc_n = mepc;
 		mstatus_n = mstatus;
+		mtvec_n = mtvec;
 		mcycle_n = mcycle + 1;
 
 		case (addr_i)
+			12'h305: mtvec_n = wdata;
 			12'h300: mstatus_n = {wdata[7], wdata[3]};
 			12'h341: mepc_n = wdata;
 			12'hB00: mcycle_n = wdata;
@@ -74,14 +82,17 @@ module csr (
 			mepc <= 0;
 			mstatus <= 0;
 			mcycle <= 0;
+			mtvec <= TVEC_ADDRESS;
 		end else begin
 			mepc <= mepc_n;
 			mcycle <= mcycle_n;
 			mstatus <= mstatus_n;
+			mtvec <= mtvec_n;
 		end
 	end
 
 	assign epc_o = mepc;
+	assign tvec_o = mtvec;
 	assign interrupt_enable_o = mstatus[`MSTATUS_MIE];
 
 endmodule

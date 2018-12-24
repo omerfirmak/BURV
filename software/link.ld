@@ -3,12 +3,11 @@ __DYNAMIC  =  0;
 
 MEMORY
 {
-    ram   : ORIGIN = 0, LENGTH = 512K
-    stack : ORIGIN = 512K, LENGTH = 512K - 4
+    mem   : ORIGIN = MEM_ORIGIN, LENGTH = MEM_LENGTH
+    stack : ORIGIN = STACK_ORIGIN, LENGTH = STACK_LENGTH
 }
 
 /* Stack information variables */
-_min_stack      = 0x03FC;   /* (1K - 4) minimum stack space to reserve */
 _stack_len     = LENGTH(stack);
 _stack_end     = ORIGIN(stack);
 _stack_start   = ORIGIN(stack) + LENGTH(stack);
@@ -23,7 +22,7 @@ SECTIONS
     {
         . = ALIGN(4);
         KEEP(*(.vectors))
-    } > ram
+    } > mem
 
     .text : {
         . = ALIGN(4);
@@ -43,7 +42,7 @@ SECTIONS
         *(.lit)
         *(.shdata)
         _endtext = .;
-    }  > ram
+    }  > mem
 
     /*--------------------------------------------------------------------*/
     /* Global constructor/destructor segement                             */
@@ -54,7 +53,7 @@ SECTIONS
       PROVIDE_HIDDEN (__preinit_array_start = .);
       KEEP (*(.preinit_array))
       PROVIDE_HIDDEN (__preinit_array_end = .);
-    } > ram
+    } > mem
 
     .init_array     :
     {
@@ -62,7 +61,7 @@ SECTIONS
       KEEP (*(SORT(.init_array.*)))
       KEEP (*(.init_array ))
       PROVIDE_HIDDEN (__init_array_end = .);
-    } > ram
+    } > mem
 
     .fini_array     :
     {
@@ -70,19 +69,19 @@ SECTIONS
       KEEP (*(SORT(.fini_array.*)))
       KEEP (*(.fini_array ))
       PROVIDE_HIDDEN (__fini_array_end = .);
-    } > ram
+    } > mem
 
     .rodata : {
         . = ALIGN(4);
         *(.rodata);
         *(.rodata.*)
-    } > ram
+    } > mem
 
     .shbss :
     {
         . = ALIGN(4);
         *(.shbss)
-    } > ram
+    } > mem
 
     .data : {
         . = ALIGN(4);
@@ -92,7 +91,7 @@ SECTIONS
         *(.data.*)
         edata  =  .;
         _edata  =  .;
-    } > ram
+    } > mem
 
     .bss :
     {
@@ -104,16 +103,7 @@ SECTIONS
         *(.sbss.*)
         *(COMMON)
         _bss_end = .;
-    } > ram
-
-    /* ensure there is enough room for stack */
-    .stack (NOLOAD): {
-        . = ALIGN(4);
-        . = . + _min_stack ;
-        . = ALIGN(4);
-        stack = . ;
-        _stack = . ;
-    } > stack
+    } > mem
 
     .stab  0 (NOLOAD) :
     {
@@ -129,6 +119,5 @@ SECTIONS
     {
         . = ALIGN(4);
         _end = .;
-    } > ram
+    } > mem
 }
-

@@ -3,6 +3,6 @@
 int main()
 {
 	while (1) {
-		print_str("omerfirmak");
+		print_str("omerfirmak\n");
 	}
 }

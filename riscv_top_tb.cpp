@@ -1,9 +1,9 @@
 #include "Vriscv_top.h"
 
 #include "Vriscv_top_riscv_top.h"
-#include "Vriscv_top_dp_ram.h"
+//#include "Vriscv_top_dp_ram__pi1.h"
 #include "Vriscv_top_reg_file.h"
-#include "Vriscv_top_riscv_core.h"
+#include "Vriscv_top_riscv_core__B0.h"
 
 #include "verilated.h"
 #include "verilated_vcd_c.h"
@@ -45,16 +45,15 @@ int main(int argc, char **argv, char **env) {
 #endif
 
     top->clk = 0;
-    top->irq = 0;
 
-    FILE *ptr;
+//    FILE *ptr;
     uint32_t tmp, index = 0;
-    ptr = fopen("test.bin","rb");
+/*    ptr = fopen("test.bin","rb");
 
     while (fread(&tmp, sizeof(uint32_t), 1, ptr) != 0) {
-        top->riscv_top->dp_ram->writeWord(4 * index++, tmp);
+        top->riscv_top->ram->writeWord(4 * index++, tmp);
     }
-
+*/
     for (int i=0;;i++) {
         top->rst_n = i > 2;
         clock(1);
