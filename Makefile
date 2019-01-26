@@ -1,8 +1,8 @@
 MODULE = riscv_top
 
-COMMON_SRC = ./source/mem_bus_arbiter.v ./source/dp_ram.v ./source/dp_rom.v ./source/riscv_top.v
+TECH=osu018
 
-POST_SYNTH=false
+COMMON_SRC = ./source/mem_bus_arbiter.v ./source/dp_ram.v ./source/dp_rom.v ./source/riscv_top.v ./source/uart.v ./source/uart_wrap.v
 
 VERILOG_SRC = 	./source/alu.v 				\
 				./source/reg_file.v			\
@@ -15,9 +15,10 @@ VERILOG_SRC = 	./source/alu.v 				\
 				./source/csr.v			\
 				./source/fetch_stage.v		\
 				./source/realign_buffer.v 	\
-				./source/axilite_master.v   \
-				./source/uart.v   \
-				./source/uart_wrap.v
+				./source/axilite_master.v
+
+POST_SYNTH_SRC = ./riscv_core.rtlnopwr.v 	\
+			  	 /usr/local/share/qflow/tech/osu018/osu018_stdcells.v	
 
 SIM_SRC = $(VERILOG_SRC)
 
@@ -75,7 +76,7 @@ COREMARK_SRC =  coremark/core_list_join.c \
 coremark:  SRC=$(COREMARK_SRC)
 dhrystone: SRC=dhrystone/dhrystone.c dhrystone/dhrystone_main.c
 coremark dhrystone: DUMP_TRACE=0
-coremark dhrystone: firmware sim_verilator
+coremark dhrystone: firmware sim_iverilog
 
 sim_verilator: compile_verilator
 	-./obj_dir/V$(MODULE)
@@ -91,10 +92,10 @@ compile_iverilog:
 	iverilog $(DEFINE_FLAGS) -g2012 -I./source $(SIM_SRC) $(COMMON_SRC) riscv_top_tb.v -o iv_exec
 
 synth:
-	qflow synthesize --tech osu018 riscv_core > /dev/null
+	qflow synthesize --tech $(TECH) riscv_core > /dev/null
 
 sta:
-	qflow sta --tech osu018 riscv_core > /dev/null
+	qflow sta --tech $(TECH) riscv_core > /dev/null
 
 prepare_ld:
 	gcc -E -x c $(DEFINE_FLAGS) software/link.ld | grep -v '^#' > software/out.ld
