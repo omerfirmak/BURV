@@ -67,9 +67,9 @@ module decoder (
 	assign imm_u_type  = { instr_i[31 : 12], 12'b0 };
 	assign imm_uj_type = { {12 {instr_i[31]}}, instr_i[19 : 12], instr_i[20], instr_i[30 : 21], 1'b0 };
 
-	assign rf_rs1_addr_o = instr_i[18 : 15];
-	assign rf_rs2_addr_o = instr_i[23 : 20];
-	assign rf_rd_addr_o  = instr_i[10 : 7];
+	assign rf_rs1_addr_o = instr_i[15 + $clog2(`GP_REG_COUNT) - 1 : 15];
+	assign rf_rs2_addr_o = instr_i[20 + $clog2(`GP_REG_COUNT) - 1 : 20];
+	assign rf_rd_addr_o  = instr_i[7  + $clog2(`GP_REG_COUNT) - 1 : 7];
 
 	assign sub_func_3 = instr_i[14 : 12];
 	assign sub_func_7 = instr_i[31 : 25];
