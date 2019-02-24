@@ -20,8 +20,11 @@ module riscv_top_tb (
 		rst_n = 1;
 	end
 
-	riscv_top riscv_top 
-	(
+	riscv_top
+	#(
+	    .BOOT_ADDRESS(`BOOT_ADDRESS),
+	    .MEM_SIZE(`MEM_SIZE)
+	) riscv_top (
 		.clk      (clk),    // Clock
 		.rst_n    (rst_n),   // Asynchronous reset active low
 		
@@ -40,8 +43,9 @@ module riscv_top_tb (
 	end
 
 	final begin
-		if(`DUMP_TRACE == 1) begin
+	if(`DUMP_TRACE == 1) begin
 			$display ("Test Result: %c%c", riscv_top.riscv_core.reg_file.mem[11], riscv_top.riscv_core.reg_file.mem[12]);
 		end
-	end
+ 	end
+
 endmodule

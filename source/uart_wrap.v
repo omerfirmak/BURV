@@ -41,7 +41,7 @@ module uart_wrap (
 
 	uart uart_core(
 		.clk				(clk), // The master clock for this module
-		.rst				(~rst_n), // Synchronous reset.
+		.rst_n				(rst_n), // Synchronous reset.
 		.rx					(rx_i), // Incoming serial line
 		.tx					(tx_o), // Outgoing serial line
 		.transmit			(transmit_en), // Signal to transmit
@@ -82,6 +82,7 @@ module uart_wrap (
 
 	always @(posedge clk or negedge rst_n) begin
 		if(~rst_n) begin
+			ready_o <= 0;
 			received_latched <= 0;
 		end else begin
 			if (received)

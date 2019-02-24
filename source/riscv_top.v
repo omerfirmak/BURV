@@ -3,12 +3,18 @@
 `include "riscv_defines.v"
 `include "alu_defines.v"
 
-module riscv_top (
+module riscv_top 
+#(
+    parameter BOOT_ADDRESS = 0,
+    parameter MEM_SIZE = 2048
+)(
 	input wire clk,    // Clock
 	input wire rst_n,   // Asynchronous reset active low
 
 	input  wire uart_rx_i,
-	output wire uart_tx_o
+	output wire uart_tx_o,
+	
+	inout  wire led
 );
 	// Instruction memory interface
 	wire imem_valid;
@@ -80,7 +86,7 @@ module riscv_top (
 
 	riscv_core 
 	#(
-		.BOOT_ADDRESS(`BOOT_ADDRESS)
+		.BOOT_ADDRESS(BOOT_ADDRESS)
 	)
 	riscv_core
 	(
@@ -150,6 +156,9 @@ module riscv_top (
 		.m2_rdata_i	(imem_s2_rdata)
 	);
 
+	assign imem_s1_ready = 0;
+	assign imem_s1_rdata = 0;
+
 	assign imem_s2_ready = 0;
 	assign imem_s2_rdata = 0;
 
@@ -198,51 +207,47 @@ module riscv_top (
 
 	dp_ram
 	#(
-		.INIT_FILE_BIN("firmware.txt"),
-	    .SIZE_BYTES(`MEM_SIZE)
+		.INIT_FILE_BIN("/home/omer/Dropbox/simple_riscv/firmware.txt"),
+	    .SIZE_BYTES(MEM_SIZE)
 	) ram (
 		.clk      (clk),
 
 		// Instruction memory interface
-		.a_valid_i(imem_s0_valid),
-		.a_ready_o(imem_s0_ready),
+		.a_valid_i(dmem_s0_valid),
+		.a_ready_o(dmem_s0_ready),
 
-		.a_addr_i (imem_s0_addr),
-		.a_wdata_i(imem_s0_wdata),
-		.a_we_i   (imem_s0_we),
-		.a_rdata_o(imem_s0_rdata),
-
-		// Data memory interface
-		.b_valid_i(dmem_s0_valid),
-		.b_ready_o(dmem_s0_ready),
-
-		.b_addr_i (dmem_s0_addr),
-		.b_wdata_i(dmem_s0_wdata),
-		.b_we_i   (dmem_s0_we),
-		.b_rdata_o(dmem_s0_rdata)
-	);
-
-	dp_rom 
-	#(
-		.INIT_FILE_BIN(""),
-	    .SIZE_BYTES(`MEM_SIZE)
-	) bootrom (
-		.clk      (clk),
-
-		// Instruction memory interface
-		.a_valid_i(imem_s1_valid),
-		.a_ready_o(imem_s1_ready),
-
-		.a_addr_i (imem_s1_addr),
-		.a_rdata_o(imem_s1_rdata),
+		.a_addr_i (dmem_s0_addr),
+		.a_wdata_i(dmem_s0_wdata),
+		.a_we_i   (dmem_s0_we),
+		.a_rdata_o(dmem_s0_rdata),
 
 		// Data memory interface
-		.b_valid_i(dmem_s1_valid),
-		.b_ready_o(dmem_s1_ready),
+		.b_valid_i(imem_s0_valid),
+		.b_ready_o(imem_s0_ready),
 
-		.b_addr_i (dmem_s1_addr),
-		.b_rdata_o(dmem_s1_rdata)
+		.b_addr_i (imem_s0_addr),
+		.b_rdata_o(imem_s0_rdata)
 	);
+
+    wire [31 : 0] gpio_pins;
+
+	gpio gpio (
+		.clk    (clk),    // Clock
+		.rst_n  (rst_n),  // Asynchronous reset active low
+
+		// Data memory interface
+		.valid_i(dmem_s1_valid),
+		.ready_o(dmem_s1_ready),
+
+		.addr_i (dmem_s1_addr),
+		.wdata_i(dmem_s1_wdata),
+		.we_i   (dmem_s1_we),
+		.rdata_o(dmem_s1_rdata),
+
+		.gpio   (gpio_pins)
+	);
+
+    assign led = gpio_pins[0];
 
 	uart_wrap uart (
 		.clk 	(clk),

@@ -42,13 +42,13 @@ module dp_rom
         
         if (a_valid_i) begin
             a_ready_o <= 1;
-        end
             a_rdata_o <= mem[a_addr];
+        end
 
         if (b_valid_i) begin
             b_ready_o <= 1;
-        end
             b_rdata_o <= mem[b_addr];
+        end
 
     end
 

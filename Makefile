@@ -2,7 +2,7 @@ MODULE = riscv_top
 
 TECH=osu018
 
-COMMON_SRC = ./source/mem_bus_arbiter.v ./source/dp_ram.v ./source/dp_rom.v ./source/riscv_top.v ./source/uart.v ./source/uart_wrap.v
+COMMON_SRC = ./source/mem_bus_arbiter.v ./source/dp_ram.v ./source/dp_rom.v ./source/riscv_top.v ./source/uart.v ./source/uart_wrap.v ./source/gpio.v
 
 VERILOG_SRC = 	./source/alu.v 				\
 				./source/reg_file.v			\
@@ -99,3 +99,6 @@ sta:
 
 prepare_ld:
 	gcc -E -x c $(DEFINE_FLAGS) software/link.ld | grep -v '^#' > software/out.ld
+
+synth_fpga:
+	yosys -ql synth_fpga.log -p 'synth_ice40 -top riscv_top; write_verilog synth.v' $(SIM_SRC) $(COMMON_SRC)

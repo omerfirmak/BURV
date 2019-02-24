@@ -24,8 +24,6 @@ module dp_ram
     output reg  b_ready_o,
 
     input  wire [`RISCV_ADDR_WIDTH - 1 : 0] b_addr_i,
-    input  wire [`RISCV_WORD_WIDTH - 1 : 0] b_wdata_i,
-    input  wire [3 : 0]                     b_we_i,
     output reg  [`RISCV_WORD_WIDTH - 1 : 0] b_rdata_o
 );
 
@@ -42,7 +40,6 @@ module dp_ram
 
     always @(posedge clk) begin
         a_ready_o <= 0;
-        b_ready_o <= 0;
         
         if (a_valid_i) begin
             if (a_we_i[0]) mem[a_addr][7 : 0] <= a_wdata_i[7 : 0];
@@ -51,19 +48,18 @@ module dp_ram
             if (a_we_i[3]) mem[a_addr][31 : 24] <= a_wdata_i[31 : 24];
 
             a_ready_o <= 1;
-        end
             a_rdata_o <= mem[a_addr];
+        end
+      
+        b_ready_o <= 0;
 
         if (b_valid_i) begin
-            if (b_we_i[0]) mem[b_addr][7 : 0] <= b_wdata_i[7 : 0];
-            if (b_we_i[1]) mem[b_addr][15 : 8] <= b_wdata_i[15 : 8];
-            if (b_we_i[2]) mem[b_addr][23 : 16] <= b_wdata_i[23 : 16];
-            if (b_we_i[3]) mem[b_addr][31 : 24] <= b_wdata_i[31 : 24];
-
             b_ready_o <= 1;
-        end
             b_rdata_o <= mem[b_addr];
+        end
     end
+
+
 
 `ifdef VERILATOR
     function [31:0] readWord;
