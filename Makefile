@@ -42,7 +42,7 @@ MEM_ORIGIN=0
 MEM_LENGTH=\(MEM_SIZE-STACK_LENGTH\)
 STACK_LENGTH=65536
 STACK_ORIGIN=\(MEM_SIZE-STACK_LENGTH\)
-CFLAGS = -O3 -g0 -falign-functions=16 -funroll-all-loops
+CFLAGS = -O2 -falign-functions=16 -funroll-all-loops
 
 COMMON_C_SRC = software/start.S software/handlers.c software/print.c
 

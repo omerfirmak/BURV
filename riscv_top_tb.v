@@ -43,9 +43,7 @@ module riscv_top_tb (
 	end
 
 	final begin
-	if(`DUMP_TRACE == 1) begin
-			$display ("Test Result: %c%c", riscv_top.riscv_core.reg_file.mem[11], riscv_top.riscv_core.reg_file.mem[12]);
-		end
+		$display ("Test Result: %c%c", riscv_top.riscv_core.reg_file.mem[11], riscv_top.riscv_core.reg_file.mem[12]);
  	end
 
 endmodule

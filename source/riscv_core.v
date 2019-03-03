@@ -134,7 +134,6 @@ module riscv_core
 	reg_file reg_file
 	(
 		.clk 			(clk),
-		.rst_n			(rst_n),
 
 		.write_data_i	(rf_write_data),
 		.write_addr_i	(rf_write_addr),

@@ -5,7 +5,6 @@
 
 module reg_file (
     input wire clk,
-    input wire rst_n,
 
     input wire [`RISCV_WORD_WIDTH - 1 : 0] 	    write_data_i,
     input wire [$clog2(`GP_REG_COUNT) - 1 : 0]  write_addr_i,
@@ -38,16 +37,10 @@ module reg_file (
     end
 
     // Latch input data to actual registers
-    always @(posedge clk or negedge rst_n) begin
-        if (~rst_n) begin
-            for (i = 0; i < `GP_REG_COUNT; i = i +1) begin
-                mem[i] <= 0;
-            end        
-        end else begin
-            for (i = 0; i < `GP_REG_COUNT; i = i +1) begin
-                if (mem_we[i] == 1'b1)
-                    mem[i] <= write_data_i;
-            end
+    always @(posedge clk) begin
+        for (i = 0; i < `GP_REG_COUNT; i = i +1) begin
+            if (mem_we[i] == 1'b1)
+                mem[i] <= write_data_i;
         end
     end
 
