@@ -32,7 +32,7 @@ module mont_mul (
 				N[i] <= 0;
 			end
 		end else begin
-			if (in_valid) begin
+			if (in_valid && CS == IDLE) begin
 				case (in_operand)	
 					`MONT_MUL_OPERAND_A: A[in_offset] <= in_word;
 					`MONT_MUL_OPERAND_B: B[in_offset] <= in_word;
@@ -50,17 +50,19 @@ module mont_mul (
 	localparam FINISH  = 2'd3;
 
 
-	wire [127 : 0] B_packed = {B[3], B[2], B[1], B[0]};
-	wire [127 : 0] N_packed = {N[3], N[2], N[1], N[0]};
+	wire [129 : 0] B_packed = {2'b0, B[3], B[2], B[1], B[0]};
+	wire [129 : 0] N_packed = {2'b0, N[3], N[2], N[1], N[0]};
 
 	reg [1 : 0]   CS, NS;
 	reg [7 : 0]	  counter;
-	reg [128 : 0] M,
+	reg [129 : 0] M,
 				  M_n;
 
 
 	always @* begin
 		NS = CS;
+		M_n = M;
+
 		case (CS)
 			IDLE:
 			begin
@@ -70,10 +72,14 @@ module mont_mul (
 			RUNNING:
 			begin
 				if (counter[7]) NS = CLEANUP;
+				if (A[0][0]) 	M_n = M_n + B_packed;
+				if (M_n[0]) 	M_n = (M_n + N_packed) >> 1;
+				else 			M_n = M_n >> 1;
 			end
 			CLEANUP:
 			begin
 				NS = IDLE;
+				if (M_n >= N_packed) M_n = M_n - N_packed;
 			end
 			FINISH: NS = IDLE;
 			default : /* default */;
@@ -90,6 +96,7 @@ module mont_mul (
 			CS <= NS;
 			M <= M_n;
 			counter <= CS == RUNNING ? counter + 1 : 0;
+//			if (CS == RUNNING) A <= {1'b0, A[127 : 1]};
 		end
 	end
 
