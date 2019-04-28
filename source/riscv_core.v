@@ -100,6 +100,20 @@ module riscv_core
 	wire 									lsu_done;
 	wire 									lsu_err;
 
+	wire 									mm_lsu_en;
+	wire 									mm_lsu_w_en;
+	wire 									mm_lsu_r_en; 	
+	wire [1 : 0] 							mm_lsu_data_type;
+	wire [`RISCV_WORD_WIDTH - 1 : 0] 		mm_lsu_wdata;
+	wire [`RISCV_ADDR_WIDTH - 1 : 0] 		mm_lsu_addr;
+
+	wire 									mm_start;
+	wire [`RISCV_ADDR_WIDTH - 1 : 0] 		mm_A_addr;
+	wire [`RISCV_ADDR_WIDTH - 1 : 0] 		mm_B_addr;
+	wire [`RISCV_ADDR_WIDTH - 1 : 0] 		mm_N_addr;
+	wire [`RISCV_ADDR_WIDTH - 1 : 0] 		mm_res_addr;
+	wire 									mm_done;
+
 	alu alu
 	(
 		.alu_op_i 		(alu_op),
@@ -277,15 +291,38 @@ module riscv_core
 		.interrupt_enable_o (interrupt_enable)
 	);
 
+	mont_mul mont_mul (
+		.clk 		(clk),    // Clock
+		.rst_n    	(rst_n),  // Asynchronous reset active low
+		
+		.start      (mm_start),
+		.A_addr     (mm_A_addr),
+		.B_addr     (mm_B_addr),
+		.N_addr     (mm_N_addr),
+		.res_addr   (mm_res_addr),
+
+		.lsu_ren    (mm_lsu_r_en),
+		.lsu_wen    (mm_lsu_w_en),
+		.lsu_type   (mm_lsu_data_type),
+		.lsu_addr   (mm_lsu_addr),
+		.lsu_done   (lsu_done),
+		.lsu_rdata  (lsu_rdata),
+		.lsu_wdata  (mm_lsu_wdata),
+
+		.result     (),
+		.done       (mm_done)
+	);
+
 	assign lsu_en = lsu_w_en | lsu_r_en;
+	assign mm_lsu_en = mm_lsu_w_en | mm_lsu_r_en;
 
 	lsu lsu
 	(
-		.w_en_i       (lsu_w_en & instr_valid & ~save_epc),
-		.r_en_i       (lsu_r_en & instr_valid & ~save_epc),
-		.type_i       (lsu_data_type),
-		.wdata_i      (rf_read_data_2),
-		.addr_i       (alu_result),
+		.w_en_i       ((mm_lsu_w_en | lsu_w_en) & instr_valid & ~save_epc),
+		.r_en_i       ((mm_lsu_r_en | lsu_r_en) & instr_valid & ~save_epc),
+		.type_i       (mm_lsu_en ? mm_lsu_data_type : lsu_data_type),
+		.wdata_i      (mm_lsu_en ? mm_lsu_wdata : rf_read_data_2),
+		.addr_i       (mm_lsu_en ? mm_lsu_addr : alu_result),
 		.sign_extend_i(lsu_sign_extend),
 
 		.err_o    	  (lsu_err),
