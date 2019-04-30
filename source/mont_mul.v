@@ -8,10 +8,8 @@ module mont_mul (
 	input wire rst_n,  // Asynchronous reset active low
 	
 	input wire 							  start,
-	input wire [31 : 0] 				  A_addr,
-	input wire [31 : 0] 				  B_addr,
-	input wire [31 : 0] 				  N_addr,
-
+	input wire [31 : 0] 				  op_addr,
+	input wire [31 : 0] 				  N_addr,		
 	input wire [31 : 0] 				  res_addr,
 
 	output reg						  	  lsu_ren,
@@ -32,15 +30,13 @@ module mont_mul (
 				  N[3 : 0];
 
 
-	reg [31 : 0] A_addr_latched,
-	 	 		 B_addr_latched,
+	reg [31 : 0] op_addr_latched,
 	 	 		 N_addr_latched,
 	 	 		 res_addr_latched;
 
 	always @(posedge clk or negedge rst_n) begin
 		if(~rst_n) begin
-			A_addr_latched <= 0;
-			B_addr_latched <= 0;
+			op_addr_latched <= 0;
 			N_addr_latched <= 0;
 			res_addr_latched <= 0;
 			for (i = 0; i < 4; i++) begin
@@ -50,9 +46,11 @@ module mont_mul (
 			end
 		end else begin
 			if (start && CS == IDLE) begin
-				A_addr_latched <= A_addr;
-				B_addr_latched <= B_addr;
+				op_addr_latched <= op_addr;
 				N_addr_latched <= N_addr;
+			end
+
+			if (CS == IDLE) begin
 				res_addr_latched <= res_addr;
 			end
 
@@ -114,14 +112,13 @@ module mont_mul (
 					end
 				end
 
-				case (counter_n[3 : 2])
-					0: lsu_addr = A_addr_latched;
-					1: lsu_addr = B_addr_latched;
-					2: lsu_addr = N_addr_latched;
-					default :lsu_addr = A_addr_latched;
+				case (counter_n[3])
+					0: lsu_addr = op_addr_latched;
+					1: lsu_addr = N_addr_latched;
+					default :;
 				endcase
 
-				lsu_addr = lsu_addr + {28'h0, counter_n[1 : 0], 2'h0};
+				lsu_addr = lsu_addr + {27'h0, counter_n[2 : 0], 2'h0};
 			end
 			RUNNING:
 			begin

@@ -25,8 +25,7 @@ module mont_mul_tb (
 		
 		.start(start),
 
-		.A_addr(32'd0),
-		.B_addr(32'd16),
+		.op_addr(32'd0),
 		.N_addr(32'd32),
 		.res_addr(32'd48),
 

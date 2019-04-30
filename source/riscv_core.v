@@ -108,8 +108,7 @@ module riscv_core
 	wire [`RISCV_ADDR_WIDTH - 1 : 0] 		mm_lsu_addr;
 
 	wire 									mm_start;
-	wire [`RISCV_ADDR_WIDTH - 1 : 0] 		mm_A_addr;
-	wire [`RISCV_ADDR_WIDTH - 1 : 0] 		mm_B_addr;
+	wire [`RISCV_ADDR_WIDTH - 1 : 0] 		mm_op_addr;
 	wire [`RISCV_ADDR_WIDTH - 1 : 0] 		mm_N_addr;
 	wire [`RISCV_ADDR_WIDTH - 1 : 0] 		mm_res_addr;
 	wire 									mm_done;
@@ -296,8 +295,7 @@ module riscv_core
 		.rst_n    	(rst_n),  // Asynchronous reset active low
 		
 		.start      (mm_start),
-		.A_addr     (mm_A_addr),
-		.B_addr     (mm_B_addr),
+		.op_addr    (mm_op_addr),
 		.N_addr     (mm_N_addr),
 		.res_addr   (mm_res_addr),
 
