@@ -17,6 +17,9 @@ module controller (
 	input wire illegal_inst_i,
 	input wire irq_i,
 
+	input wire mm_start_i,
+	input wire mm_done_i,
+
 	input wire lsu_en_i,
 	input wire lsu_done_i,
 	input wire lsu_err_i,
@@ -75,6 +78,7 @@ module controller (
 									NS = MULTI_CYCLE_OP;
 								end
 							end
+							mm_start_i,
 							jump_inst_i:
 							begin
 								retire_o = 0;
@@ -120,7 +124,9 @@ module controller (
 				end
 				MULTI_CYCLE_OP:
 				begin
-					if (lsu_en_i & ~lsu_done_i)  begin
+					if ((lsu_en_i & ~lsu_done_i) || 
+						(mm_start_i & ~mm_done_i))  begin
+						retire_o = 0;
 						NS = MULTI_CYCLE_OP;
 						deassert_rf_wen_n_o = 0;						
 					end else if (jump_inst_i | branch_inst_i)  begin

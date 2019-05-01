@@ -36,6 +36,8 @@ void clock(int times)
 }
 
 int main(int argc, char **argv, char **env) {
+    srand(time(NULL));
+
     Verilated::commandArgs(argc, argv);
     top = new Vriscv_top;
 

@@ -109,7 +109,6 @@ module riscv_core
 
 	wire 									mm_start;
 	wire [`RISCV_ADDR_WIDTH - 1 : 0] 		mm_op_addr;
-	wire [`RISCV_ADDR_WIDTH - 1 : 0] 		mm_N_addr;
 	wire [`RISCV_ADDR_WIDTH - 1 : 0] 		mm_res_addr;
 	wire 									mm_done;
 
@@ -224,6 +223,8 @@ module riscv_core
 		.lsu_data_type_o  (lsu_data_type),
 		.lsu_sign_extend_o(lsu_sign_extend),
 
+		.mm_start_o       (mm_start),
+
 		.csr_op_o         (csr_op),	
 		.csr_addr_o       (csr_addr),	
 
@@ -251,6 +252,9 @@ module riscv_core
 		.mret_inst_i      (mret_inst),
 		.illegal_inst_i   (illegal_inst),
 		.irq_i            (irq_i & interrupt_enable),
+
+		.mm_start_i       (mm_start),
+		.mm_done_i        (mm_done),
 
 		.lsu_en_i         (lsu_en),
 		.lsu_done_i       (lsu_done),
@@ -295,9 +299,8 @@ module riscv_core
 		.rst_n    	(rst_n),  // Asynchronous reset active low
 		
 		.start      (mm_start),
-		.op_addr    (mm_op_addr),
-		.N_addr     (mm_N_addr),
-		.res_addr   (mm_res_addr),
+		.op_addr    (rf_read_data_1),
+		.res_addr   (rf_read_data_2),
 
 		.lsu_ren    (mm_lsu_r_en),
 		.lsu_wen    (mm_lsu_w_en),

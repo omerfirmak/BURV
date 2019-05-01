@@ -27,6 +27,8 @@ module decoder (
 	output reg [1 : 0] lsu_data_type_o,
 	output reg lsu_sign_extend_o,
 
+	output reg mm_start_o,
+
 	output reg  [1 : 0]  csr_op_o,	
 	output wire [11 : 0] csr_addr_o,	
 
@@ -99,6 +101,8 @@ module decoder (
 		lsu_sign_extend_o = 0;
 
 		csr_op_o = `CSR_OP_NONE;
+
+		mm_start_o = 0;
 
 		case (opcode)
 			`OPCODE_OPIMM:
@@ -293,6 +297,11 @@ module decoder (
 					rf_we_o = 1;
 					rf_write_sel_o = `RF_WRITE_CSR_OUT;
 				end;
+			end
+			`OPCODE_CUSTOM0:
+			begin
+				illegal_inst = sub_func_3 != 0 || imm_s_type != 128;
+				mm_start_o = ~illegal_inst;
 			end
 			default: illegal_inst = 1'b1;
 		endcase

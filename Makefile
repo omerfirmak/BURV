@@ -15,6 +15,7 @@ VERILOG_SRC = 	./source/alu.v 				\
 				./source/csr.v			\
 				./source/fetch_stage.v		\
 				./source/realign_buffer.v 	\
+				./source/mont_mul.v 	\
 				./source/axilite_master.v
 
 POST_SYNTH_SRC = ./riscv_core.rtlnopwr.v 	\
@@ -56,7 +57,7 @@ bootrom: STACK_ORIGIN=0
 bootrom: STACK_LENGTH=MEM_SIZE 
 bootrom: SRC=software/bootrom.c
 compile_test bootrom firmware: prepare_ld
-	riscv32-unknown-elf-gcc -I./software $(CFLAGS) -march=rv32e -mabi=ilp32e -nostartfiles -T software/out.ld $(COMMON_C_SRC) $(SRC) -o firmware.elf
+	riscv32-unknown-elf-gcc -I./software $(CFLAGS) -march=rv32ec -mabi=ilp32e -nostartfiles -T software/out.ld $(COMMON_C_SRC) $(SRC) -o firmware.elf
 	riscv32-unknown-elf-objdump --disassembler-options=no-aliases,numeric -D firmware.elf > firmware.dump
 	riscv32-unknown-elf-objcopy -O binary firmware.elf firmware.bin
 	cat firmware.bin | od -t x4 -w4 -v -A n > firmware.txt
@@ -82,7 +83,7 @@ sim_verilator: compile_verilator
 	-./obj_dir/V$(MODULE)
 
 compile_verilator:
-	verilator $(DEFINE_FLAGS) --cc --trace $(SIM_SRC) $(COMMON_SRC) -I./source --exe $(MODULE)_tb.cpp --top-module $(MODULE)
+	verilator $(DEFINE_FLAGS) --cc --trace --x-assign unique $(SIM_SRC) $(COMMON_SRC) -I./source --exe $(MODULE)_tb.cpp --top-module $(MODULE)
 	make CXXFLAGS="$(DEFINE_FLAGS)" -j -C obj_dir/ -f V$(MODULE).mk V$(MODULE)
 
 sim_iverilog: compile_iverilog

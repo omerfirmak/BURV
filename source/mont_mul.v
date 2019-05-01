@@ -9,7 +9,6 @@ module mont_mul (
 	
 	input wire 							  start,
 	input wire [31 : 0] 				  op_addr,
-	input wire [31 : 0] 				  N_addr,		
 	input wire [31 : 0] 				  res_addr,
 
 	output reg						  	  lsu_ren,
@@ -47,10 +46,6 @@ module mont_mul (
 		end else begin
 			if (start && CS == IDLE) begin
 				op_addr_latched <= op_addr;
-				N_addr_latched <= N_addr;
-			end
-
-			if (CS == IDLE) begin
 				res_addr_latched <= res_addr;
 			end
 
@@ -112,13 +107,7 @@ module mont_mul (
 					end
 				end
 
-				case (counter_n[3])
-					0: lsu_addr = op_addr_latched;
-					1: lsu_addr = N_addr_latched;
-					default :;
-				endcase
-
-				lsu_addr = lsu_addr + {27'h0, counter_n[2 : 0], 2'h0};
+				lsu_addr = op_addr_latched + {26'h0, counter_n[3 : 0], 2'h0};
 			end
 			RUNNING:
 			begin

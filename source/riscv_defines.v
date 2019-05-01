@@ -43,6 +43,7 @@
 `define OPCODE_JAL         7'h6f
 `define OPCODE_AUIPC       7'h17
 `define OPCODE_LUI         7'h37
+`define OPCODE_CUSTOM0     7'h0B
 
 `define IMM_I  3'h0
 `define IMM_IZ  3'h1
