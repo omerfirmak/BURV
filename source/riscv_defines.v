@@ -57,6 +57,7 @@
 `define ALU_OP_SEL_RF  0
 `define ALU_OP_SEL_IMM  1
 `define ALU_OP_SEL_PC  2
+`define ALU_OP_SEL_MM  3
 
 `define RF_WRITE_ALU_OUT  2'h0
 `define RF_WRITE_LSU_OUT  2'h1

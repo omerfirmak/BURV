@@ -138,6 +138,8 @@ module controller (
 				default: NS = IDLE;
 			endcase
 		end
+
+		if (save_epc_o) $finish;
 	end
 
 
@@ -149,7 +151,7 @@ module controller (
 			CS <= NS;
 
 			if (NS == IDLE) cycle_counter_o <= 0;
-			else 		  	cycle_counter_o <= cycle_counter_o + 1;
+			else			cycle_counter_o <= cycle_counter_o + 1;
 		end
 	end
 

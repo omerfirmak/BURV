@@ -36,7 +36,7 @@ module riscv_core
 	reg  [`RISCV_WORD_WIDTH - 1 : 0] 		alu_operand_a;
 	wire [1 : 0] 							alu_operand_a_sel;
 	reg  [`RISCV_WORD_WIDTH - 1 : 0] 		alu_operand_b;
-	wire 									alu_operand_b_sel;
+	wire [1 : 0]							alu_operand_b_sel;
 	wire [`RISCV_WORD_WIDTH - 1 : 0] 		alu_result;
 
 	// Register File signals
@@ -105,7 +105,8 @@ module riscv_core
 	wire 									mm_lsu_r_en; 	
 	wire [1 : 0] 							mm_lsu_data_type;
 	wire [`RISCV_WORD_WIDTH - 1 : 0] 		mm_lsu_wdata;
-	wire [`RISCV_ADDR_WIDTH - 1 : 0] 		mm_lsu_addr;
+	wire [`RISCV_ADDR_WIDTH - 1 : 0] 		mm_lsu_addr_base;
+	wire [`RISCV_ADDR_WIDTH - 1 : 0] 		mm_lsu_addr_offset;
 
 	wire 									mm_start;
 	wire [`RISCV_ADDR_WIDTH - 1 : 0] 		mm_op_addr;
@@ -123,15 +124,17 @@ module riscv_core
 	always @*
 	begin
 		case (alu_operand_a_sel)
-			`ALU_OP_SEL_RF: alu_operand_a = rf_read_data_1;
-			`ALU_OP_SEL_IMM:  alu_operand_a = imm_val;
-			`ALU_OP_SEL_PC:   alu_operand_a = instr_addr;
+			`ALU_OP_SEL_RF:  alu_operand_a = rf_read_data_1;
+			`ALU_OP_SEL_IMM: alu_operand_a = imm_val;
+			`ALU_OP_SEL_PC:  alu_operand_a = instr_addr;
+			`ALU_OP_SEL_MM:  alu_operand_a = mm_lsu_addr_base;
 			default: 		 alu_operand_a = rf_read_data_1;
 		endcase
 		
 		case (alu_operand_b_sel)
-			`ALU_OP_SEL_RF: alu_operand_b = rf_read_data_2;
-			`ALU_OP_SEL_IMM:  alu_operand_b = imm_val;
+			`ALU_OP_SEL_RF:  alu_operand_b = rf_read_data_2;
+			`ALU_OP_SEL_IMM: alu_operand_b = imm_val;
+			`ALU_OP_SEL_MM:  alu_operand_b = mm_lsu_addr_offset;
 			default: 		 alu_operand_b = rf_read_data_2;
 		endcase
 
@@ -299,13 +302,16 @@ module riscv_core
 		.rst_n    	(rst_n),  // Asynchronous reset active low
 		
 		.start      (mm_start),
-		.op_addr    (rf_read_data_1),
+		.A_addr     (rf_read_data_1),
+		.B_addr     (rf_read_data_2),
+		.N_addr     (rf_read_data_1),
 		.res_addr   (rf_read_data_2),
 
 		.lsu_ren    (mm_lsu_r_en),
 		.lsu_wen    (mm_lsu_w_en),
 		.lsu_type   (mm_lsu_data_type),
-		.lsu_addr   (mm_lsu_addr),
+		.lsu_addr_base   (mm_lsu_addr_base),
+		.lsu_addr_offset (mm_lsu_addr_offset),
 		.lsu_done   (lsu_done),
 		.lsu_rdata  (lsu_rdata),
 		.lsu_wdata  (mm_lsu_wdata),
@@ -323,7 +329,7 @@ module riscv_core
 		.r_en_i       ((mm_lsu_r_en | lsu_r_en) & instr_valid & ~save_epc),
 		.type_i       (mm_lsu_en ? mm_lsu_data_type : lsu_data_type),
 		.wdata_i      (mm_lsu_en ? mm_lsu_wdata : rf_read_data_2),
-		.addr_i       (mm_lsu_en ? mm_lsu_addr : alu_result),
+		.addr_i       (alu_result),
 		.sign_extend_i(lsu_sign_extend),
 
 		.err_o    	  (lsu_err),

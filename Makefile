@@ -25,10 +25,11 @@ SIM_SRC = $(VERILOG_SRC)
 
 TESTNAMES = $(wildcard ./tests/*.S)
 
+HARD_GF = 1
 DUMP_TRACE = 1
 BOOT_ADDRESS = 0
 MEM_SIZE = 262144
-DEFINE_FLAGS = -DBOOT_ADDRESS=$(BOOT_ADDRESS) -DMEM_SIZE=$(MEM_SIZE) -DDUMP_TRACE=$(DUMP_TRACE) -DMEM_ORIGIN=$(MEM_ORIGIN) -DMEM_LENGTH=$(MEM_LENGTH) -DSTACK_LENGTH=$(STACK_LENGTH) -DSTACK_ORIGIN=$(STACK_ORIGIN)
+DEFINE_FLAGS = -DBOOT_ADDRESS=$(BOOT_ADDRESS) -DMEM_SIZE=$(MEM_SIZE) -DDUMP_TRACE=$(DUMP_TRACE) -DMEM_ORIGIN=$(MEM_ORIGIN) -DMEM_LENGTH=$(MEM_LENGTH) -DSTACK_LENGTH=$(STACK_LENGTH) -DSTACK_ORIGIN=$(STACK_ORIGIN) -DHARD_GF=$(HARD_GF)
 
 all: firmware sim_iverilog
 test: compile_test sim_iverilog
@@ -57,7 +58,7 @@ bootrom: STACK_ORIGIN=0
 bootrom: STACK_LENGTH=MEM_SIZE 
 bootrom: SRC=software/bootrom.c
 compile_test bootrom firmware: prepare_ld
-	riscv32-unknown-elf-gcc -I./software $(CFLAGS) -march=rv32ec -mabi=ilp32e -nostartfiles -T software/out.ld $(COMMON_C_SRC) $(SRC) -o firmware.elf
+	riscv32-unknown-elf-gcc -I./software $(CFLAGS) $(DEFINE_FLAGS) -march=rv32ec -mabi=ilp32e -nostartfiles -T software/out.ld $(COMMON_C_SRC) $(SRC) -o firmware.elf
 	riscv32-unknown-elf-objdump --disassembler-options=no-aliases,numeric -D firmware.elf > firmware.dump
 	riscv32-unknown-elf-objcopy -O binary firmware.elf firmware.bin
 	cat firmware.bin | od -t x4 -w4 -v -A n > firmware.txt
@@ -74,16 +75,28 @@ COREMARK_SRC =  coremark/core_list_join.c \
 				coremark/cvt.c \
 				coremark/ee_printf.c
 
+FOURQ_SRC = FourQ_RV32/random/random.c \
+			FourQ_RV32/sha512/sha512.c \
+			FourQ_RV32/tests/$(FOURQ_TEST).c \
+			FourQ_RV32/tests/test_extras.c \
+			FourQ_RV32/crypto_util.c \
+			FourQ_RV32/eccp2.c \
+			FourQ_RV32/eccp2_no_endo.c \
+			FourQ_RV32/kex.c \
+			FourQ_RV32/schnorrq.c
+
+fourq:     CFLAGS =-O3 -fwrapv -fomit-frame-pointer -funroll-loops -D_RV32_ -D__OSNONE__ -DUSE_ENDO -D_NO_CACHE_MEM_ -I./FourQ_RV32
+fourq:     SRC=$(FOURQ_SRC)
 coremark:  SRC=$(COREMARK_SRC)
 dhrystone: SRC=dhrystone/dhrystone.c dhrystone/dhrystone_main.c
-coremark dhrystone: DUMP_TRACE=0
-coremark dhrystone: firmware sim_verilator
+fourq coremark dhrystone: DUMP_TRACE=0
+fourq coremark dhrystone: firmware sim_verilator
 
 sim_verilator: compile_verilator
 	-./obj_dir/V$(MODULE)
 
 compile_verilator:
-	verilator $(DEFINE_FLAGS) --cc --trace --x-assign unique $(SIM_SRC) $(COMMON_SRC) -I./source --exe $(MODULE)_tb.cpp --top-module $(MODULE)
+	verilator -O3 $(DEFINE_FLAGS) --cc --trace --x-assign unique $(SIM_SRC) $(COMMON_SRC) -I./source --exe $(MODULE)_tb.cpp --top-module $(MODULE)
 	make CXXFLAGS="$(DEFINE_FLAGS)" -j -C obj_dir/ -f V$(MODULE).mk V$(MODULE)
 
 sim_iverilog: compile_iverilog
@@ -103,3 +116,6 @@ prepare_ld:
 
 synth_fpga:
 	yosys -ql synth_fpga.log -p 'synth_ice40 -top riscv_top; write_verilog synth.v' $(SIM_SRC) $(COMMON_SRC)
+
+gcc_fourq:
+	gcc -O3 -fwrapv -fomit-frame-pointer -funroll-loops -D_RV32_ -D__OSNONE__ -DUSE_ENDO=1 -D_NO_CACHE_MEM_ -I./FourQ_RV32 $(CFLAGS) $(DEFINE_FLAGS) $(FOURQ_SRC)

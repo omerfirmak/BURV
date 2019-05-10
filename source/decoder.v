@@ -12,15 +12,15 @@ module decoder (
 	input wire cycle_counter_i, // Cycle of instruction being decoded
 
 	// Register file interface
-	output wire [$clog2(`GP_REG_COUNT) - 1 : 0]  rf_rs1_addr_o,
-	output wire [$clog2(`GP_REG_COUNT) - 1 : 0]  rf_rs2_addr_o,
+	output reg [$clog2(`GP_REG_COUNT) - 1 : 0]   rf_rs1_addr_o,
+	output reg [$clog2(`GP_REG_COUNT) - 1 : 0]   rf_rs2_addr_o,
 	output wire [$clog2(`GP_REG_COUNT) - 1 : 0]  rf_rd_addr_o,
 	output reg  							     rf_we_o,
 	output reg  [1 : 0]						 	 rf_write_sel_o,
 
 	output reg [`ALU_OP_WIDTH -1 : 0] alu_op_o,
     output reg [1 : 0] 			   	  operand_a_sel_o,
-    output reg  			      	  operand_b_sel_o,
+    output reg [1 : 0] 			      operand_b_sel_o,
 
 	output reg lsu_w_en_o,
 	output reg lsu_r_en_o, 	
@@ -69,8 +69,6 @@ module decoder (
 	assign imm_u_type  = { instr_i[31 : 12], 12'b0 };
 	assign imm_uj_type = { {12 {instr_i[31]}}, instr_i[19 : 12], instr_i[20], instr_i[30 : 21], 1'b0 };
 
-	assign rf_rs1_addr_o = instr_i[15 + $clog2(`GP_REG_COUNT) - 1 : 15];
-	assign rf_rs2_addr_o = instr_i[20 + $clog2(`GP_REG_COUNT) - 1 : 20];
 	assign rf_rd_addr_o  = instr_i[7  + $clog2(`GP_REG_COUNT) - 1 : 7];
 
 	assign sub_func_3 = instr_i[14 : 12];
@@ -80,6 +78,9 @@ module decoder (
 
 	always @* 
 	begin
+		rf_rs1_addr_o = instr_i[15 + $clog2(`GP_REG_COUNT) - 1 : 15];
+		rf_rs2_addr_o = instr_i[20 + $clog2(`GP_REG_COUNT) - 1 : 20];
+
 		ecall_inst_o = 0;
 		ebreak_inst_o = 0;
 		mret_inst_o = 0;
@@ -300,8 +301,16 @@ module decoder (
 			end
 			`OPCODE_CUSTOM0:
 			begin
-				illegal_inst = sub_func_3 != 0 || imm_s_type != 128;
-				mm_start_o = ~illegal_inst;
+				alu_op_o = `ALU_ADD;
+				operand_a_sel_o = `ALU_OP_SEL_MM;
+				operand_b_sel_o = `ALU_OP_SEL_MM;
+
+				if (cycle_counter_i) begin
+					rf_rs1_addr_o = instr_i[27 + $clog2(`GP_REG_COUNT) - 1 : 27];
+					rf_rs2_addr_o = rf_rd_addr_o;
+				end
+
+				mm_start_o = 1;
 			end
 			default: illegal_inst = 1'b1;
 		endcase
