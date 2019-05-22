@@ -6,11 +6,12 @@
 * Abstract: testing code for cryptographic functions based on FourQ 
 ************************************************************************************/   
 
+#include <stdlib.h>
+
 #include "../FourQ_api.h"
 #include "../FourQ_params.h"
 #include "test_extras.h"
 #include "print.h"
-
 
 // Benchmark and test parameters  
 #if defined(GENERIC_IMPLEMENTATION)

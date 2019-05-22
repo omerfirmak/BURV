@@ -11,13 +11,14 @@
 #include "../FourQ_tables.h"
 #include "test_extras.h"
 #include <stdio.h>
-
+#include "encoding.h"
 
 // Benchmark and test parameters 
-#define BENCH_LOOPS       100       // Number of iterations per bench
-#define SHORT_BENCH_LOOPS 10        // Number of iterations per bench (for expensive operations)
-#define TEST_LOOPS        1000      // Number of iterations per test
+#define BENCH_LOOPS       1       // Number of iterations per bench
+#define SHORT_BENCH_LOOPS 1        // Number of iterations per bench (for expensive operations)
+#define TEST_LOOPS        1      // Number of iterations per test
 
+#define printf print_str
 
 bool ecc_test()
 {
@@ -163,8 +164,8 @@ bool ecc_test()
     unsigned int digits[65], sign_masks[65];
     uint64_t k[4];
     int i;
-
-    for (n=0; n<TEST_LOOPS*10; n++)
+    
+    for (n=0; n<10; n++)
     {
         random_scalar_test(k);
         decompose(k, scalars);  
@@ -187,7 +188,8 @@ bool ecc_test()
                 acc3 -= ((digits[i] >> 1) & 1);
                 acc4 -= ((digits[i] >> 2) & 1);
             }
-        }   
+        }
+
         if (scalar[0] != acc1 || scalar[1] != acc2  || scalar[2] != acc3 || scalar[3] != acc4) { passed=0; break; }
     }
     
@@ -358,8 +360,9 @@ bool ecc_run()
         nsec2 = cpu_nseconds();
         nsec = nsec+(nsec2-nsec1);
     }
-    printf("  Point doubling runs in ...                                       %8lld nsec", nsec/(BENCH_LOOPS*10));
-    printf("\n");
+    print_str("  Point doubling runs in ............................................... ");
+    print_dec(nsec);
+    print_str(" clk \n");
 
     // Point addition (twisted Edwards a=-1)
     eccset(A);
@@ -390,8 +393,10 @@ bool ecc_run()
         nsec2 = cpu_nseconds();
         nsec = nsec+(nsec2-nsec1);
     }
-    printf("  Point addition runs in ...                                       %8lld nsec", nsec/(BENCH_LOOPS*10));
-    printf("\n");
+
+    print_str("  Point addition runs in ............................................... ");
+    print_dec(nsec);
+    print_str(" clk \n");
    
 #if (USE_ENDO == true)
     // Psi endomorphism
@@ -415,8 +420,10 @@ bool ecc_run()
         nsec2 = cpu_nseconds();
         nsec = nsec+(nsec2-nsec1);
     }
-    printf("  Psi mapping runs in ...                                          %8lld nsec", nsec/(BENCH_LOOPS*10));
-    printf("\n");
+
+    print_str("  Psi mapping runs in ............................................... ");
+    print_dec(nsec);
+    print_str(" clk \n");
    
     // Phi endomorphism
     eccset(A);
@@ -439,8 +446,10 @@ bool ecc_run()
         nsec2 = cpu_nseconds();
         nsec = nsec+(nsec2-nsec1);
     }
-    printf("  Phi mapping runs in ...                                          %8lld nsec", nsec/(BENCH_LOOPS*10));
-    printf("\n");
+
+    print_str("  Phi mapping runs in ............................................... ");
+    print_dec(nsec);
+    print_str(" clk \n");
    
     // Scalar decomposition
     {
@@ -465,8 +474,9 @@ bool ecc_run()
         nsec = nsec+(nsec2-nsec1);
     }
     
-    printf("  Scalar decomposition runs in ...                                 %8lld nsec", nsec/(BENCH_LOOPS*10));
-    printf("\n");
+    print_str("  Scalar decomposition runs in ............................................... ");
+    print_dec(nsec);
+    print_str(" clk \n");
     }
 
     // Scalar recoding
@@ -492,8 +502,9 @@ bool ecc_run()
         nsec = nsec+(nsec2-nsec1);
     }
     
-    printf("  Scalar recoding runs in ...                                      %8lld nsec", nsec/(BENCH_LOOPS*10));
-    printf("\n");  
+    print_str("  Scalar recoding runs in ............................................... ");
+    print_dec(nsec);
+    print_str(" clk \n");
     }
 #endif
 
@@ -509,9 +520,9 @@ bool ecc_run()
         nsec2 = cpu_nseconds();
         nsec = nsec+(nsec2-nsec1);
     }
-    
-    printf("  Precomputation runs in ...                                       %8lld nsec", nsec/BENCH_LOOPS);
-    printf("\n");  
+    print_str("  Precomputation runs in ............................................... ");
+    print_dec(nsec);
+    print_str(" clk \n");
 
     // Table lookup
     eccset(A);
@@ -536,8 +547,9 @@ bool ecc_run()
         nsec = nsec+(nsec2-nsec1);
     } 
     
-    printf("  Table lookup runs in ...                                         %8lld nsec", nsec/(BENCH_LOOPS*10));
-    printf("\n");  
+    print_str("  Table lookup runs in ............................................... ");
+    print_dec(nsec);
+    print_str(" clk \n");
 
     // Scalar multiplication
     random_scalar_test(scalar); 
@@ -557,8 +569,9 @@ bool ecc_run()
         nsec = nsec+(nsec2-nsec1);
     }
     
-    printf("  Scalar multiplication (without clearing cofactor) runs in ...    %8lld nsec", nsec/SHORT_BENCH_LOOPS);
-    printf("\n"); 
+    print_str("  Scalar multiplication (without clearing cofactor) runs in ................ ");
+    print_dec(nsec);
+    print_str(" clk \n");
     
     random_scalar_test(scalar); 
 
@@ -577,8 +590,9 @@ bool ecc_run()
         nsec = nsec+(nsec2-nsec1);
     }
     
-    printf("  Scalar multiplication (including clearing cofactor) runs in ...  %8lld nsec", nsec/SHORT_BENCH_LOOPS);
-    printf("\n"); 
+    print_str("  Scalar multiplication (including clearing cofactor) runs in ................... ");
+    print_dec(nsec);
+    print_str(" clk \n");
      
     {      
     point_precomp_t T;
@@ -605,8 +619,9 @@ bool ecc_run()
         nsec = nsec+(nsec2-nsec1);
     }
     
-    printf("  Reduction modulo the order runs in ...                           %8lld nsec", nsec/(BENCH_LOOPS*10));
-    printf("\n"); 
+    print_str("  Reduction modulo the order runs in ............................................... ");
+    print_dec(nsec);
+    print_str(" clk \n");
 
     // Scalar recoding using the mLSB-set representation 
     random_scalar_test(scalar); 
@@ -629,8 +644,9 @@ bool ecc_run()
         nsec = nsec+(nsec2-nsec1);
     }
     
-    printf("  Fixed-base recoding runs in ...                                  %8lld nsec", nsec/(SHORT_BENCH_LOOPS*10));
-    printf("\n"); 
+    print_str("  Fixed-base recoding runs in ............................................... ");
+    print_dec(nsec);
+    print_str(" clk \n");
 
     // Table lookup for fixed-base scalar multiplication
     eccset(A);
@@ -653,8 +669,9 @@ bool ecc_run()
         nsec = nsec+(nsec2-nsec1);
     }
     
-    printf("  Fixed-base table lookup runs in ...                              %8lld nsec", nsec/(BENCH_LOOPS*10));
-    printf("\n");   
+    print_str("  Fixed-base table lookup runs in ............................................... ");
+    print_dec(nsec);
+    print_str(" clk \n");
 
     // Fixed-base scalar multiplication  
     eccset(A);
@@ -669,8 +686,9 @@ bool ecc_run()
         nsec = nsec+(nsec2-nsec1);
     } 
     
-    printf("  Fixed-base scalar mul runs in ...                                %8lld nsec with w=%d and v=%d", nsec/SHORT_BENCH_LOOPS, W_FIXEDBASE, V_FIXEDBASE);
-    printf("\n"); 
+    print_str("  Fixed-base scalar mul runs in ............................................... ");
+    print_dec(nsec);
+    print_str(" clk \n");
     }
 
     {    
@@ -694,8 +712,9 @@ bool ecc_run()
         nsec = nsec+(nsec2-nsec1);
     }
     
-    printf("  Double scalar mul runs in ...                                    %8lld nsec with wP=%d and wQ=%d", nsec/SHORT_BENCH_LOOPS, WP_DOUBLEBASE, WQ_DOUBLEBASE);
-    printf("\n"); 
+    print_str("  Double scalar mul runs in ............................................... ");
+    print_dec(nsec);
+    print_str(" clk \n");
     }
 
     return OK;
@@ -706,7 +725,7 @@ int main()
 {
     bool OK = true;
 
-    OK = OK && ecc_test();         // Test FourQ's curve functions
+//  OK = OK && ecc_test();         // Test FourQ's curve functions
     OK = OK && ecc_run();          // Benchmark FourQ's curve functions
     
     return OK;
