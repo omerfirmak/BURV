@@ -90,7 +90,7 @@ fourq:     SRC=$(FOURQ_SRC)
 coremark:  SRC=$(COREMARK_SRC)
 dhrystone: SRC=dhrystone/dhrystone.c dhrystone/dhrystone_main.c
 fourq coremark dhrystone: DUMP_TRACE=0
-fourq coremark dhrystone: firmware sim_verilator
+fourq coremark dhrystone: firmware sim_iverilog
 
 sim_verilator: compile_verilator
 	-./obj_dir/V$(MODULE)
@@ -119,3 +119,6 @@ synth_fpga:
 
 gcc_fourq:
 	gcc -O3 -fwrapv -fomit-frame-pointer -funroll-loops -D_RV32_ -D__OSNONE__ -DUSE_ENDO=1 -D_NO_CACHE_MEM_ -I./FourQ_RV32 $(CFLAGS) $(DEFINE_FLAGS) $(FOURQ_SRC)
+
+sim_mmul:
+	iverilog -g2012 -I./source ./source/mont_mul.v ./source/dp_ram.v mont_mul_tb.v -o iv_exec

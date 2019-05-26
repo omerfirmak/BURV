@@ -3,7 +3,10 @@
 `include "mont_mul_defines.v"
 `include "riscv_defines.v"
 
-module mont_mul (
+module mont_mul 
+#(
+    parameter WORDS = 4
+)(
 	input wire clk,    // Clock
 	input wire rst_n,  // Asynchronous reset active low
 	
@@ -22,19 +25,30 @@ module mont_mul (
 	input  wire [31 : 0]			      lsu_rdata,
 	output reg  [31 : 0]			      lsu_wdata,
 
-	output wire [127 : 0]				  result,
+	output wire [BITS-1 : 0]			  result,
 	output reg							  done
 );
 
-	integer i;
-	reg [31 : 0]  A[3 : 0],
-				  B[3 : 0],
-				  N[3 : 0];
+	localparam BITS = WORDS * 32;
+	localparam WORD_COUNT_BIT = $clog2(WORDS);
+	localparam BIT_COUNT_BIT = $clog2(BITS);
+
+	integer i, j;
+	reg [31 : 0]  A[WORDS - 1 : 0],
+				  B[WORDS - 1 : 0],
+				  N[WORDS - 1 : 0];
 
 	reg [31 : 0] A_addr_latched,
 				 B_addr_latched,
 	 	 		 N_addr_latched,
 	 	 		 res_addr_latched;
+
+
+ 	initial begin
+ 		$display("BITS %d\n",BITS);
+ 		$display("WORD_COUNT_BIT %d\n",WORD_COUNT_BIT);
+ 		$display("BIT_COUNT_BIT %d\n",BIT_COUNT_BIT);
+ 	end
 
 	always @(posedge clk or negedge rst_n) begin
 		if(~rst_n) begin
@@ -42,7 +56,7 @@ module mont_mul (
 			B_addr_latched <= 0;
 			N_addr_latched <= 0;
 			res_addr_latched <= 0;
-			for (i = 0; i < 4; i++) begin
+			for (i = 0; i < WORDS; i++) begin
 				A[i] <= 0;
 				B[i] <= 0;
 				N[i] <= 0;
@@ -59,15 +73,25 @@ module mont_mul (
 			end
 
 			if (lsu_done && CS == FETCH_OPERANDS) begin
-				case (counter[3 : 2])
-					0: A[counter[1 : 0]] <= lsu_rdata;
-					1: B[counter[1 : 0]] <= lsu_rdata;
-					2: N[counter[1 : 0]] <= lsu_rdata;
+				case (counter[WORD_COUNT_BIT + 1 : WORD_COUNT_BIT])
+					0: A[counter[WORD_COUNT_BIT - 1 : 0]] <= lsu_rdata;
+					1: B[counter[WORD_COUNT_BIT - 1 : 0]] <= lsu_rdata;
+					2: N[counter[WORD_COUNT_BIT - 1 : 0]] <= lsu_rdata;
 					default :;
 				endcase
-			end
+			end 
 		end
 	end
+
+	generate
+		for (genvar gi = 0; gi < WORDS; gi++) begin
+			always @(posedge clk or negedge rst_n) begin
+				if (rst_n && CS == RUNNING_2) begin
+					A[gi] <= A_shr[(gi * 32) + 31 : gi * 32];
+				end
+			end
+		end		
+	endgenerate
 
 	localparam IDLE    		  = 3'd0;
 	localparam PREPARE		  = 3'd1;
@@ -77,19 +101,34 @@ module mont_mul (
 	localparam CLEANUP 		  = 3'd5;
 	localparam FINISH  		  = 3'd6;
 
-	wire [129 : 0] A_packed = {2'b0, A[3], A[2], A[1], A[0]};
-	wire [129 : 0] B_packed = {2'b0, B[3], B[2], B[1], B[0]};
-	wire [129 : 0] N_packed = {2'b0, N[3], N[2], N[1], N[0]};
+	wire [BITS + 1: 0] A_packed;
+	wire [BITS + 1: 0] A_shr;
+	wire [BITS + 1: 0] B_packed;
+	wire [BITS + 1: 0] N_packed;
 
-	reg [2 : 0]   CS, NS;
-	reg [7 : 0]	  counter, counter_n;
-	reg [129 : 0] M,
-				  M_n;
+	assign A_packed[BITS + 1 : BITS] = 2'd0;
+	assign B_packed[BITS + 1 : BITS] = 2'd0;
+	assign N_packed[BITS + 1 : BITS] = 2'd0;
 
-	wire [130 : 0] adder_out;
-	reg [129 : 0]  adder_in;
-	reg			   carry;
-	reg 		   is_greater_equal;
+	generate
+		for (genvar gi = 0; gi < WORDS; gi++) begin
+			assign A_packed[(gi * 32) + 31 : gi * 32] = A[gi];
+			assign B_packed[(gi * 32) + 31 : gi * 32] = B[gi];
+			assign N_packed[(gi * 32) + 31 : gi * 32] = N[gi];
+		end
+	endgenerate
+
+	assign A_shr = A_packed >> 1;
+
+	reg [2 : 0]   			  CS, NS;
+	reg [BIT_COUNT_BIT : 0]	  counter, counter_n;
+	reg [BITS + 1 : 0]        M,
+				  		      M_n;
+
+	wire [BITS + 2 : 0] adder_out;
+	reg  [BITS + 1 : 0] adder_in;
+	reg			   		carry;
+	reg 		   		is_greater_equal;
 
 	assign adder_out = {M, 1'b0} + {adder_in, carry};  
 	assign lsu_type = `DATA_WORD;
@@ -124,36 +163,36 @@ module mont_mul (
 
 				if (lsu_done) begin
 					counter_n = counter + 1;
-					if (counter == 8'h0B) begin
+					if (counter == (WORDS * 3) - 1) begin
 						counter_n = 0;
 						NS = RUNNING_1;
 						lsu_ren = 0;
 					end
 				end
 
-				case (counter_n[3 : 2])
+				case (counter_n[WORD_COUNT_BIT + 1 : WORD_COUNT_BIT])
 					0: lsu_addr_base = A_addr_latched;
 					1: lsu_addr_base = B_addr_latched;
 					2: lsu_addr_base = N_addr_latched;
 					default:;
  				endcase
-				lsu_addr_offset = {28'h0, counter_n[1 : 0], 2'h0};
+				lsu_addr_offset = {{30-WORD_COUNT_BIT{1'b0}}, counter_n[WORD_COUNT_BIT - 1 : 0], 2'h0};
 			end
 			RUNNING_1:
 			begin
-				if (A[0][0]) 	M_n = adder_out[130: 1];
+				if (A[0][0]) 	M_n = adder_out[BITS + 2: 1];
 				NS = RUNNING_2;
 			end
 			RUNNING_2:
 			begin
 				adder_in = N_packed;
 
-				if (M[0]) 	M_n = adder_out[130: 1];
+				if (M[0]) 	M_n = adder_out[BITS + 2: 1];
 				M_n = M_n >> 1;
 				
 				counter_n = counter + 1;
-				if (counter_n[7]) NS = CLEANUP;
-				else			  NS = RUNNING_1;
+				if (counter_n[BIT_COUNT_BIT]) NS = CLEANUP;
+				else			 			  NS = RUNNING_1;
 			end
 			CLEANUP:
 			begin
@@ -161,8 +200,8 @@ module mont_mul (
 				adder_in = ~N_packed;
 				carry = 1;
 
-				is_greater_equal = (M[129] ^ (~N_packed[129])) ? M[129] : (~adder_out[130]);
-				if (is_greater_equal) M_n = adder_out[130: 1];
+				is_greater_equal = (M[BITS + 1] ^ (~N_packed[BITS + 1])) ? M[BITS + 1] : (~adder_out[BITS + 2]);
+				if (is_greater_equal) M_n = adder_out[BITS + 2: 1];
 
 				counter_n = 0;
 			end
@@ -170,17 +209,17 @@ module mont_mul (
 			begin 
 				lsu_wen = 1;
 				lsu_addr_base = res_addr_latched;
-				lsu_addr_offset = {28'h0, counter[1 : 0], 2'h0};
+				lsu_addr_offset = {{30-WORD_COUNT_BIT{1'b0}}, counter[WORD_COUNT_BIT - 1 : 0], 2'h0};
 
 				counter_n = counter + 1;
-				if (counter == 8'h04) begin
+				if (counter == WORDS) begin
 					counter_n = 0;
 					NS = IDLE;
 					lsu_wen = 0;
 					done = 1;
 				end
 
-				lsu_wdata = result_unpacked[counter[1 : 0]];
+				lsu_wdata = result_unpacked[counter[WORD_COUNT_BIT - 1 : 0]];
 			end
 			default : /* default */;
 		endcase
@@ -196,22 +235,16 @@ module mont_mul (
 			CS <= NS;
 			M <= M_n;
 			counter <= counter_n;
-
-			if (CS == RUNNING_2) begin
-				A[0] <= {A[1][0], A[0][31 : 1]};
-				A[1] <= {A[2][0], A[1][31 : 1]};
-				A[2] <= {A[3][0], A[2][31 : 1]};
-				A[3] <= {1'b0, 	  A[3][31 : 1]};
-			end
 		end
 	end
 
-	assign result = M[127: 0];
-	wire [31 : 0]  result_unpacked[3 : 0];
+	assign result = M[BITS - 1: 0];
+	wire [31 : 0]  result_unpacked[WORDS - 1 : 0];
 
-	assign result_unpacked[3] = result[127 : 96];
-	assign result_unpacked[2] = result[95 : 64];
-	assign result_unpacked[1] = result[63 : 32];
-	assign result_unpacked[0] = result[31 : 0];
+	generate
+		for (genvar gi = 0; gi < WORDS; gi++) begin
+			assign result_unpacked[gi] = result[(gi * 32) + 31 : gi * 32];
+		end
+	endgenerate
 
 endmodule

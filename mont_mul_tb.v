@@ -5,7 +5,7 @@ module mont_mul_tb (
 	reg clk, rst_n, start;
 	wire valid;
 
-	wire [127:0] result;
+	wire [255:0] result;
 
 	always begin
 		clk = 0;
@@ -26,9 +26,9 @@ module mont_mul_tb (
 		.start(start),
 
 		.A_addr(32'd0),
-		.B_addr(32'd16),
- 		.N_addr(32'd32),
-		.res_addr(32'd48),
+		.B_addr(32'd32),
+ 		.N_addr(32'd64),
+		.res_addr(32'd96),
 
 		.lsu_ren(lsu_ren),
 		.lsu_wen(lsu_wen),
