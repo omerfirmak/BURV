@@ -122,3 +122,4 @@ gcc_fourq:
 
 sim_mmul:
 	iverilog -g2012 -I./source ./source/mont_mul.v ./source/dp_ram.v mont_mul_tb.v -o iv_exec
+	vvp iv_exec

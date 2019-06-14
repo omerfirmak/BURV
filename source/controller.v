@@ -138,8 +138,6 @@ module controller (
 				default: NS = IDLE;
 			endcase
 		end
-
-		if (save_epc_o) $finish;
 	end
 
 
