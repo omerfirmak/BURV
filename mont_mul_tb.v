@@ -15,7 +15,8 @@ module mont_mul_tb (
 	end
 
 	wire lsu_ren, lsu_wen, lsu_done;
-	wire [31 : 0] lsu_addr;
+	wire [31 : 0] lsu_addr_base;
+	wire [31 : 0] lsu_addr_offset;
 	wire [31 : 0] lsu_wdata;
 	wire [31 : 0] lsu_rdata;
 
@@ -33,7 +34,8 @@ module mont_mul_tb (
 		.lsu_ren(lsu_ren),
 		.lsu_wen(lsu_wen),
 		.lsu_type(),
-		.lsu_addr(lsu_addr),
+		.lsu_addr_base(lsu_addr_base),
+		.lsu_addr_offset(lsu_addr_offset),
 		.lsu_done(lsu_done),
 		.lsu_rdata(lsu_rdata),
 		.lsu_wdata(lsu_wdata),
@@ -53,7 +55,7 @@ module mont_mul_tb (
 		.a_valid_i(lsu_ren | lsu_wen),
 		.a_ready_o(lsu_done),
 
-		.a_addr_i (lsu_addr),
+		.a_addr_i (lsu_addr_base + lsu_addr_offset),
 		.a_wdata_i(lsu_wdata),
 		.a_we_i   ({4{lsu_wen}}),
 		.a_rdata_o(lsu_rdata),

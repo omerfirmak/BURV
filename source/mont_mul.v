@@ -5,7 +5,7 @@
 
 module mont_mul 
 #(
-    parameter WORDS = 4
+    parameter WORDS = 8
 )(
 	input wire clk,    // Clock
 	input wire rst_n,  // Asynchronous reset active low
@@ -33,7 +33,7 @@ module mont_mul
 	localparam WORD_COUNT_BIT = $clog2(WORDS);
 	localparam BIT_COUNT_BIT = $clog2(BITS);
 
-	integer i, j;
+	integer i;
 	reg [31 : 0]  A[WORDS - 1 : 0],
 				  B[WORDS - 1 : 0],
 				  N[WORDS - 1 : 0];
@@ -43,20 +43,20 @@ module mont_mul
 	 	 		 N_addr_latched,
 	 	 		 res_addr_latched;
 
-
+/*
  	initial begin
  		$display("BITS %d\n",BITS);
  		$display("WORD_COUNT_BIT %d\n",WORD_COUNT_BIT);
  		$display("BIT_COUNT_BIT %d\n",BIT_COUNT_BIT);
  	end
-
+*/
 	always @(posedge clk or negedge rst_n) begin
 		if(~rst_n) begin
 			A_addr_latched <= 0;
 			B_addr_latched <= 0;
 			N_addr_latched <= 0;
 			res_addr_latched <= 0;
-			for (i = 0; i < WORDS; i++) begin
+			for (i = 0; i < WORDS; i = i + 1) begin
 				A[i] <= 0;
 				B[i] <= 0;
 				N[i] <= 0;
@@ -84,7 +84,8 @@ module mont_mul
 	end
 
 	generate
-		for (genvar gi = 0; gi < WORDS; gi++) begin
+		genvar gi;
+		for (gi = 0; gi < WORDS; gi = gi + 1) begin
 			always @(posedge clk or negedge rst_n) begin
 				if (rst_n && CS == RUNNING_2) begin
 					A[gi] <= A_shr[(gi * 32) + 31 : gi * 32];
@@ -111,10 +112,11 @@ module mont_mul
 	assign N_packed[BITS + 1 : BITS] = 2'd0;
 
 	generate
-		for (genvar gi = 0; gi < WORDS; gi++) begin
-			assign A_packed[(gi * 32) + 31 : gi * 32] = A[gi];
-			assign B_packed[(gi * 32) + 31 : gi * 32] = B[gi];
-			assign N_packed[(gi * 32) + 31 : gi * 32] = N[gi];
+		genvar gj;
+		for (gj = 0; gj < WORDS; gj = gj + 1) begin
+			assign A_packed[(gj * 32) + 31 : gj * 32] = A[gj];
+			assign B_packed[(gj * 32) + 31 : gj * 32] = B[gj];
+			assign N_packed[(gj * 32) + 31 : gj * 32] = N[gj];
 		end
 	endgenerate
 
@@ -242,8 +244,9 @@ module mont_mul
 	wire [31 : 0]  result_unpacked[WORDS - 1 : 0];
 
 	generate
-		for (genvar gi = 0; gi < WORDS; gi++) begin
-			assign result_unpacked[gi] = result[(gi * 32) + 31 : gi * 32];
+		genvar gk;
+		for (gk = 0; gk < WORDS; gk = gk + 1) begin
+			assign result_unpacked[gk] = result[(gk * 32) + 31 : gk * 32];
 		end
 	endgenerate
 

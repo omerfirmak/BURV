@@ -31,13 +31,13 @@ void clock(int times)
         top->clk = 0;
         top->eval ();
 #if DUMP_TRACE == 1
-        if (clk_count > 4100000000 && clk_count < 5000000000) tfp->dump(clk_count);
+        tfp->dump(clk_count);
 #endif
         clk_count++;
         top->clk = 1;
         top->eval ();
 #if DUMP_TRACE == 1
-        if (clk_count > 4100000000 && clk_count < 5000000000) tfp->dump(clk_count);
+        tfp->dump(clk_count);
 #endif
         clk_count++;
     }

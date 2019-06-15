@@ -85,12 +85,23 @@ FOURQ_SRC = FourQ_RV32/random/random.c \
 			FourQ_RV32/kex.c \
 			FourQ_RV32/schnorrq.c
 
-fourq:     CFLAGS =-O3 -fwrapv -fomit-frame-pointer -funroll-loops -D_RV32_ -D__OSNONE__ -DUSE_ENDO -D_NO_CACHE_MEM_ -I./FourQ_RV32
+C25519_SRC = CycloneCrypto/ecc/curve25519.c \
+			 CycloneCrypto/ecc/ed25519.c \
+			 CycloneCrypto/hash/sha512.c \
+			 CycloneCrypto/common/os_port_none.c \
+		 	 CycloneCrypto/common/cpu_endian.c \
+		 	 CycloneCrypto/main.c
+
+# g++ -I./ -I./common ./ecc/curve25519.c ./ecc/ed25519.c ./hash/sha512.c ./common/os_port_none.c ./common/cpu_endian.c main.c
+
+c25519:	   CFLAGS=-ICycloneCrypto/ -ICycloneCrypto/common
+c25519:	   SRC=$(C25519_SRC)
+fourq:     CFLAGS=-O3 -fwrapv -fomit-frame-pointer -funroll-loops -D_RV32_ -D__OSNONE__ -DUSE_ENDO -D_NO_CACHE_MEM_ -I./FourQ_RV32
 fourq:     SRC=$(FOURQ_SRC)
 coremark:  SRC=$(COREMARK_SRC)
 dhrystone: SRC=dhrystone/dhrystone.c dhrystone/dhrystone_main.c
-fourq coremark dhrystone: DUMP_TRACE=0
-fourq coremark dhrystone: firmware sim_iverilog
+c25519 fourq coremark dhrystone: DUMP_TRACE=0
+c25519 fourq coremark dhrystone: firmware sim_verilator
 
 sim_verilator: compile_verilator
 	-./obj_dir/V$(MODULE)
@@ -122,3 +133,4 @@ gcc_fourq:
 
 sim_mmul:
 	iverilog -g2012 -I./source ./source/mont_mul.v ./source/dp_ram.v mont_mul_tb.v -o iv_exec
+	vvp iv_exec
