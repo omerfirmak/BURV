@@ -2,7 +2,7 @@
 
 `include "mont_mul_defines.v"
 `include "riscv_defines.v"
-
+/* verilator lint_off UNOPTFLAT */
 module mont_mul 
 #(
     parameter WORDS = 8
@@ -132,7 +132,7 @@ module mont_mul
 	reg			   		carry;
 	reg 		   		is_greater_equal;
 
-	assign adder_out = {M, 1'b0} + {adder_in, carry};  
+	assign adder_out = {M, 1'b1} + {adder_in, carry};  
 	assign lsu_type = `DATA_WORD;
 
 	always @* begin
@@ -202,7 +202,7 @@ module mont_mul
 				adder_in = ~N_packed;
 				carry = 1;
 
-				is_greater_equal = (M[BITS + 1] ^ (~N_packed[BITS + 1])) ? M[BITS + 1] : (~adder_out[BITS + 2]);
+				is_greater_equal = (M[BITS + 1] ^ N_packed[BITS + 1]) ? M[BITS + 1] : (~adder_out[BITS + 2]);
 				if (is_greater_equal) M_n = adder_out[BITS + 2: 1];
 
 				counter_n = 0;
@@ -251,3 +251,4 @@ module mont_mul
 	endgenerate
 
 endmodule
+/* verilator lint_on UNOPTFLAT */

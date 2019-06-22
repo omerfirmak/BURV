@@ -207,7 +207,7 @@ module riscv_top
 
 	dp_ram
 	#(
-		.INIT_FILE_BIN("/home/omer/Desktop/BURV/firmware.txt"),
+		.INIT_FILE_BIN("/home/omer/Dropbox/BURV/firmware.txt"),
 	    .SIZE_BYTES(MEM_SIZE)
 	) ram (
 		.clk      (clk),

@@ -67,7 +67,7 @@ int main(int argc, char **argv, char **env) {
         top->riscv_top->ram->writeWord(4 * index++, tmp);
     }
 */
-    for (int i=0;;i++) {
+    for (uint64_t i=0;;i++) {
         top->rst_n = i > 2;
         clock(1);
         if (Verilated::gotFinish() || !keepRunning) break;

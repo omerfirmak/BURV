@@ -92,16 +92,22 @@ C25519_SRC = CycloneCrypto/ecc/curve25519.c \
 		 	 CycloneCrypto/common/cpu_endian.c \
 		 	 CycloneCrypto/main.c
 
+P256_SRC =  tinycrypt/tests/test_ecc_dh.c \
+			tinycrypt/tests/test_ecc_utils.c \
+			tinycrypt/source/*.c
+
 # g++ -I./ -I./common ./ecc/curve25519.c ./ecc/ed25519.c ./hash/sha512.c ./common/os_port_none.c ./common/cpu_endian.c main.c
 
+p256:	   CFLAGS=--std=gnu99 -O3 -I./tinycrypt/include -I./tinycrypt/tests/include
+p256:	   SRC=$(P256_SRC)
 c25519:	   CFLAGS=-ICycloneCrypto/ -ICycloneCrypto/common
 c25519:	   SRC=$(C25519_SRC)
 fourq:     CFLAGS=-O3 -fwrapv -fomit-frame-pointer -funroll-loops -D_RV32_ -D__OSNONE__ -DUSE_ENDO -D_NO_CACHE_MEM_ -I./FourQ_RV32
 fourq:     SRC=$(FOURQ_SRC)
 coremark:  SRC=$(COREMARK_SRC)
 dhrystone: SRC=dhrystone/dhrystone.c dhrystone/dhrystone_main.c
-c25519 fourq coremark dhrystone: DUMP_TRACE=0
-c25519 fourq coremark dhrystone: firmware sim_verilator
+p256 c25519 fourq coremark dhrystone: DUMP_TRACE=0
+p256 c25519 fourq coremark dhrystone: firmware sim_verilator
 
 sim_verilator: compile_verilator
 	-./obj_dir/V$(MODULE)
