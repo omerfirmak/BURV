@@ -74,11 +74,9 @@ module mont_mul
 		for (gi = 0; gi < WORDS; gi = gi + 1) begin
 			always @(posedge clk or negedge rst_n) begin
 				if (~rst_n) begin
-					for (i = 0; i < WORDS; i = i + 1) begin
-						A[i] <= 0;
-						B[i] <= 0;
-						N[i] <= 0;
-					end
+					A[gi] <= 0;
+					B[gi] <= 0;
+					N[gi] <= 0;
 				end else begin
 					if (lsu_done && CS == FETCH_OPERANDS) begin
 						if (counter[WORD_COUNT_BIT - 1 : 0] == gi) begin
