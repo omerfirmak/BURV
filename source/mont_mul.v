@@ -2,7 +2,7 @@
 
 `include "mont_mul_defines.v"
 `include "riscv_defines.v"
-/* verilator lint_off UNOPTFLAT */
+
 module mont_mul 
 #(
     parameter WORDS = 8
@@ -56,11 +56,6 @@ module mont_mul
 			B_addr_latched <= 0;
 			N_addr_latched <= 0;
 			res_addr_latched <= 0;
-			for (i = 0; i < WORDS; i = i + 1) begin
-				A[i] <= 0;
-				B[i] <= 0;
-				N[i] <= 0;
-			end
 		end else begin
 			if (start && CS == IDLE) begin
 				A_addr_latched <= A_addr;
@@ -71,15 +66,6 @@ module mont_mul
 				N_addr_latched <= N_addr;
 				res_addr_latched <= res_addr;
 			end
-
-			if (lsu_done && CS == FETCH_OPERANDS) begin
-				case (counter[WORD_COUNT_BIT + 1 : WORD_COUNT_BIT])
-					0: A[counter[WORD_COUNT_BIT - 1 : 0]] <= lsu_rdata;
-					1: B[counter[WORD_COUNT_BIT - 1 : 0]] <= lsu_rdata;
-					2: N[counter[WORD_COUNT_BIT - 1 : 0]] <= lsu_rdata;
-					default :;
-				endcase
-			end 
 		end
 	end
 
@@ -87,11 +73,28 @@ module mont_mul
 		genvar gi;
 		for (gi = 0; gi < WORDS; gi = gi + 1) begin
 			always @(posedge clk or negedge rst_n) begin
-				if (rst_n && CS == RUNNING_2) begin
-					A[gi] <= A_shr[(gi * 32) + 31 : gi * 32];
+				if (~rst_n) begin
+					for (i = 0; i < WORDS; i = i + 1) begin
+						A[i] <= 0;
+						B[i] <= 0;
+						N[i] <= 0;
+					end
+				end else begin
+					if (lsu_done && CS == FETCH_OPERANDS) begin
+						if (counter[WORD_COUNT_BIT - 1 : 0] == gi) begin
+							case (counter[WORD_COUNT_BIT + 1 : WORD_COUNT_BIT])
+								0: A[gi] <= lsu_rdata;
+								1: B[gi] <= lsu_rdata;
+								2: N[gi] <= lsu_rdata;
+								default : /* default */;
+							endcase
+						end
+					end else if (CS == RUNNING_2) begin
+						A[gi] <= A_shr[(gi * 32) + 31 : gi * 32];
+					end
 				end
 			end
-		end		
+		end
 	endgenerate
 
 	localparam IDLE    		  = 3'd0;
@@ -147,6 +150,7 @@ module mont_mul
 		adder_in = B_packed;
 		is_greater_equal = 0;
 		lsu_addr_base = A_addr_latched;
+		lsu_addr_offset = 0;
 
 		case (CS)
 			IDLE:
@@ -251,4 +255,3 @@ module mont_mul
 	endgenerate
 
 endmodule
-/* verilator lint_on UNOPTFLAT */
