@@ -26,14 +26,17 @@
     #define SEL_K             18
     #define SEL_T             16
 #endif
-//ECCRYPTO as defined in FourQ.h is a enum to handle error codes
-void print_hex(unsigned char* arr, int len)
-{
-    int i;
-    for(i = 0; i < len; i++)
-        print_hex((unsigned char) arr[i], 8);
-}
- 
+
+uint8_t prf_out_malloc[16 * 2];
+uint8_t prf_out2_malloc[16 * 2];
+
+uint8_t publicAll_Y_malloc[SEL_T*64];
+uint8_t publicAll_R_malloc[SEL_T*64];
+uint8_t secret_all_malloc[SEL_T*32];
+
+uint8_t h_malloc[32];
+uint8_t h_check_malloc[32];
+uint8_t concatMsg_malloc[64];
 
 
 int main()
@@ -44,12 +47,15 @@ int main()
 //AES variables  
     unsigned char sk_aes[32] = {0x54, 0xa2, 0xf8, 0x03, 0x1d, 0x18, 0xac, 0x77, 0xd2, 0x53, 0x92, 0xf2, 0x80, 0xb4, 0xb1, 0x2f, 0xac, 0xf1, 0x29, 0x3f, 0x3a, 0xe6, 0x77, 0x7d, 0x74, 0x15, 0x67, 0x91, 0x99, 0x53, 0x69, 0xc5}; 
     block key;
-	key = toBlock((uint8_t*)sk_aes);
-	setKey(key);
+
+    memcpy(&key, sk_aes, sizeof(block));
+	//key = toBlock((uint8_t*)sk_aes);
+	
+    setKey(key);
     block* prf_out;
     unsigned char * prf_out2;
-	prf_out = malloc(16*2);
-	prf_out2 = malloc(16*2);
+	prf_out = prf_out_malloc;// malloc(16*2);
+	prf_out2 = prf_out2_malloc; // malloc(16*2);
     uint64_t ii ,i,index;
 	ii = 1;
 	i = 0;
@@ -60,10 +66,10 @@ int main()
     unsigned char secret_key[32] =  {0x54, 0xa2, 0xf8, 0x03, 0x1d, 0x18, 0xac, 0x77, 0xd2, 0x53, 0x92, 0xf2, 0x80, 0xb4, 0xb1, 0x2f, 0xac, 0xf1, 0x29, 0x3f, 0x3a, 0xe6, 0x77, 0x7d, 0x74, 0x15, 0x67, 0x91, 0x99, 0x53, 0x69, 0xc5}; 
 
     unsigned char* publicAll_Y;
-    publicAll_Y = malloc(SEL_T*64);
+    publicAll_Y = publicAll_Y_malloc; //malloc(SEL_T*64);
     unsigned char* publicAll_R, *secret_all;
-    publicAll_R = malloc(SEL_T*64);
-    secret_all = malloc(SEL_T*32);
+    publicAll_R = publicAll_R_malloc; //malloc(SEL_T*64);
+    secret_all = secret_all_malloc; //malloc(SEL_T*32);
 
     unsigned char publicTemp[64];
     unsigned char publicTempVer[64];
@@ -74,11 +80,11 @@ int main()
     uint8_t message[32] = {0};
     uint8_t message1[32] = {1};
     unsigned char * h;
-    h = malloc(32);
+    h = h_malloc; //malloc(32);
     unsigned char * h_check;
-    h_check = malloc(32);
+    h_check = h_check_malloc; //malloc(32);
     unsigned char * concatMsg;
-    concatMsg = malloc(64);
+    concatMsg = concatMsg_malloc; //malloc(64);
     unsigned char hashedMsg[64] = {0}; 
     
 //  Benchmarking variables 

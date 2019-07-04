@@ -28,7 +28,8 @@ TESTNAMES = $(wildcard ./tests/*.S)
 HARD_GF = 1
 DUMP_TRACE = 1
 BOOT_ADDRESS = 0
-MEM_SIZE = 262144
+MEM_SIZE = 524288
+#MEM_SIZE = 262144
 DEFINE_FLAGS = -DBOOT_ADDRESS=$(BOOT_ADDRESS) -DMEM_SIZE=$(MEM_SIZE) -DDUMP_TRACE=$(DUMP_TRACE) -DMEM_ORIGIN=$(MEM_ORIGIN) -DMEM_LENGTH=$(MEM_LENGTH) -DSTACK_LENGTH=$(STACK_LENGTH) -DSTACK_ORIGIN=$(STACK_ORIGIN) -DHARD_GF=$(HARD_GF)
 
 all: firmware sim_iverilog
@@ -83,7 +84,8 @@ FOURQ_SRC = FourQ_RV32/random/random.c \
 			FourQ_RV32/eccp2.c \
 			FourQ_RV32/eccp2_no_endo.c \
 			FourQ_RV32/kex.c \
-			FourQ_RV32/schnorrq.c
+			FourQ_RV32/schnorrq.c \
+			FourQ_RV32/tests/blake2/*.c
 
 C25519_SRC = CycloneCrypto/ecc/curve25519.c \
 			 CycloneCrypto/ecc/ed25519.c \
@@ -102,7 +104,7 @@ p256:	   CFLAGS=--std=gnu99 -O3 -I./tinycrypt/include -I./tinycrypt/tests/includ
 p256:	   SRC=$(P256_SRC)
 c25519:	   CFLAGS=-ICycloneCrypto/ -ICycloneCrypto/common
 c25519:	   SRC=$(C25519_SRC)
-fourq:     CFLAGS=-O3 -fwrapv -fomit-frame-pointer -funroll-loops -D_RV32_ -D__OSNONE__ -DUSE_ENDO -D_NO_CACHE_MEM_ -I./FourQ_RV32
+fourq:     CFLAGS=-O3 -fwrapv -fomit-frame-pointer -funroll-loops -D_RV32_ -D__OSNONE__ -DUSE_ENDO -D_NO_CACHE_MEM_ -I./FourQ_RV32 -I./FourQ_RV32/tests/blake2
 fourq:     SRC=$(FOURQ_SRC)
 coremark:  SRC=$(COREMARK_SRC)
 dhrystone: SRC=dhrystone/dhrystone.c dhrystone/dhrystone_main.c
