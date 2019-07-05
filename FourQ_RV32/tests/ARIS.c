@@ -386,11 +386,11 @@ int main()
     }
 
     print_str("Signing runs in ...................................... ");
-    print_dec(cycles);
+    print_dec(SignTime);
     print_str("\n");
 
     print_str("Verify runs in ...................................... ");
-    print_dec(vcycles);
+    print_dec(VerifyTime);
     print_str("\n");
 
     print_dec((SignTime+VerifyTime));
