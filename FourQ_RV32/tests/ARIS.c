@@ -44,6 +44,8 @@ int main()
     
     ECCRYPTO_STATUS Status = ECCRYPTO_SUCCESS;
     
+    print_str("ARIS main\n");
+
 //AES variables  
     unsigned char sk_aes[32] = {0x54, 0xa2, 0xf8, 0x03, 0x1d, 0x18, 0xac, 0x77, 0xd2, 0x53, 0x92, 0xf2, 0x80, 0xb4, 0xb1, 0x2f, 0xac, 0xf1, 0x29, 0x3f, 0x3a, 0xe6, 0x77, 0x7d, 0x74, 0x15, 0x67, 0x91, 0x99, 0x53, 0x69, 0xc5}; 
     block key;
@@ -89,9 +91,9 @@ int main()
     
 //  Benchmarking variables 
     unsigned char R_hashed[32];
-    double SignTime, VerifyTime;
-    SignTime = 0.0;
-    VerifyTime = 0.0;
+    unsigned long long SignTime, VerifyTime;
+    SignTime = 0;
+    VerifyTime = 0;
     unsigned long long flagSignStart, flagVerStart;
 	unsigned long long flagSignEnd, flagVerEnd; 
     unsigned long long cycles, cycles1, cycles2;     
@@ -103,6 +105,8 @@ int main()
     point_t sig;
     bool verify = true;
  
+     print_str("ARIS KeyGen\n");
+
     // ......................... KeyGen .............................
     for (i=0;i<SEL_T;i++){ // To generate the y_i and Y[i]= y_i x G  and publish Y[i] as the public key
         ecbEncCounterMode(i,2,prf_out);
@@ -127,6 +131,7 @@ int main()
         
     }
  
+     print_str("ARIS KeyGen 2\n");
 
     for (i=0;i <SEL_T;i++){ // To generate r_i and R[i]= r_i x G  and publish R[i] as a part of the secret key
 
@@ -152,7 +157,8 @@ int main()
     }
 
 
-  // ............................ Sign ..................................
+     print_str("ARIS Sign\n");
+ // ............................ Sign ..................................
     int zz;
  
     point_extproj_t TempExtproj;
@@ -181,7 +187,7 @@ int main()
 
 
     for (zz = 0; zz < BENCH_LOOPS; ++zz) {
-        flagSignStart = clock();
+        flagSignStart = cpu_nseconds();
         cycles1 = cpu_nseconds(); 
         // The following code is separated from the for loop mainly to initilize the values of r_temp and r to be used in the a add_mod_order() func
 
@@ -284,14 +290,15 @@ int main()
         subtract_mod_order((digit_t*)(lastSecret),(digit_t*)(sigma) ,(digit_t*)(sigma)); 
         //modulo_order(x_i, x_i);
         flagSignEnd = cpu_nseconds();
-        SignTime = SignTime +(double)(flagSignEnd-flagSignStart);
+        SignTime = (flagSignEnd-flagSignStart);
 
 
- 
-            cycles2 = cpu_nseconds(); 
-            cycles = cycles + (cycles2 - cycles1);
+
+        cycles2 = cpu_nseconds(); 
+        cycles = cycles + (cycles2 - cycles1);
 
 // // ............................ Verify ..................................
+     print_str("ARIS Verify\n");
 
 
        
@@ -367,26 +374,28 @@ int main()
 
  
            flagVerEnd =cpu_nseconds();  
-           VerifyTime = VerifyTime + (double)(flagVerEnd-flagVerStart);
+           VerifyTime = (flagVerEnd-flagVerStart);
            vcycles2 = cpu_nseconds(); 
            vcycles = vcycles + (vcycles2 - vcycles1);
     }     
 
     if (verify){
 
-        print_str("\n\n\n\Signature is VERIFIED\n");
+        print_str("\n\n\nSignature is VERIFIED\n");
         print_str("\nSignature is VERIFIED\n\n\n\n");
     }
-/*
-    printf("%fus per sign\n", ((double) (SignTime * 1000)) / CLOCKS_PER_SEC / zz * 1000);
-    printf("%fus per verification\n", ((double) (VerifyTime * 1000)) / CLOCKS_PER_SEC / zz * 1000);
-    printf("Signing runs in ...................................... %2lld ", cycles/zz);print_unit;
-    print_str("\n");
-    printf("Verify runs in ....................................... %2lld ", vcycles/zz);print_unit;
-    print_str("\n");
-    printf("%fus end-to-end delay\n", ((double) ((SignTime+VerifyTime) * 1000)) / CLOCKS_PER_SEC / zz * 1000);
 
- */
+    print_str("Signing runs in ...................................... ");
+    print_dec(cycles);
+    print_str("\n");
+
+    print_str("Verify runs in ...................................... ");
+    print_dec(vcycles);
+    print_str("\n");
+
+    print_dec((SignTime+VerifyTime));
+    print_str(" clks end-to-end delay\n");
+
     print_str("\n\n THIS IS TO SHOW THAT THE FILE COMPILES\n\n\n");
 
 

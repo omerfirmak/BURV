@@ -5,7 +5,7 @@
 
 module mont_mul 
 #(
-    parameter WORDS = 8
+    parameter WORDS = 4
 )(
 	input wire clk,    // Clock
 	input wire rst_n,  // Asynchronous reset active low
