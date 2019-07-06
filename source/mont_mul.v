@@ -10,12 +10,13 @@ module mont_mul
 	input wire clk,    // Clock
 	input wire rst_n,  // Asynchronous reset active low
 	
-	input wire 							  start,	
-	input wire [31 : 0] 				  A_addr,
-	input wire [31 : 0] 				  B_addr,
-	input wire [31 : 0] 				  N_addr,
-	input wire [31 : 0] 				  res_addr,
+	input wire 							  start,			// Start execution
+	input wire [31 : 0] 				  A_addr,			// Address of operand A
+	input wire [31 : 0] 				  B_addr,			// Address of operand B
+	input wire [31 : 0] 				  N_addr,			// Address of operand N
+	input wire [31 : 0] 				  res_addr,			// Address that result will be written
 
+	/* LSU Control Signals*/
 	output reg						  	  lsu_ren,
 	output reg						  	  lsu_wen,
 	output wire	[1 : 0]					  lsu_type,
@@ -25,8 +26,8 @@ module mont_mul
 	input  wire [31 : 0]			      lsu_rdata,
 	output reg  [31 : 0]			      lsu_wdata,
 
-	output wire [BITS-1 : 0]			  result,
-	output reg							  done
+	output wire [BITS-1 : 0]			  result,			// Calculated result
+	output reg							  done 				// End of execution signal
 );
 
 	localparam BITS = WORDS * 32;
@@ -34,22 +35,18 @@ module mont_mul
 	localparam BIT_COUNT_BIT = $clog2(BITS);
 
 	integer i;
+
+	// A, B, N registers holding value read from memory
 	reg [31 : 0]  A[WORDS - 1 : 0],
 				  B[WORDS - 1 : 0],
 				  N[WORDS - 1 : 0];
 
+	// Addresses of operands
 	reg [31 : 0] A_addr_latched,
 				 B_addr_latched,
 	 	 		 N_addr_latched,
 	 	 		 res_addr_latched;
 
-/*
- 	initial begin
- 		$display("BITS %d\n",BITS);
- 		$display("WORD_COUNT_BIT %d\n",WORD_COUNT_BIT);
- 		$display("BIT_COUNT_BIT %d\n",BIT_COUNT_BIT);
- 	end
-*/
 	always @(posedge clk or negedge rst_n) begin
 		if(~rst_n) begin
 			A_addr_latched <= 0;
@@ -57,6 +54,10 @@ module mont_mul
 			N_addr_latched <= 0;
 			res_addr_latched <= 0;
 		end else begin
+			/*
+				Since register file in our design only has 2 read ports, mont_mul expects A_addr and B_addr inputs to be valid in the same cycle 
+				start signal rises to high. Then N_addr and res_addr inputs to be valid the next cycle.
+			*/
 			if (start && CS == IDLE) begin
 				A_addr_latched <= A_addr;
 				B_addr_latched <= B_addr;
@@ -80,6 +81,7 @@ module mont_mul
 				end else begin
 					if (lsu_done && CS == FETCH_OPERANDS) begin
 						if (counter[WORD_COUNT_BIT - 1 : 0] == gi) begin
+							// Depending on the counter value latch the input data from memory to their respective registers.
 							case (counter[WORD_COUNT_BIT + 1 : WORD_COUNT_BIT])
 								0: A[gi] <= lsu_rdata;
 								1: B[gi] <= lsu_rdata;
@@ -88,6 +90,7 @@ module mont_mul
 							endcase
 						end
 					end else if (CS == RUNNING_2) begin
+						// Shift A by 1 to right every time we are in RUNNING_2 staet
 						A[gi] <= A_shr[(gi * 32) + 31 : gi * 32];
 					end
 				end
@@ -133,7 +136,8 @@ module mont_mul
 	reg			   		carry;
 	reg 		   		is_greater_equal;
 
-	assign adder_out = {M, 1'b1} + {adder_in, carry};  
+	// Single BITS wide adder used for all the calculations
+	assign adder_out = {M, 1'b1} + {adder_in, carry};
 	assign lsu_type = `DATA_WORD;
 
 	always @* begin
@@ -157,14 +161,17 @@ module mont_mul
 				M_n = 0;
 				counter_n = 0;
 			end
+			// Single cycle delay so that all address registers are initialized
 			PREPARE:
 			begin
 				NS = FETCH_OPERANDS;
 			end
+			// Start fetching operands from memory
 			FETCH_OPERANDS:
 			begin
 				lsu_ren = 1;
 
+				// When LSU signals completion of the memory operation, increment the counter and see if we have fetched all the operands
 				if (lsu_done) begin
 					counter_n = counter + 1;
 					if (counter == (WORDS * 3) - 1) begin
@@ -174,6 +181,8 @@ module mont_mul
 					end
 				end
 
+				// Calculate the address we will fetch from with respect to number of bytes we have already fetched.
+				// Resulting memory address is (lsu_addr_base + lsu_addr_offset)
 				case (counter_n[WORD_COUNT_BIT + 1 : WORD_COUNT_BIT])
 					0: lsu_addr_base = A_addr_latched;
 					1: lsu_addr_base = B_addr_latched;
@@ -184,6 +193,8 @@ module mont_mul
 			end
 			RUNNING_1:
 			begin
+				// At this stage adder_out = M + B, if A is odd update M with M + B
+				// Remember A is shifted right by 1 every RUNNING_2 state
 				if (A[0][0]) 	M_n = adder_out[BITS + 2: 1];
 				NS = RUNNING_2;
 			end
@@ -191,9 +202,11 @@ module mont_mul
 			begin
 				adder_in = N_packed;
 
+				// If M is odd update M with M + N then shift it by 1 regardless
 				if (M[0]) 	M_n = adder_out[BITS + 2: 1];
 				M_n = M_n >> 1;
 				
+				// Are we done with the loop?
 				counter_n = counter + 1;
 				if (counter_n[BIT_COUNT_BIT]) NS = CLEANUP;
 				else			 			  NS = RUNNING_1;
@@ -201,14 +214,19 @@ module mont_mul
 			CLEANUP:
 			begin
 				NS = FINISH;
+
+				// Substract N from M for final operation
 				adder_in = ~N_packed;
 				carry = 1;
 
+				// Check if M >= N
 				is_greater_equal = (M[BITS + 1] ^ N_packed[BITS + 1]) ? M[BITS + 1] : (~adder_out[BITS + 2]);
+				// If M >= N update M with M-N
 				if (is_greater_equal) M_n = adder_out[BITS + 2: 1];
 
 				counter_n = 0;
 			end
+			// Write out the result to memory
 			FINISH: 
 			begin 
 				lsu_wen = 1;
@@ -229,7 +247,7 @@ module mont_mul
 		endcase
 	end
 
-
+	// Latch the state related registers
 	always @(posedge clk or negedge rst_n) begin
 		if(~rst_n) begin
 			CS <= IDLE;
