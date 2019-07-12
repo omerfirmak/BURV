@@ -5,7 +5,8 @@
 
 module mont_mul 
 #(
-    parameter WORDS = 4
+    parameter WORDS = 4,
+    parameter PARTIAL_EXEC = 1
 )(
 	input wire clk,    // Clock
 	input wire rst_n,  // Asynchronous reset active low
@@ -155,8 +156,10 @@ module mont_mul
 			begin
 				// At this stage adder_out = M + B, if A is odd update M with M + B
 				// Remember A is shifted right by 1 every RUNNING_2 state
-				if (A[0][0]) 	M_n = adder_out[BITS + 2: 1];
-				NS = RUNNING_2;
+				if (PARTIAL_EXEC == 0 || start) 
+					NS = RUNNING_2;				
+
+				if (NS == RUNNING_2 && A[0][0]) M_n = adder_out[BITS + 2: 1];
 			end
 			RUNNING_2:
 			begin
@@ -169,7 +172,10 @@ module mont_mul
 				// Are we done with the loop?
 				counter_n = counter + 1;
 				if (counter_n[BIT_COUNT_BIT]) NS = CLEANUP;
-				else			 			  NS = RUNNING_1;
+				else begin
+					done = PARTIAL_EXEC;			
+	 			  	NS = RUNNING_1;
+				end
 			end
 			CLEANUP:
 			begin

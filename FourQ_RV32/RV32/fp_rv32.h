@@ -162,7 +162,7 @@ void fpmul1271(felm_t a, felm_t b, felm_t c)
 #elif (HARD_GF == 1)
     volatile uint32_t _a[4];
     volatile uint32_t _b[4];
-
+    
     asm volatile (  ".insn r CUSTOM_0, 0, 0, %[_a], %[a], %[r], %[n]\n" \
                     ".insn r CUSTOM_0, 0, 0, %[_b], %[b], %[r], %[n]\n" \
                     ".insn r CUSTOM_0, 0, 0, %[c], %[_a], %[_b], %[n]\n" \
@@ -175,7 +175,65 @@ void fpmul1271(felm_t a, felm_t b, felm_t c)
                       [r] "r" (r), 
                       [one] "r" (one), 
                       [_a] "r" (_a), 
-                      [_b] "r" (_b)      );
+                      [_b] "r" (_b) );    
+
+#elif (HARD_GF == 2)
+    volatile uint32_t _a[4];
+    volatile uint32_t _b[4];
+
+    for (int i = 0; i < 128; i++) {
+        asm volatile (  ".insn r CUSTOM_0, 0, 0, %[_a], %[a], %[r], %[n]\n" \
+                        : 
+                        : [a] "r" (a), 
+                          [b] "r" (b), 
+                          [n] "r" (n), 
+                          [c] "r" (c), 
+                          [r] "r" (r), 
+                          [one] "r" (one), 
+                          [_a] "r" (_a), 
+                          [_b] "r" (_b)      );        
+    }
+
+    for (int i = 0; i < 128; i++) {
+        asm volatile (  ".insn r CUSTOM_0, 0, 0, %[_b], %[b], %[r], %[n]\n" \
+                        : 
+                        : [a] "r" (a), 
+                          [b] "r" (b), 
+                          [n] "r" (n), 
+                          [c] "r" (c), 
+                          [r] "r" (r), 
+                          [one] "r" (one), 
+                          [_a] "r" (_a), 
+                          [_b] "r" (_b)      );        
+    }
+
+    
+    for (int i = 0; i < 128; i++) {
+        asm volatile (  ".insn r CUSTOM_0, 0, 0, %[c], %[_a], %[_b], %[n]\n" \
+                        : 
+                        : [a] "r" (a), 
+                          [b] "r" (b), 
+                          [n] "r" (n), 
+                          [c] "r" (c), 
+                          [r] "r" (r), 
+                          [one] "r" (one), 
+                          [_a] "r" (_a), 
+                          [_b] "r" (_b)      );        
+    }
+
+    
+    for (int i = 0; i < 128; i++) {
+        asm volatile (  ".insn r CUSTOM_0, 0, 0, %[c], %[c], %[one], %[n]\n" \
+                        : 
+                        : [a] "r" (a), 
+                          [b] "r" (b), 
+                          [n] "r" (n), 
+                          [c] "r" (c), 
+                          [r] "r" (r), 
+                          [one] "r" (one), 
+                          [_a] "r" (_a), 
+                          [_b] "r" (_b)      );        
+    }
 #endif
 
 }
@@ -198,7 +256,47 @@ void fpsqr1271(felm_t a, felm_t c)
                       [r] "r" (r), 
                       [one] "r" (one), 
                       [_a] "r" (_a)         );
+
+#elif (HARD_GF == 2)
+    volatile uint32_t _a[4];
+
+    for (int i = 0; i < 128; i++) {
+      asm volatile (  ".insn r CUSTOM_0, 0, 0, %[_a], %[a], %[r], %[n]\n" \
+                      : 
+                      : [a] "r" (a), 
+                        [n] "r" (n), 
+                        [c] "r" (c), 
+                        [r] "r" (r), 
+                        [one] "r" (one), 
+                        [_a] "r" (_a)         );
+    }
+
+
+    for (int i = 0; i < 128; i++) {
+      asm volatile (  ".insn r CUSTOM_0, 0, 0, %[c], %[_a], %[_a], %[n]\n" \
+                      : 
+                      : [a] "r" (a), 
+                        [n] "r" (n), 
+                        [c] "r" (c), 
+                        [r] "r" (r), 
+                        [one] "r" (one), 
+                        [_a] "r" (_a)         );
+    }
+
+
+    for (int i = 0; i < 128; i++) {
+      asm volatile (  ".insn r CUSTOM_0, 0, 0, %[c], %[c], %[one], %[n]\n" \
+                      : 
+                      : [a] "r" (a), 
+                        [n] "r" (n), 
+                        [c] "r" (c), 
+                        [r] "r" (r), 
+                        [one] "r" (one), 
+                        [_a] "r" (_a)         );
+    }
+
 #endif
+
 }
 
 
