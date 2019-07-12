@@ -352,6 +352,8 @@ int main()
     ECCRYPTO_STATUS Status = ECCRYPTO_SUCCESS;
 
 /*
+
+
     Status = SchnorrQ_test();         // Test SchnorrQ signature scheme
     if (Status != ECCRYPTO_SUCCESS) {
         return false;

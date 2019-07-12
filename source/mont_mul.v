@@ -6,7 +6,7 @@
 module mont_mul 
 #(
     parameter WORDS = 4,
-    parameter PARTIAL_EXEC = 1
+    parameter PARTIAL_EXEC = 0
 )(
 	input wire clk,    // Clock
 	input wire rst_n,  // Asynchronous reset active low
@@ -35,7 +35,7 @@ module mont_mul
 	integer i;
 
 	// A, B, N registers holding value read from memory
-	reg [31 : 0]  A[WORDS - 1 : 0],
+	reg [31 : 0]  A,
 				  B[WORDS - 1 : 0],
 				  N[WORDS - 1 : 0];
 
@@ -44,56 +44,57 @@ module mont_mul
 		for (gi = 0; gi < WORDS; gi = gi + 1) begin
 			always @(posedge clk or negedge rst_n) begin
 				if (~rst_n) begin
-					A[gi] <= 0;
 					B[gi] <= 0;
 					N[gi] <= 0;
 				end else begin
 					if (lsu_done && CS == FETCH_OPERANDS) begin
 						if (counter[WORD_COUNT_BIT - 1 : 0] == gi) begin
 							// Depending on the counter value latch the input data from memory to their respective registers.
-							case (counter[WORD_COUNT_BIT + 1 : WORD_COUNT_BIT])
-								0: A[gi] <= lsu_rdata;
-								1: B[gi] <= lsu_rdata;
-								2: N[gi] <= lsu_rdata;
+							case (counter[WORD_COUNT_BIT])
+								0: B[gi] <= lsu_rdata;
+								1: N[gi] <= lsu_rdata;
 								default : /* default */;
 							endcase
 						end
-					end else if (CS == RUNNING_2) begin
-						// Shift A by 1 to right every time we are in RUNNING_2 staet
-						A[gi] <= A_shr[(gi * 32) + 31 : gi * 32];
 					end
 				end
 			end
 		end
 	endgenerate
 
+	always @(posedge clk or negedge rst_n) begin
+		if (~rst_n) begin
+			A <= 0;
+		end else begin
+			if (lsu_done && CS == FETCH_A) begin
+				A <= lsu_rdata;
+			end else if (CS == RUNNING_2) begin
+				A <= A >> 1;
+			end
+		end
+	end
+
 	localparam IDLE    		  = 3'd0;
-	localparam PREPARE		  = 3'd1;
+	localparam FETCH_A		  = 3'd1;
 	localparam FETCH_OPERANDS = 3'd2;
 	localparam RUNNING_1 	  = 3'd3;
 	localparam RUNNING_2 	  = 3'd4;
 	localparam CLEANUP 		  = 3'd5;
 	localparam FINISH  		  = 3'd6;
 
-	wire [BITS + 1: 0] A_packed;
-	wire [BITS + 1: 0] A_shr;
 	wire [BITS + 1: 0] B_packed;
 	wire [BITS + 1: 0] N_packed;
 
-	assign A_packed[BITS + 1 : BITS] = 2'd0;
 	assign B_packed[BITS + 1 : BITS] = 2'd0;
 	assign N_packed[BITS + 1 : BITS] = 2'd0;
 
 	generate
 		genvar gj;
 		for (gj = 0; gj < WORDS; gj = gj + 1) begin
-			assign A_packed[(gj * 32) + 31 : gj * 32] = A[gj];
 			assign B_packed[(gj * 32) + 31 : gj * 32] = B[gj];
 			assign N_packed[(gj * 32) + 31 : gj * 32] = N[gj];
 		end
 	endgenerate
-
-	assign A_shr = A_packed >> 1;
 
 	reg [2 : 0]   			  CS, NS;
 	reg [BIT_COUNT_BIT : 0]	  counter, counter_n;
@@ -121,19 +122,14 @@ module mont_mul
 		adder_in = B_packed;
 		is_greater_equal = 0;
 		lsu_addr_offset = 0;
-		op_address_sel = counter_n[WORD_COUNT_BIT + 1 : WORD_COUNT_BIT];
+		op_address_sel = 0;
 
 		case (CS)
 			IDLE:
 			begin
-				if (start) NS = PREPARE;
+				if (start) NS = FETCH_OPERANDS;
 				M_n = 0;
 				counter_n = 0;
-			end
-			// Single cycle delay so that all address registers are initialized
-			PREPARE:
-			begin
-				NS = FETCH_OPERANDS;
 			end
 			// Start fetching operands from memory
 			FETCH_OPERANDS:
@@ -143,14 +139,24 @@ module mont_mul
 				// When LSU signals completion of the memory operation, increment the counter and see if we have fetched all the operands
 				if (lsu_done) begin
 					counter_n = counter + 1;
-					if (counter == (WORDS * 3) - 1) begin
+					if (counter == (WORDS * 2) - 1) begin
 						counter_n = 0;
-						NS = RUNNING_1;
+						NS = FETCH_A;
 						lsu_ren = 0;
 					end
 				end
 
+				op_address_sel = counter_n[WORD_COUNT_BIT + 1 : WORD_COUNT_BIT];
 				lsu_addr_offset = {{30-WORD_COUNT_BIT{1'b0}}, counter_n[WORD_COUNT_BIT - 1 : 0], 2'h0};
+			end
+			FETCH_A:
+			begin
+				lsu_ren = ~lsu_done;
+				op_address_sel = 2; // A
+				lsu_addr_offset = {{30-WORD_COUNT_BIT{1'b0}}, counter[5 + WORD_COUNT_BIT - 1 : 5], 2'h0};
+
+				if (lsu_done)
+					NS = RUNNING_1;
 			end
 			RUNNING_1:
 			begin
@@ -159,7 +165,7 @@ module mont_mul
 				if (PARTIAL_EXEC == 0 || start) 
 					NS = RUNNING_2;				
 
-				if (NS == RUNNING_2 && A[0][0]) M_n = adder_out[BITS + 2: 1];
+				if (NS == RUNNING_2 && A[0]) M_n = adder_out[BITS + 2: 1];
 			end
 			RUNNING_2:
 			begin
@@ -171,10 +177,13 @@ module mont_mul
 				
 				// Are we done with the loop?
 				counter_n = counter + 1;
-				if (counter_n[BIT_COUNT_BIT]) NS = CLEANUP;
+				if (counter_n[BIT_COUNT_BIT]) 
+					NS = CLEANUP;
+				else if (counter_n[4 : 0] == 0)
+					NS = FETCH_A;
 				else begin
-					done = PARTIAL_EXEC;			
-	 			  	NS = RUNNING_1;
+					done = PARTIAL_EXEC;
+	 				NS = RUNNING_1;
 				end
 			end
 			CLEANUP:
@@ -193,10 +202,10 @@ module mont_mul
 				counter_n = 0;
 			end
 			// Write out the result to memory
-			FINISH: 
-			begin 
+			FINISH:
+			begin
 				lsu_wen = 1;
-				op_address_sel = 2'd3;
+				op_address_sel = 3; // Result
 				
 				lsu_addr_offset = {{30-WORD_COUNT_BIT{1'b0}}, counter[WORD_COUNT_BIT - 1 : 0], 2'h0};
 

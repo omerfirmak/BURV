@@ -184,8 +184,8 @@ int main()
 {
     bool OK = true;
 
-//    OK = OK && fp2_test();     // Test quadratic extension field operations using p = 2^127-1
-    OK = OK && fp2_run();      // Benchmark quadratic extension field operations using p = 2^127-1
+    OK = OK && fp2_test();     // Test quadratic extension field operations using p = 2^127-1
+//    OK = OK && fp2_run();      // Benchmark quadratic extension field operations using p = 2^127-1
     
     return OK;
 }

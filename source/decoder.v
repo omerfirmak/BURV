@@ -307,10 +307,10 @@ module decoder (
 				operand_b_sel_o = `ALU_OP_SEL_RF;
 
 				case (mm_op_address_sel_i)
-					0: rf_rs2_addr_o = instr_i[15 + $clog2(`GP_REG_COUNT) - 1 : 15];
-					1: rf_rs2_addr_o = instr_i[20 + $clog2(`GP_REG_COUNT) - 1 : 20];
-					2: rf_rs2_addr_o = instr_i[27 + $clog2(`GP_REG_COUNT) - 1 : 27];
-					3: rf_rs2_addr_o = rf_rd_addr_o;
+					0: rf_rs2_addr_o = instr_i[20 + $clog2(`GP_REG_COUNT) - 1 : 20]; // B
+					1: rf_rs2_addr_o = instr_i[27 + $clog2(`GP_REG_COUNT) - 1 : 27]; // N
+					2: rf_rs2_addr_o = instr_i[15 + $clog2(`GP_REG_COUNT) - 1 : 15]; // A
+					3: rf_rs2_addr_o = rf_rd_addr_o; // Result
 				endcase
 
 				mm_start_o = 1;

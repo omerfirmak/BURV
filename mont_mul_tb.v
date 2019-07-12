@@ -15,26 +15,32 @@ module mont_mul_tb (
 	end
 
 	wire lsu_ren, lsu_wen, lsu_done;
-	wire [31 : 0] lsu_addr_base;
+	reg  [31 : 0] lsu_addr_base;
 	wire [31 : 0] lsu_addr_offset;
 	wire [31 : 0] lsu_wdata;
 	wire [31 : 0] lsu_rdata;
+
+	wire [1:0] mm_op_address_sel;
+
+	always @(*) begin
+		case (mm_op_address_sel)
+			0: lsu_addr_base = 32'd16; // B
+			1: lsu_addr_base = 32'd32; // N
+			2: lsu_addr_base = 32'd0; // A
+			3: lsu_addr_base = 32'd48; // Result
+		endcase
+	end
 
 	mont_mul DUT (
 		.clk(clk),    // Clock
 		.rst_n(rst_n),  // Asynchronous reset active low
 		
 		.start(start),
-
-		.A_addr(32'd0),
-		.B_addr(32'd32),
- 		.N_addr(32'd64),
-		.res_addr(32'd96),
+		.op_address_sel (mm_op_address_sel),
 
 		.lsu_ren(lsu_ren),
 		.lsu_wen(lsu_wen),
 		.lsu_type(),
-		.lsu_addr_base(lsu_addr_base),
 		.lsu_addr_offset(lsu_addr_offset),
 		.lsu_done(lsu_done),
 		.lsu_rdata(lsu_rdata),
