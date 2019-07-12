@@ -296,7 +296,7 @@ module riscv_core
 		.tvec_o    (tvec),
 		.interrupt_enable_o (interrupt_enable)
 	);
-/*
+
 	mont_mul mont_mul (
 		.clk 		(clk),    // Clock
 		.rst_n    	(rst_n),  // Asynchronous reset active low
@@ -316,7 +316,7 @@ module riscv_core
 		.result     (),
 		.done       (mm_done)
 	);
-*/
+
 	assign lsu_en = lsu_w_en | lsu_r_en;
 	assign mm_lsu_en = mm_lsu_w_en | mm_lsu_r_en;
 
