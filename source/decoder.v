@@ -9,7 +9,8 @@ module decoder (
 	input wire compressed_inst_i,
 	input wire illegal_compressed_inst_i,
 
-	input wire cycle_counter_i, // Cycle of instruction being decoded
+	input wire 			cycle_counter_i, // Cycle of instruction being decoded
+	input wire [1 : 0]  mm_op_address_sel_i,
 
 	// Register file interface
 	output reg [$clog2(`GP_REG_COUNT) - 1 : 0]   rf_rs1_addr_o,
@@ -20,7 +21,7 @@ module decoder (
 
 	output reg [`ALU_OP_WIDTH -1 : 0] alu_op_o,
     output reg [1 : 0] 			   	  operand_a_sel_o,
-    output reg [1 : 0] 			      operand_b_sel_o,
+    output reg 					      operand_b_sel_o,
 
 	output reg lsu_w_en_o,
 	output reg lsu_r_en_o, 	
@@ -303,12 +304,14 @@ module decoder (
 			begin
 				alu_op_o = `ALU_ADD;
 				operand_a_sel_o = `ALU_OP_SEL_MM;
-				operand_b_sel_o = `ALU_OP_SEL_MM;
+				operand_b_sel_o = `ALU_OP_SEL_RF;
 
-				if (cycle_counter_i) begin
-					rf_rs1_addr_o = instr_i[27 + $clog2(`GP_REG_COUNT) - 1 : 27];
-					rf_rs2_addr_o = rf_rd_addr_o;
-				end
+				case (mm_op_address_sel_i)
+					0: rf_rs2_addr_o = instr_i[15 + $clog2(`GP_REG_COUNT) - 1 : 15];
+					1: rf_rs2_addr_o = instr_i[20 + $clog2(`GP_REG_COUNT) - 1 : 20];
+					2: rf_rs2_addr_o = instr_i[27 + $clog2(`GP_REG_COUNT) - 1 : 27];
+					3: rf_rs2_addr_o = rf_rd_addr_o;
+				endcase
 
 				mm_start_o = 1;
 			end

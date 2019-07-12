@@ -11,20 +11,17 @@ module mont_mul
 	input wire rst_n,  // Asynchronous reset active low
 	
 	input wire 							  start,			// Start execution
-	input wire [31 : 0] 				  A_addr,			// Address of operand A
-	input wire [31 : 0] 				  B_addr,			// Address of operand B
-	input wire [31 : 0] 				  N_addr,			// Address of operand N
-	input wire [31 : 0] 				  res_addr,			// Address that result will be written
 
 	/* LSU Control Signals*/
 	output reg						  	  lsu_ren,
 	output reg						  	  lsu_wen,
 	output wire	[1 : 0]					  lsu_type,
-	output reg  [31 : 0]			      lsu_addr_base,
 	output reg  [31 : 0]			      lsu_addr_offset,
 	input  wire						      lsu_done,
 	input  wire [31 : 0]			      lsu_rdata,
 	output reg  [31 : 0]			      lsu_wdata,
+
+	output reg  [1 : 0] 	  			  op_address_sel,
 
 	output wire [BITS-1 : 0]			  result,			// Calculated result
 	output reg							  done 				// End of execution signal
@@ -40,35 +37,6 @@ module mont_mul
 	reg [31 : 0]  A[WORDS - 1 : 0],
 				  B[WORDS - 1 : 0],
 				  N[WORDS - 1 : 0];
-
-	// Addresses of operands
-	reg [31 : 0] A_addr_latched,
-				 B_addr_latched,
-	 	 		 N_addr_latched,
-	 	 		 res_addr_latched;
-
-	always @(posedge clk or negedge rst_n) begin
-		if(~rst_n) begin
-			A_addr_latched <= 0;
-			B_addr_latched <= 0;
-			N_addr_latched <= 0;
-			res_addr_latched <= 0;
-		end else begin
-			/*
-				Since register file in our design only has 2 read ports, mont_mul expects A_addr and B_addr inputs to be valid in the same cycle 
-				start signal rises to high. Then N_addr and res_addr inputs to be valid the next cycle.
-			*/
-			if (start && CS == IDLE) begin
-				A_addr_latched <= A_addr;
-				B_addr_latched <= B_addr;
-			end
-
-			if (start && CS == PREPARE) begin
-				N_addr_latched <= N_addr;
-				res_addr_latched <= res_addr;
-			end
-		end
-	end
 
 	generate
 		genvar gi;
@@ -151,8 +119,8 @@ module mont_mul
 		carry = 0;
 		adder_in = B_packed;
 		is_greater_equal = 0;
-		lsu_addr_base = A_addr_latched;
 		lsu_addr_offset = 0;
+		op_address_sel = counter_n[WORD_COUNT_BIT + 1 : WORD_COUNT_BIT];
 
 		case (CS)
 			IDLE:
@@ -181,14 +149,6 @@ module mont_mul
 					end
 				end
 
-				// Calculate the address we will fetch from with respect to number of bytes we have already fetched.
-				// Resulting memory address is (lsu_addr_base + lsu_addr_offset)
-				case (counter_n[WORD_COUNT_BIT + 1 : WORD_COUNT_BIT])
-					0: lsu_addr_base = A_addr_latched;
-					1: lsu_addr_base = B_addr_latched;
-					2: lsu_addr_base = N_addr_latched;
-					default:;
- 				endcase
 				lsu_addr_offset = {{30-WORD_COUNT_BIT{1'b0}}, counter_n[WORD_COUNT_BIT - 1 : 0], 2'h0};
 			end
 			RUNNING_1:
@@ -230,7 +190,8 @@ module mont_mul
 			FINISH: 
 			begin 
 				lsu_wen = 1;
-				lsu_addr_base = res_addr_latched;
+				op_address_sel = 2'd3;
+				
 				lsu_addr_offset = {{30-WORD_COUNT_BIT{1'b0}}, counter[WORD_COUNT_BIT - 1 : 0], 2'h0};
 
 				counter_n = counter + 1;

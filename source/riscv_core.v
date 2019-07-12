@@ -36,7 +36,7 @@ module riscv_core
 	reg  [`RISCV_WORD_WIDTH - 1 : 0] 		alu_operand_a;
 	wire [1 : 0] 							alu_operand_a_sel;
 	reg  [`RISCV_WORD_WIDTH - 1 : 0] 		alu_operand_b;
-	wire [1 : 0]							alu_operand_b_sel;
+	wire 									alu_operand_b_sel;
 	wire [`RISCV_WORD_WIDTH - 1 : 0] 		alu_result;
 
 	// Register File signals
@@ -105,7 +105,7 @@ module riscv_core
 	wire 									mm_lsu_r_en; 	
 	wire [1 : 0] 							mm_lsu_data_type;
 	wire [`RISCV_WORD_WIDTH - 1 : 0] 		mm_lsu_wdata;
-	wire [`RISCV_ADDR_WIDTH - 1 : 0] 		mm_lsu_addr_base;
+	wire [1 : 0]							mm_op_address_sel;
 	wire [`RISCV_ADDR_WIDTH - 1 : 0] 		mm_lsu_addr_offset;
 
 	wire 									mm_start;
@@ -127,14 +127,13 @@ module riscv_core
 			`ALU_OP_SEL_RF:  alu_operand_a = rf_read_data_1;
 			`ALU_OP_SEL_IMM: alu_operand_a = imm_val;
 			`ALU_OP_SEL_PC:  alu_operand_a = instr_addr;
-			`ALU_OP_SEL_MM:  alu_operand_a = mm_lsu_addr_base;
+			`ALU_OP_SEL_MM:  alu_operand_a = mm_lsu_addr_offset;
 			default: 		 alu_operand_a = rf_read_data_1;
 		endcase
 		
 		case (alu_operand_b_sel)
 			`ALU_OP_SEL_RF:  alu_operand_b = rf_read_data_2;
 			`ALU_OP_SEL_IMM: alu_operand_b = imm_val;
-			`ALU_OP_SEL_MM:  alu_operand_b = mm_lsu_addr_offset;
 			default: 		 alu_operand_b = rf_read_data_2;
 		endcase
 
@@ -142,7 +141,7 @@ module riscv_core
 			`RF_WRITE_ALU_OUT: rf_write_data = alu_result;
 			`RF_WRITE_LSU_OUT: rf_write_data = lsu_rdata;
 			`RF_WRITE_CSR_OUT: rf_write_data = csr_rdata;
-			default: 		  rf_write_data = alu_result;
+			default: 		   rf_write_data = alu_result;
 		endcase
 	end
 
@@ -209,6 +208,7 @@ module riscv_core
 		.illegal_compressed_inst_i	(illegal_compressed_inst),
 
 		.cycle_counter_i(cycle_counter),
+		.mm_op_address_sel_i(mm_op_address_sel),
 
 		// Register file interface
 		.rf_rs1_addr_o  (rf_read_addr_1),
@@ -276,7 +276,7 @@ module riscv_core
 		.target_valid_o     (target_valid)
 	);
 
-	csr 
+	csr
 	#(
     	.TVEC_ADDRESS(BOOT_ADDRESS)
     )
@@ -296,21 +296,18 @@ module riscv_core
 		.tvec_o    (tvec),
 		.interrupt_enable_o (interrupt_enable)
 	);
-
+/*
 	mont_mul mont_mul (
 		.clk 		(clk),    // Clock
 		.rst_n    	(rst_n),  // Asynchronous reset active low
-		
 		.start      (mm_start),
-		.A_addr     (rf_read_data_1),
-		.B_addr     (rf_read_data_2),
-		.N_addr     (rf_read_data_1),
-		.res_addr   (rf_read_data_2),
 
 		.lsu_ren    (mm_lsu_r_en),
 		.lsu_wen    (mm_lsu_w_en),
 		.lsu_type   (mm_lsu_data_type),
-		.lsu_addr_base   (mm_lsu_addr_base),
+
+		.op_address_sel (mm_op_address_sel),
+
 		.lsu_addr_offset (mm_lsu_addr_offset),
 		.lsu_done   (lsu_done),
 		.lsu_rdata  (lsu_rdata),
@@ -319,7 +316,7 @@ module riscv_core
 		.result     (),
 		.done       (mm_done)
 	);
-
+*/
 	assign lsu_en = lsu_w_en | lsu_r_en;
 	assign mm_lsu_en = mm_lsu_w_en | mm_lsu_r_en;
 
