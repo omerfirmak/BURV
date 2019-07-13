@@ -209,6 +209,62 @@ void curve25519Mul(uint32_t *r, const uint32_t *a, const uint32_t *b)
                       [one] "r" (one), 
                       [_a] "r" (_a), 
                       [_b] "r" (_b)      );
+#elif (HARD_GF == 2)
+
+    volatile uint32_t _a[8];
+    volatile uint32_t _b[8];
+ 
+    for (int i = 0; i < 256; i ++) {
+       asm volatile (  ".insn r CUSTOM_0, 0, 0, %[_a], %[a], %[_r], %[n]\n" \
+                       : 
+                       : [a] "r" (a), 
+                         [b] "r" (b), 
+                         [n] "r" (n), 
+                         [c] "r" (r), 
+                         [_r] "r" (_r), 
+                         [one] "r" (one), 
+                         [_a] "r" (_a), 
+                         [_b] "r" (_b)      );
+   }
+
+    for (int i = 0; i < 256; i ++) {
+       asm volatile (  ".insn r CUSTOM_0, 0, 0, %[_b], %[b], %[_r], %[n]\n" \
+                       : 
+                       : [a] "r" (a), 
+                         [b] "r" (b), 
+                         [n] "r" (n), 
+                         [c] "r" (r), 
+                         [_r] "r" (_r), 
+                         [one] "r" (one), 
+                         [_a] "r" (_a), 
+                         [_b] "r" (_b)      );
+   }
+
+    for (int i = 0; i < 256; i ++) {
+       asm volatile (  ".insn r CUSTOM_0, 0, 0, %[c], %[_a], %[_b], %[n]\n" \
+                       : 
+                       : [a] "r" (a), 
+                         [b] "r" (b), 
+                         [n] "r" (n), 
+                         [c] "r" (r), 
+                         [_r] "r" (_r), 
+                         [one] "r" (one), 
+                         [_a] "r" (_a), 
+                         [_b] "r" (_b)      );
+   }
+
+    for (int i = 0; i < 256; i ++) {
+       asm volatile (  ".insn r CUSTOM_0, 0, 0, %[c], %[c], %[one], %[n]\n" \
+                       : 
+                       : [a] "r" (a), 
+                         [b] "r" (b), 
+                         [n] "r" (n), 
+                         [c] "r" (r), 
+                         [_r] "r" (_r), 
+                         [one] "r" (one), 
+                         [_a] "r" (_a), 
+                         [_b] "r" (_b)      );
+   }
 #else
    uint_t i;
    uint_t j;

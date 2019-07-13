@@ -394,6 +394,62 @@ void uECC_vli_modMult_fast(uECC_word_t *result, const uECC_word_t *left,
                       [one] "r" (one), 
                       [_left] "r" (_left), 
                       [_right] "r" (_right)      );
+#elif HARD_GF == 2
+
+    volatile uint32_t _left[NUM_ECC_WORDS];
+    volatile uint32_t _right[NUM_ECC_WORDS];
+
+    for (int i = 0; i < 256; i++) {
+	    asm volatile (  ".insn r CUSTOM_0, 0, 0, %[_left], %[left], %[r], %[n]\n" \
+	                    : 
+	                    : [left] "r" (left), 
+	                      [right] "r" (right), 
+	                      [n] "r" (n), 
+	                      [result] "r" (result), 
+	                      [r] "r" (r), 
+	                      [one] "r" (one), 
+	                      [_left] "r" (_left), 
+	                      [_right] "r" (_right)      );
+	}
+
+    for (int i = 0; i < 256; i++) {
+	    asm volatile (  ".insn r CUSTOM_0, 0, 0, %[_right], %[right], %[r], %[n]\n" \
+	                    : 
+	                    : [left] "r" (left), 
+	                      [right] "r" (right), 
+	                      [n] "r" (n), 
+	                      [result] "r" (result), 
+	                      [r] "r" (r), 
+	                      [one] "r" (one), 
+	                      [_left] "r" (_left), 
+	                      [_right] "r" (_right)      );
+	}
+
+    for (int i = 0; i < 256; i++) {
+	    asm volatile (  ".insn r CUSTOM_0, 0, 0, %[result], %[_left], %[_right], %[n]\n" \
+	                    : 
+	                    : [left] "r" (left), 
+	                      [right] "r" (right), 
+	                      [n] "r" (n), 
+	                      [result] "r" (result), 
+	                      [r] "r" (r), 
+	                      [one] "r" (one), 
+	                      [_left] "r" (_left), 
+	                      [_right] "r" (_right)      );
+	}
+
+    for (int i = 0; i < 256; i++) {
+	    asm volatile (	".insn r CUSTOM_0, 0, 0, %[result], %[result], %[one], %[n]\n" \
+	                    : 
+	                    : [left] "r" (left), 
+	                      [right] "r" (right), 
+	                      [n] "r" (n), 
+	                      [result] "r" (result), 
+	                      [r] "r" (r), 
+	                      [one] "r" (one), 
+	                      [_left] "r" (_left), 
+	                      [_right] "r" (_right)      );
+	}
 #else
 	uECC_word_t product[2 * NUM_ECC_WORDS];
 	uECC_vli_mult(product, left, right, curve->num_words);

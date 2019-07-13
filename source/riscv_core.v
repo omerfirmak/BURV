@@ -300,7 +300,12 @@ module riscv_core
 		.interrupt_enable_o (interrupt_enable)
 	);
 
-	mont_mul mont_mul (
+	mont_mul 
+	#(
+		.WORDS(`ECC_WORD_COUNT),
+		.PARTIAL_EXEC(`HARD_GF == 2)
+	)
+	mont_mul (
 		.clk 		(clk),    // Clock
 		.rst_n    	(rst_n),  // Asynchronous reset active low
 		.start      (mm_start),

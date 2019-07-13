@@ -25,12 +25,13 @@ SIM_SRC = $(VERILOG_SRC)
 
 TESTNAMES = $(wildcard ./tests/*.S)
 
+ECC_WORD_COUNT = 8
 HARD_GF = 1
 DUMP_TRACE = 1
 BOOT_ADDRESS = 0
 MEM_SIZE = 524288
 #MEM_SIZE = 262144
-DEFINE_FLAGS = -DBOOT_ADDRESS=$(BOOT_ADDRESS) -DMEM_SIZE=$(MEM_SIZE) -DDUMP_TRACE=$(DUMP_TRACE) -DMEM_ORIGIN=$(MEM_ORIGIN) -DMEM_LENGTH=$(MEM_LENGTH) -DSTACK_LENGTH=$(STACK_LENGTH) -DSTACK_ORIGIN=$(STACK_ORIGIN) -DHARD_GF=$(HARD_GF)
+DEFINE_FLAGS = -DECC_WORD_COUNT=$(ECC_WORD_COUNT) -DBOOT_ADDRESS=$(BOOT_ADDRESS) -DMEM_SIZE=$(MEM_SIZE) -DDUMP_TRACE=$(DUMP_TRACE) -DMEM_ORIGIN=$(MEM_ORIGIN) -DMEM_LENGTH=$(MEM_LENGTH) -DSTACK_LENGTH=$(STACK_LENGTH) -DSTACK_ORIGIN=$(STACK_ORIGIN) -DHARD_GF=$(HARD_GF)
 
 all: firmware sim_iverilog
 test: compile_test sim_iverilog
@@ -45,7 +46,7 @@ MEM_ORIGIN=0
 MEM_LENGTH=\(MEM_SIZE-STACK_LENGTH\)
 STACK_LENGTH=98304
 STACK_ORIGIN=\(MEM_SIZE-STACK_LENGTH\)
-CFLAGS = -O2 -falign-functions=16 -funroll-all-loops
+CFLAGS = -O3 -falign-functions=16 -funroll-all-loops
 
 COMMON_C_SRC = software/start.S software/handlers.c software/print.c
 
@@ -100,12 +101,13 @@ P256_SRC =  tinycrypt/tests/test_ecc_dh.c \
 
 # g++ -I./ -I./common ./ecc/curve25519.c ./ecc/ed25519.c ./hash/sha512.c ./common/os_port_none.c ./common/cpu_endian.c main.c
 
-p256:	   CFLAGS=--std=gnu99 -O3 -I./tinycrypt/include -I./tinycrypt/tests/include
+p256:	   CFLAGS += --std=gnu99 -I./tinycrypt/include -I./tinycrypt/tests/include
 p256:	   SRC=$(P256_SRC)
-c25519:	   CFLAGS=-ICycloneCrypto/ -ICycloneCrypto/common
+c25519:	   CFLAGS += -ICycloneCrypto/ -ICycloneCrypto/common
 c25519:	   SRC=$(C25519_SRC)
-fourq:     CFLAGS=-O3 -fwrapv -fomit-frame-pointer -funroll-loops -D_RV32_ -D__OSNONE__ -DUSE_ENDO -D_NO_CACHE_MEM_ -I./FourQ_RV32 -I./FourQ_RV32/tests/blake2
+fourq:     CFLAGS += -fwrapv -fomit-frame-pointer -D_RV32_ -D__OSNONE__ -DUSE_ENDO -D_NO_CACHE_MEM_ -I./FourQ_RV32 -I./FourQ_RV32/tests/blake2
 fourq:     SRC=$(FOURQ_SRC)
+fourq:	   ECC_WORD_COUNT = 4
 coremark:  SRC=$(COREMARK_SRC)
 dhrystone: SRC=dhrystone/dhrystone.c dhrystone/dhrystone_main.c
 p256 c25519 fourq coremark dhrystone: DUMP_TRACE=0

@@ -94,4 +94,12 @@
 `define FUNC3_CJR_JALR   3'b100
 `define FUNC3_CSLLI  	 3'b000
 
+`ifndef HARD_GF
+	`define HARD_GF 1
+`endif
+
+`ifndef ECC_WORD_COUNT
+	`define ECC_WORD_COUNT 4
+`endif
+
 `endif

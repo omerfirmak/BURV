@@ -39,6 +39,11 @@ module mont_mul
 				  B[WORDS - 1 : 0],
 				  N[WORDS - 1 : 0];
 
+	initial begin
+		$display("MMUL WORDS: %d",WORDS);
+		$display("MMUL PARTIAL_EXEC: %d",PARTIAL_EXEC);
+	end
+
 	generate
 		genvar gi;
 		for (gi = 0; gi < WORDS; gi = gi + 1) begin
