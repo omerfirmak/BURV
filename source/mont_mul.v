@@ -124,7 +124,7 @@ module mont_mul
 		adder_in = B_packed;
 		is_greater_equal = 0;
 		lsu_addr_offset = 0;
-		op_address_sel = 0;
+		op_address_sel = {1'b0, counter[WORD_COUNT_BIT] | (&counter[WORD_COUNT_BIT - 1 : 0])};
 
 		case (CS)
 			IDLE:
@@ -148,7 +148,6 @@ module mont_mul
 					end
 				end
 
-				op_address_sel = counter_n[WORD_COUNT_BIT + 1 : WORD_COUNT_BIT];
 				lsu_addr_offset = {{30-WORD_COUNT_BIT{1'b0}}, counter_n[WORD_COUNT_BIT - 1 : 0], 2'h0};
 			end
 			FETCH_A:
