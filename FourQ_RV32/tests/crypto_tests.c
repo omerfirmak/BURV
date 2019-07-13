@@ -351,25 +351,20 @@ int main()
 {
     ECCRYPTO_STATUS Status = ECCRYPTO_SUCCESS;
 
-/*
-
-
     Status = SchnorrQ_test();         // Test SchnorrQ signature scheme
     if (Status != ECCRYPTO_SUCCESS) {
         return false;
     }
-*/
     Status = SchnorrQ_run();          // Benchmark SchnorrQ signature scheme
     if (Status != ECCRYPTO_SUCCESS) {
 		print_str("\n\n   Error detected: compressedkex_run \n\n");
         return false;
     }
-/*	Status = compressedkex_test();    // Test Diffie-Hellman key exchange using compressed public keys
+	Status = compressedkex_test();    // Test Diffie-Hellman key exchange using compressed public keys
 	if (Status != ECCRYPTO_SUCCESS) {
 		printf("\n\n   Error detected: %s \n\n", FourQ_get_error_message(Status));
 		return false;
 	}
-*/
 
 	Status = compressedkex_run();     // Benchmark Diffie-Hellman key exchange using compressed public keys
 	if (Status != ECCRYPTO_SUCCESS) {
@@ -377,13 +372,12 @@ int main()
 		return false;
 	}
 
-/*
 	Status = kex_test();              // Test Diffie-Hellman key exchange using uncompressed public keys
 	if (Status != ECCRYPTO_SUCCESS) {
 //		printf("\n\n   Error detected: %s \n\n", FourQ_get_error_message(Status));
 		return false;
 	}
-*/
+
 	Status = kex_run();               // Benchmark Diffie-Hellman key exchange using uncompressed public keys
 	if (Status != ECCRYPTO_SUCCESS) {
 		print_str("\n\n   Error detected: kex_run \n\n");

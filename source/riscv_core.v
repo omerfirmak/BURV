@@ -73,6 +73,7 @@ module riscv_core
 
 	// For multicycle instructions
 	wire                         	 		cycle_counter;
+	wire 									multi_cycle_op_in_progress;
 
 	// Controller module signals
 	wire [1 : 0]					   		pc_mux_sel;
@@ -208,6 +209,7 @@ module riscv_core
 		.illegal_compressed_inst_i	(illegal_compressed_inst),
 
 		.cycle_counter_i(cycle_counter),
+		.multi_cycle_op_in_progress_i(multi_cycle_op_in_progress),
 		.mm_op_address_sel_i(mm_op_address_sel),
 
 		// Register file interface
@@ -268,6 +270,7 @@ module riscv_core
 
 		.cycle_counter_o     (cycle_counter),
 		.deassert_rf_wen_n_o (deassert_rf_wen_n),
+		.multi_cycle_op_in_progress_o (multi_cycle_op_in_progress),
 		.retire_o            (retire_curr_inst),
 
 		.pc_mux_sel_o    	(pc_mux_sel),

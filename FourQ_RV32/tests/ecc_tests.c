@@ -727,7 +727,7 @@ int main()
     bool OK = true;
 
     OK = OK && ecc_test();         // Test FourQ's curve functions
-//  OK = OK && ecc_run();          // Benchmark FourQ's curve functions
+//    OK = OK && ecc_run();          // Benchmark FourQ's curve functions
     
     return OK;
 }

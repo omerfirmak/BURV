@@ -10,6 +10,7 @@ module decoder (
 	input wire illegal_compressed_inst_i,
 
 	input wire 			cycle_counter_i, // Cycle of instruction being decoded
+	input wire 			multi_cycle_op_in_progress_i,
 	input wire [1 : 0]  mm_op_address_sel_i,
 
 	// Register file interface
@@ -223,7 +224,7 @@ module decoder (
 				rf_we_o = 1;
 				rf_write_sel_o = `RF_WRITE_LSU_OUT;
 
-				lsu_r_en_o = 1;
+				lsu_r_en_o = ~multi_cycle_op_in_progress_i;
 				lsu_sign_extend_o = ~instr_i[14];
 				case (sub_func_3[1:0])
 					2'b00:   lsu_data_type_o = `DATA_BYTE;
@@ -238,7 +239,7 @@ module decoder (
 				imm_sel = `IMM_S;
 				operand_b_sel_o = `ALU_OP_SEL_IMM;
 
-				lsu_w_en_o = 1;
+				lsu_w_en_o = ~multi_cycle_op_in_progress_i;
 				case (sub_func_3)
 					3'b000:   lsu_data_type_o = `DATA_BYTE;
 					3'b001:   lsu_data_type_o = `DATA_HALF_WORD;

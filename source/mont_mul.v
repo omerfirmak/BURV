@@ -66,10 +66,12 @@ module mont_mul
 		if (~rst_n) begin
 			A <= 0;
 		end else begin
-			if (lsu_done && CS == FETCH_A) begin
-				A <= lsu_rdata;
-			end else if (CS == RUNNING_2) begin
-				A <= A >> 1;
+			if (PARTIAL_EXEC == 0 || start) begin
+				if (lsu_done && CS == FETCH_A) begin
+					A <= lsu_rdata;
+				end else if (CS == RUNNING_1) begin
+					A <= A >> 1;
+				end
 			end
 		end
 	end
@@ -151,40 +153,44 @@ module mont_mul
 			end
 			FETCH_A:
 			begin
-				lsu_ren = ~lsu_done;
-				op_address_sel = 2; // A
-				lsu_addr_offset = {{30-WORD_COUNT_BIT{1'b0}}, counter[5 + WORD_COUNT_BIT - 1 : 5], 2'h0};
+				if (PARTIAL_EXEC == 0 || start) begin 
+					lsu_ren = 1;
+					op_address_sel = 2; // A
+					lsu_addr_offset = {{30-WORD_COUNT_BIT{1'b0}}, counter[5 + WORD_COUNT_BIT - 1 : 5], 2'h0};
 
-				if (lsu_done)
-					NS = RUNNING_1;
+					if (lsu_done) begin
+						NS = RUNNING_1;
+						lsu_ren = 0;						
+					end
+				end
 			end
 			RUNNING_1:
 			begin
-				// At this stage adder_out = M + B, if A is odd update M with M + B
-				// Remember A is shifted right by 1 every RUNNING_2 state
-				if (PARTIAL_EXEC == 0 || start) 
-					NS = RUNNING_2;				
-
-				if (NS == RUNNING_2 && A[0]) M_n = adder_out[BITS + 2: 1];
+				if (PARTIAL_EXEC == 0 || start) begin 
+					// At this stage adder_out = M + B, if A is odd update M with M + B
+					// Remember A is shifted right by 1 every RUNNING_1 state
+					if (A[0]) M_n = adder_out[BITS + 2: 1];
+					NS = RUNNING_2;
+				end
 			end
 			RUNNING_2:
 			begin
 				adder_in = N_packed;
+				done = PARTIAL_EXEC;
 
 				// If M is odd update M with M + N then shift it by 1 regardless
 				if (M[0]) 	M_n = adder_out[BITS + 2: 1];
 				M_n = M_n >> 1;
-				
+
 				// Are we done with the loop?
 				counter_n = counter + 1;
-				if (counter_n[BIT_COUNT_BIT]) 
+				if (counter_n[BIT_COUNT_BIT]) begin
 					NS = CLEANUP;
-				else if (counter_n[4 : 0] == 0)
+					done = 0;
+				end else if (counter_n[4 : 0] == 0)
 					NS = FETCH_A;
-				else begin
-					done = PARTIAL_EXEC;
+				else
 	 				NS = RUNNING_1;
-				end
 			end
 			CLEANUP:
 			begin

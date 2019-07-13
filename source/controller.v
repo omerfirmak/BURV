@@ -29,6 +29,7 @@ module controller (
 
 	output reg cycle_counter_o,
 	output reg deassert_rf_wen_n_o,
+	output wire multi_cycle_op_in_progress_o,
 	output reg retire_o,
 
 	output reg [1 : 0] pc_mux_sel_o,
@@ -40,6 +41,8 @@ module controller (
 	localparam MULTI_CYCLE_OP = 1'b1;
 
 	reg CS, NS;
+
+	assign multi_cycle_op_in_progress_o = CS == MULTI_CYCLE_OP;
 
 	always @* 
 	begin
@@ -140,7 +143,6 @@ module controller (
 		end
 	end
 
-
 	always @(posedge clk or negedge rst_n) begin
 		if(~rst_n) begin
 			CS <= IDLE;
@@ -152,9 +154,5 @@ module controller (
 			else			cycle_counter_o <= cycle_counter_o + 1;
 		end
 	end
-
-
-
-
 
 endmodule
