@@ -155,6 +155,7 @@ module mont_mul
 
 				lsu_addr_offset = {{30-WORD_COUNT_BIT{1'b0}}, counter_n[WORD_COUNT_BIT - 1 : 0], 2'h0};
 			end
+			// Fetch a single word of operand A
 			FETCH_A:
 			begin
 				if (PARTIAL_EXEC == 0 || start) begin 
@@ -191,6 +192,7 @@ module mont_mul
 				if (counter_n[BIT_COUNT_BIT]) begin
 					NS = CLEANUP;
 					done = 0;
+				// If iteration count is a multiple of 32, fetch new word of A
 				end else if (counter_n[4 : 0] == 0)
 					NS = FETCH_A;
 				else
