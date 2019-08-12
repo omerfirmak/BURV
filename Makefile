@@ -126,6 +126,9 @@ sim_iverilog: compile_iverilog
 compile_iverilog:
 	iverilog $(DEFINE_FLAGS) -g2012 -I./source $(SIM_SRC) $(COMMON_SRC) riscv_top_tb.v -o iv_exec
 
+synth_vivado:
+	vivado -mode batch -nojournal -nolog -source vivado_synth.tcl
+
 synth:
 	qflow synthesize --tech $(TECH) riscv_core > /dev/null
 

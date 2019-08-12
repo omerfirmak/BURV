@@ -5,7 +5,8 @@
 
 module riscv_core 
 #(
-	parameter BOOT_ADDRESS = 32'h0
+	parameter BOOT_ADDRESS = 32'h0,
+	parameter MMUL_EN = 1
 )(
 	input wire clk,    // Clock
 	input wire rst_n,  // Asynchronous reset active low
@@ -128,7 +129,7 @@ module riscv_core
 			`ALU_OP_SEL_RF:  alu_operand_a = rf_read_data_1;
 			`ALU_OP_SEL_IMM: alu_operand_a = imm_val;
 			`ALU_OP_SEL_PC:  alu_operand_a = instr_addr;
-			`ALU_OP_SEL_MM:  alu_operand_a = mm_lsu_addr_offset;
+			`ALU_OP_SEL_MM:  if (MMUL_EN) alu_operand_a = mm_lsu_addr_offset;
 			default: 		 alu_operand_a = rf_read_data_1;
 		endcase
 		
@@ -202,7 +203,11 @@ module riscv_core
 		.imem_rdata_i  (imem_rdata_i)
     );
 
-	decoder decoder 
+	decoder
+    #(
+    	.MMUL_EN(MMUL_EN)
+    )
+	decoder 
 	(
 		.instr_i        			(instr),
 		.compressed_inst_i  		(compressed_inst),
@@ -300,6 +305,7 @@ module riscv_core
 		.interrupt_enable_o (interrupt_enable)
 	);
 
+if (MMUL_EN) begin
 	mont_mul 
 	#(
 		.WORDS(`ECC_WORD_COUNT),
@@ -324,6 +330,7 @@ module riscv_core
 		.result     (),
 		.done       (mm_done)
 	);
+end
 
 	assign lsu_en = lsu_w_en | lsu_r_en;
 	assign mm_lsu_en = mm_lsu_w_en | mm_lsu_r_en;

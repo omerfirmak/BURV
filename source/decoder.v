@@ -3,7 +3,10 @@
 `include "riscv_defines.v"
 `include "alu_defines.v"
 
-module decoder (
+module decoder 
+#(
+	parameter MMUL_EN = 1
+)(
 	// From fetch stage
 	input wire [`RISCV_WORD_WIDTH - 1 : 0] instr_i,
 	input wire compressed_inst_i,
@@ -303,18 +306,22 @@ module decoder (
 			end
 			`OPCODE_CUSTOM0:
 			begin
-				alu_op_o = `ALU_ADD;
-				operand_a_sel_o = `ALU_OP_SEL_MM;
-				operand_b_sel_o = `ALU_OP_SEL_RF;
+				if (MMUL_EN) begin
+					alu_op_o = `ALU_ADD;
+					operand_a_sel_o = `ALU_OP_SEL_MM;
+					operand_b_sel_o = `ALU_OP_SEL_RF;
 
-				case (mm_op_address_sel_i)
-					0: rf_rs2_addr_o = instr_i[20 + $clog2(`GP_REG_COUNT) - 1 : 20]; // B
-					1: rf_rs2_addr_o = instr_i[27 + $clog2(`GP_REG_COUNT) - 1 : 27]; // N
-					2: rf_rs2_addr_o = instr_i[15 + $clog2(`GP_REG_COUNT) - 1 : 15]; // A
-					3: rf_rs2_addr_o = rf_rd_addr_o; // Result
-				endcase
+					case (mm_op_address_sel_i)
+						0: rf_rs2_addr_o = instr_i[20 + $clog2(`GP_REG_COUNT) - 1 : 20]; // B
+						1: rf_rs2_addr_o = instr_i[27 + $clog2(`GP_REG_COUNT) - 1 : 27]; // N
+						2: rf_rs2_addr_o = instr_i[15 + $clog2(`GP_REG_COUNT) - 1 : 15]; // A
+						3: rf_rs2_addr_o = rf_rd_addr_o; // Result
+					endcase
 
-				mm_start_o = 1;
+					mm_start_o = 1;
+				end else begin
+					illegal_inst = 1'b1;
+				end
 			end
 			default: illegal_inst = 1'b1;
 		endcase
