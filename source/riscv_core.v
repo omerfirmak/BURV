@@ -132,12 +132,20 @@ module riscv_core
 			default: 		 alu_operand_a = rf_read_data_1;
 		endcase
 		
-		case (alu_operand_b_sel)
-			`ALU_OP_SEL_RF:  alu_operand_b = rf_read_data_2;
-			`ALU_OP_SEL_IMM: alu_operand_b = imm_val;
-			`ALU_OP_SEL_MM:  if (MMUL_EN) alu_operand_b = mm_lsu_addr_offset;
-			default: 		 alu_operand_b = rf_read_data_2;
-		endcase
+		if (MMUL_EN) begin
+			case (alu_operand_b_sel)
+				`ALU_OP_SEL_RF:  alu_operand_b = rf_read_data_2;
+				`ALU_OP_SEL_IMM: alu_operand_b = imm_val;
+				`ALU_OP_SEL_MM:  alu_operand_b = mm_lsu_addr_offset;
+				default: 		 alu_operand_b = rf_read_data_2;
+			endcase
+		end else begin
+			case (alu_operand_b_sel[0])
+				`ALU_OP_SEL_RF:  alu_operand_b = rf_read_data_2;
+				`ALU_OP_SEL_IMM: alu_operand_b = imm_val;
+				default: 		 alu_operand_b = rf_read_data_2;
+			endcase		
+		end
 
 		case (rf_write_sel)
 			`RF_WRITE_ALU_OUT: rf_write_data = alu_result;
