@@ -59,7 +59,8 @@ module fetch_stage
 		.instr_i 		(imem_rdata_i),
 		.addr_i   		(fetch_addr),
 
-		.read_en_i 		((take_next && ~realign_buffer_empty) ? (2'b10 ^ {2{compressed_inst}}) : 2'h0),
+		.read_en_i 		(take_next && ~realign_buffer_empty),
+		.read_len_i 	(2'b10 ^ {2{compressed_inst}}),
 		.instr_o		(instr),
 		.addr_o   		(instr_addr),
 
