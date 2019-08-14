@@ -30,13 +30,13 @@ module dp_ram
     wire [$clog2(SIZE_BYTES/4) - 1 : 0] a_addr = a_addr_i[$clog2(SIZE_BYTES/4) + 1 : 2];
     wire [$clog2(SIZE_BYTES/4) - 1 : 0] b_addr = b_addr_i[$clog2(SIZE_BYTES/4) + 1 : 2];
 
+    reg [31:0] mem[(SIZE_BYTES/4) -1 : 0];
+
     initial begin
         /* verilator lint_off WIDTH */
         if (INIT_FILE_BIN != "") $readmemh(INIT_FILE_BIN, mem);
         /* verilator lint_on WIDTH */
     end
-
-    reg [31:0] mem[(SIZE_BYTES/4) -1 : 0];
 
     always @(posedge clk) begin
         a_ready_o <= 0;

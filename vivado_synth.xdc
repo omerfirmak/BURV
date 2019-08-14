@@ -1,4 +1,4 @@
-create_clock -period 11.00 [get_ports clk]
+create_clock -period 10.00 [get_ports clk]
 
 set_property PACKAGE_PIN Y9 [get_ports {clk}];  # "GCLK"
 set_property PACKAGE_PIN Y11  [get_ports {rst_n}];  # "JA1"

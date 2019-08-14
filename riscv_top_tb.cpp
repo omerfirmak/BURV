@@ -5,7 +5,7 @@
 #include "Vriscv_top_riscv_top.h"
 //#include "Vriscv_top_dp_ram__pi1.h"
 #include "Vriscv_top_reg_file.h"
-#include "Vriscv_top_riscv_core__B0.h"
+#include "Vriscv_top_riscv_core__B0_M1.h"
 
 #include "verilated.h"
 #include "verilated_vcd_c.h"

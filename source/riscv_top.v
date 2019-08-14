@@ -86,7 +86,8 @@ module riscv_top
 
 	riscv_core 
 	#(
-		.BOOT_ADDRESS(BOOT_ADDRESS)
+		.BOOT_ADDRESS(BOOT_ADDRESS),
+		.MMUL_EN(1)
 	)
 	riscv_core
 	(

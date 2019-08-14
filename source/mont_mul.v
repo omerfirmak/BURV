@@ -32,6 +32,14 @@ module mont_mul
 	localparam WORD_COUNT_BIT = $clog2(WORDS);
 	localparam BIT_COUNT_BIT = $clog2(BITS);
 
+	localparam IDLE    		  = 3'd0;
+	localparam FETCH_A		  = 3'd1;
+	localparam FETCH_OPERANDS = 3'd2;
+	localparam RUNNING_1 	  = 3'd3;
+	localparam RUNNING_2 	  = 3'd4;
+	localparam CLEANUP 		  = 3'd5;
+	localparam FINISH  		  = 3'd6;
+
 	integer i;
 
 	// A, B, N registers holding value read from memory
@@ -39,10 +47,29 @@ module mont_mul
 				  B[WORDS - 1 : 0],
 				  N[WORDS - 1 : 0];
 
-	initial begin
-		$display("MMUL WORDS: %d",WORDS);
-		$display("MMUL PARTIAL_EXEC: %d",PARTIAL_EXEC);
-	end
+	wire [BITS + 1: 0] B_packed;
+	wire [BITS + 1: 0] N_packed;
+
+	reg [2 : 0]   			  CS, NS;
+	reg [BIT_COUNT_BIT : 0]	  counter, counter_n;
+	reg [BITS + 1 : 0]        M,
+				  		      M_n;
+
+	wire [BITS + 2 : 0] adder_out;
+	reg  [BITS + 1 : 0] adder_in;
+	reg			   		carry;
+	reg 		   		is_greater_equal;
+
+	wire [31 : 0]  result_unpacked[WORDS - 1 : 0];
+
+	assign result = M[BITS - 1: 0];
+
+	generate
+		genvar gk;
+		for (gk = 0; gk < WORDS; gk = gk + 1) begin
+			assign result_unpacked[gk] = result[(gk * 32) + 31 : gk * 32];
+		end
+	endgenerate
 
 	generate
 		genvar gi;
@@ -81,17 +108,6 @@ module mont_mul
 		end
 	end
 
-	localparam IDLE    		  = 3'd0;
-	localparam FETCH_A		  = 3'd1;
-	localparam FETCH_OPERANDS = 3'd2;
-	localparam RUNNING_1 	  = 3'd3;
-	localparam RUNNING_2 	  = 3'd4;
-	localparam CLEANUP 		  = 3'd5;
-	localparam FINISH  		  = 3'd6;
-
-	wire [BITS + 1: 0] B_packed;
-	wire [BITS + 1: 0] N_packed;
-
 	assign B_packed[BITS + 1 : BITS] = 2'd0;
 	assign N_packed[BITS + 1 : BITS] = 2'd0;
 
@@ -102,16 +118,6 @@ module mont_mul
 			assign N_packed[(gj * 32) + 31 : gj * 32] = N[gj];
 		end
 	endgenerate
-
-	reg [2 : 0]   			  CS, NS;
-	reg [BIT_COUNT_BIT : 0]	  counter, counter_n;
-	reg [BITS + 1 : 0]        M,
-				  		      M_n;
-
-	wire [BITS + 2 : 0] adder_out;
-	reg  [BITS + 1 : 0] adder_in;
-	reg			   		carry;
-	reg 		   		is_greater_equal;
 
 	// Single BITS wide adder used for all the calculations
 	assign adder_out = {M, 1'b1} + {adder_in, carry};
@@ -247,15 +253,5 @@ module mont_mul
 			counter <= counter_n;
 		end
 	end
-
-	assign result = M[BITS - 1: 0];
-	wire [31 : 0]  result_unpacked[WORDS - 1 : 0];
-
-	generate
-		genvar gk;
-		for (gk = 0; gk < WORDS; gk = gk + 1) begin
-			assign result_unpacked[gk] = result[(gk * 32) + 31 : gk * 32];
-		end
-	endgenerate
 
 endmodule

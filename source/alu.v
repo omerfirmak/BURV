@@ -31,7 +31,7 @@ module alu (
 
     always @*
     begin
-        negate_op_b = alu_op_i == `ALU_SUB;
+        negate_op_b = alu_op_i != `ALU_ADD;
         adder_in_a = {operand_a_i, 1'b1};
         adder_in_b = {operand_b_i ^ {32{negate_op_b}}, negate_op_b};
         adder_result = adder_in_a + adder_in_b;
@@ -57,24 +57,33 @@ module alu (
     /*
      * Comparison
      */
+    wire signed_op;
     reg  comp_result;
     wire is_equal;
-    wire is_greater;
-    wire is_greater_signed;
+    reg  is_greater_equal;
 
+    assign signed_op = (alu_op_i == `ALU_GES || alu_op_i == `ALU_LTS); 
     assign is_equal = operand_a_i == operand_b_i; 
-    assign is_greater = operand_a_i > operand_b_i;
-    assign is_greater_signed = operand_a_i_signed > operand_b_i_signed;
+
+    always @*
+    begin
+        if ((operand_a_i[`RISCV_WORD_WIDTH - 1] ^ operand_b_i[`RISCV_WORD_WIDTH - 1]) == 1'b0) begin
+            is_greater_equal = ~adder_out[`RISCV_WORD_WIDTH - 1];
+        end else begin
+            is_greater_equal = operand_a_i[`RISCV_WORD_WIDTH - 1] ^ signed_op;
+        end
+    end
+
 
     always @*
     begin
         case (alu_op_i)
             `ALU_EQ:  comp_result = is_equal;
             `ALU_NE:  comp_result = ~is_equal;
-            `ALU_GES: comp_result = is_greater_signed | is_equal;
-            `ALU_GEU: comp_result = is_greater | is_equal;
-            `ALU_LTS: comp_result = ~is_greater_signed && ~is_equal;
-            `ALU_LTU: comp_result = ~is_greater && ~is_equal;
+            `ALU_GES,
+            `ALU_GEU: comp_result = is_greater_equal;
+            `ALU_LTS,
+            `ALU_LTU: comp_result = ~is_greater_equal;
             default: comp_result = 1'bx;
         endcase
     end

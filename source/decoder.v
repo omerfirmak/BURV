@@ -25,7 +25,7 @@ module decoder
 
 	output reg [`ALU_OP_WIDTH -1 : 0] alu_op_o,
     output reg [1 : 0] 			   	  operand_a_sel_o,
-    output reg 					      operand_b_sel_o,
+    output reg [1 : 0]				  operand_b_sel_o,
 
 	output reg lsu_w_en_o,
 	output reg lsu_r_en_o, 	
@@ -308,14 +308,14 @@ module decoder
 			begin
 				if (MMUL_EN) begin
 					alu_op_o = `ALU_ADD;
-					operand_a_sel_o = `ALU_OP_SEL_MM;
-					operand_b_sel_o = `ALU_OP_SEL_RF;
+					operand_b_sel_o = `ALU_OP_SEL_MM;
+					operand_a_sel_o = `ALU_OP_SEL_RF;
 
 					case (mm_op_address_sel_i)
-						0: rf_rs2_addr_o = instr_i[20 + $clog2(`GP_REG_COUNT) - 1 : 20]; // B
-						1: rf_rs2_addr_o = instr_i[27 + $clog2(`GP_REG_COUNT) - 1 : 27]; // N
-						2: rf_rs2_addr_o = instr_i[15 + $clog2(`GP_REG_COUNT) - 1 : 15]; // A
-						3: rf_rs2_addr_o = rf_rd_addr_o; // Result
+						0: rf_rs1_addr_o = instr_i[20 + $clog2(`GP_REG_COUNT) - 1 : 20]; // B
+						1: rf_rs1_addr_o = instr_i[27 + $clog2(`GP_REG_COUNT) - 1 : 27]; // N
+						2: rf_rs1_addr_o = instr_i[15 + $clog2(`GP_REG_COUNT) - 1 : 15]; // A
+						3: rf_rs1_addr_o = rf_rd_addr_o; // Result
 					endcase
 
 					mm_start_o = 1;

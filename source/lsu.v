@@ -4,6 +4,8 @@
 `include "alu_defines.v"
 
 module lsu (
+	input wire clk,
+
 	input wire w_en_i,
 	input wire r_en_i, 	
 	input wire [1 : 0] type_i,
@@ -59,12 +61,18 @@ module lsu (
 	end
 
 	assign dmem_we_o = w_en_i == 1'b1 ? dmem_we : 4'h0;
-	assign err_o = misaligned;
+	assign err_o = 0;
+
+	reg [`RISCV_ADDR_WIDTH - 1 : 0] addr_latched;
+
+	always @(posedge clk) begin
+		addr_latched <= addr_i;
+	end
 
 	// Sign extension and short/byte shifting
 	always @*
 	begin
-		case ({sign_extend_i, addr_i[1 : 0], type_i})
+		case ({sign_extend_i, addr_latched[1 : 0], type_i})
 			{1'b0, 2'b00, `DATA_WORD},
 			{1'b1, 2'b00, `DATA_WORD}:		rdata_o = dmem_rdata_i;
 

@@ -23,7 +23,7 @@ read_verilog    ./source/mem_bus_arbiter.v \
 
 read_xdc vivado_synth.xdc
 
-synth_design -part xc7z020clg484-1 -top riscv_top_small
+synth_design -part xc7z020clg484-1 -top riscv_top_small -flatten_hierarchy none
 opt_design
 place_design
 phys_opt_design

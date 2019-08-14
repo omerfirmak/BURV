@@ -6,7 +6,7 @@
 module riscv_core 
 #(
 	parameter BOOT_ADDRESS = 32'h0,
-	parameter MMUL_EN = 1
+	parameter MMUL_EN = 0
 )(
 	input wire clk,    // Clock
 	input wire rst_n,  // Asynchronous reset active low
@@ -37,7 +37,7 @@ module riscv_core
 	reg  [`RISCV_WORD_WIDTH - 1 : 0] 		alu_operand_a;
 	wire [1 : 0] 							alu_operand_a_sel;
 	reg  [`RISCV_WORD_WIDTH - 1 : 0] 		alu_operand_b;
-	wire 									alu_operand_b_sel;
+	wire [1 : 0]							alu_operand_b_sel;
 	wire [`RISCV_WORD_WIDTH - 1 : 0] 		alu_result;
 
 	// Register File signals
@@ -129,13 +129,13 @@ module riscv_core
 			`ALU_OP_SEL_RF:  alu_operand_a = rf_read_data_1;
 			`ALU_OP_SEL_IMM: alu_operand_a = imm_val;
 			`ALU_OP_SEL_PC:  alu_operand_a = instr_addr;
-			`ALU_OP_SEL_MM:  if (MMUL_EN) alu_operand_a = mm_lsu_addr_offset;
 			default: 		 alu_operand_a = rf_read_data_1;
 		endcase
 		
 		case (alu_operand_b_sel)
 			`ALU_OP_SEL_RF:  alu_operand_b = rf_read_data_2;
 			`ALU_OP_SEL_IMM: alu_operand_b = imm_val;
+			`ALU_OP_SEL_MM:  if (MMUL_EN) alu_operand_b = mm_lsu_addr_offset;
 			default: 		 alu_operand_b = rf_read_data_2;
 		endcase
 
@@ -337,6 +337,8 @@ end
 
 	lsu lsu
 	(
+		.clk 		  (clk),
+
 		.w_en_i       ((mm_lsu_w_en | lsu_w_en) & instr_valid & ~save_epc),
 		.r_en_i       ((mm_lsu_r_en | lsu_r_en) & instr_valid & ~save_epc),
 		.type_i       (mm_lsu_en ? mm_lsu_data_type : lsu_data_type),
