@@ -32,3 +32,6 @@ software/out.ld
 
 .Xil
 tight_setup_hold_pins.txt
+vivado
+
+.~lock.bench.ods#

@@ -6,7 +6,7 @@
 module riscv_top_small
 #(
     parameter BOOT_ADDRESS = 0,
-    parameter MEM_SIZE = 1024
+    parameter MEM_SIZE = 2048
 )(
 	input wire clk,    // Clock
 	input wire rst_n,   // Asynchronous reset active low
@@ -36,7 +36,7 @@ module riscv_top_small
 	riscv_core 
 	#(
 		.BOOT_ADDRESS(BOOT_ADDRESS),
-		.MMUL_EN(0)
+		.MMUL_EN(1)
 	)
 	riscv_core
 	(
@@ -61,11 +61,12 @@ module riscv_top_small
 		.dmem_we_o   (dmem_we),
 		.dmem_rdata_i(dmem_rdata),
 
-        .irq_i       (uart_irq)
+        .irq_i       (0)
 	);
 
 	dp_ram
 	#(
+	    .INIT_FILE_BIN("/home/omer/Dropbox/BURV/firmware.txt"),
 	    .SIZE_BYTES(MEM_SIZE)
 	) ram (
 		.clk      (clk),

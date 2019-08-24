@@ -95,7 +95,7 @@
 `define FUNC3_CSLLI  	 3'b000
 
 `ifndef HARD_GF
-	`define HARD_GF 1
+	`define HARD_GF 2
 `endif
 
 `ifndef ECC_WORD_COUNT

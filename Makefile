@@ -46,7 +46,7 @@ MEM_ORIGIN=0
 MEM_LENGTH=\(MEM_SIZE-STACK_LENGTH\)
 STACK_LENGTH=98304
 STACK_ORIGIN=\(MEM_SIZE-STACK_LENGTH\)
-CFLAGS = -O3 -falign-functions=16 -funroll-all-loops
+CFLAGS = -O3 -falign-functions=16 -funroll-all-loops -fdata-sections -ffunction-sections -Wl,--gc-sections
 
 COMMON_C_SRC = software/start.S software/handlers.c software/print.c
 
@@ -60,7 +60,7 @@ bootrom: STACK_ORIGIN=0
 bootrom: STACK_LENGTH=MEM_SIZE 
 bootrom: SRC=software/bootrom.c
 compile_test bootrom firmware: prepare_ld
-	riscv32-unknown-elf-gcc -I./software $(CFLAGS) $(DEFINE_FLAGS) -march=rv32ec -mabi=ilp32e -nostartfiles -T software/out.ld $(COMMON_C_SRC) $(SRC) -o firmware.elf
+	riscv32-unknown-elf-gcc -I./software $(CFLAGS) $(DEFINE_FLAGS) -march=rv32ec -mabi=ilp32e -nostartfiles -T software/out.ld $(COMMON_C_SRC) $(SRC) -o firmware.elf 
 	riscv32-unknown-elf-objdump --disassembler-options=no-aliases,numeric -D firmware.elf > firmware.dump
 	riscv32-unknown-elf-objcopy -O binary firmware.elf firmware.bin
 	cat firmware.bin | od -t x4 -w4 -v -A n > firmware.txt

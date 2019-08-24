@@ -180,12 +180,12 @@ module riscv_core
 		endcase	
 	end
 
-    fetch_stage 
-    #(
-    	.BOOT_ADDRESS(BOOT_ADDRESS)
-    )
-    fetch_stage
-    (
+	fetch_stage 
+	#(
+		.BOOT_ADDRESS(BOOT_ADDRESS)
+	)
+	fetch_stage
+	(
 		.clk 		   (clk),
 		.rst_n		   (rst_n),
 
@@ -209,12 +209,12 @@ module riscv_core
 		.imem_wdata_o  (imem_wdata_o),
 		.imem_we_o     (imem_we_o),
 		.imem_rdata_i  (imem_rdata_i)
-    );
+	);
 
 	decoder
-    #(
-    	.MMUL_EN(MMUL_EN)
-    )
+	#(
+		.MMUL_EN(MMUL_EN)
+	)
 	decoder 
 	(
 		.instr_i        			(instr),
@@ -294,8 +294,8 @@ module riscv_core
 
 	csr
 	#(
-    	.TVEC_ADDRESS(BOOT_ADDRESS)
-    )
+		.TVEC_ADDRESS(BOOT_ADDRESS)
+	)
 	csr
 	(
 		.clk       (clk),
@@ -338,6 +338,9 @@ if (MMUL_EN) begin
 		.result     (),
 		.done       (mm_done)
 	);
+end else begin
+	assign mm_lsu_w_en = 0;
+	assign mm_lsu_r_en = 0;
 end
 
 	assign lsu_en = lsu_w_en | lsu_r_en;
