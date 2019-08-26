@@ -11,6 +11,6 @@ uint32_t c[4] = {0, 0, 0, 0};
 
 void main()
 {
-	for (int32_t i = 0; i < 20; i++)
+//	for (int32_t i = 0; i < 20; i++)
 		fpmul1271(a, b, c);
 }

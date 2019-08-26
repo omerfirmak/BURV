@@ -65,7 +65,7 @@ compile_test bootrom firmware: prepare_ld
 	riscv32-unknown-elf-objcopy -O binary firmware.elf firmware.bin
 	cat firmware.bin | od -t x4 -w4 -v -A n > firmware.txt
 
-test_all: clean
+test_all:
 	$(foreach var,$(TESTNAMES), echo "Test Name:$(var)"; make DUMP_TRACE=0 SRC=$(var) compile_test sim_iverilog;)
 
 COREMARK_SRC =  coremark/core_list_join.c \
@@ -95,7 +95,7 @@ C25519_SRC = CycloneCrypto/ecc/curve25519.c \
 		 	 CycloneCrypto/common/cpu_endian.c \
 		 	 CycloneCrypto/main.c
 
-P256_SRC =  tinycrypt/tests/test_ecc_dh.c \
+P256_SRC =  tinycrypt/tests/test_ecc_dsa.c \
 			tinycrypt/tests/test_ecc_utils.c \
 			tinycrypt/source/*.c
 

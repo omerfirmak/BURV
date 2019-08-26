@@ -399,6 +399,7 @@ void uECC_vli_modMult_fast(uECC_word_t *result, const uECC_word_t *left,
     volatile uint32_t _left[NUM_ECC_WORDS];
     volatile uint32_t _right[NUM_ECC_WORDS];
 
+    #pragma GCC unroll 256
     for (int i = 0; i < 256; i++) {
 	    asm volatile (  ".insn r CUSTOM_0, 0, 0, %[_left], %[left], %[r], %[n]\n" \
 	                    : 
@@ -412,6 +413,7 @@ void uECC_vli_modMult_fast(uECC_word_t *result, const uECC_word_t *left,
 	                      [_right] "r" (_right)      );
 	}
 
+    #pragma GCC unroll 256
     for (int i = 0; i < 256; i++) {
 	    asm volatile (  ".insn r CUSTOM_0, 0, 0, %[_right], %[right], %[r], %[n]\n" \
 	                    : 
@@ -425,6 +427,7 @@ void uECC_vli_modMult_fast(uECC_word_t *result, const uECC_word_t *left,
 	                      [_right] "r" (_right)      );
 	}
 
+    #pragma GCC unroll 256
     for (int i = 0; i < 256; i++) {
 	    asm volatile (  ".insn r CUSTOM_0, 0, 0, %[result], %[_left], %[_right], %[n]\n" \
 	                    : 
@@ -438,6 +441,7 @@ void uECC_vli_modMult_fast(uECC_word_t *result, const uECC_word_t *left,
 	                      [_right] "r" (_right)      );
 	}
 
+    #pragma GCC unroll 256
     for (int i = 0; i < 256; i++) {
 	    asm volatile (	".insn r CUSTOM_0, 0, 0, %[result], %[result], %[one], %[n]\n" \
 	                    : 

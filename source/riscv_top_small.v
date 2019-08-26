@@ -6,7 +6,7 @@
 module riscv_top_small
 #(
     parameter BOOT_ADDRESS = 0,
-    parameter MEM_SIZE = 2048
+    parameter MEM_SIZE = 4096
 )(
 	input wire clk,    // Clock
 	input wire rst_n,   // Asynchronous reset active low

@@ -351,7 +351,7 @@ int main()
 {
     ECCRYPTO_STATUS Status = ECCRYPTO_SUCCESS;
 
-/*
+
     Status = SchnorrQ_test();         // Test SchnorrQ signature scheme
     if (Status != ECCRYPTO_SUCCESS) {
         return false;
@@ -363,10 +363,9 @@ int main()
 	}
 	Status = kex_test();              // Test Diffie-Hellman key exchange using uncompressed public keys
 	if (Status != ECCRYPTO_SUCCESS) {
-//		printf("\n\n   Error detected: %s \n\n", FourQ_get_error_message(Status));
+		printf("\n\n   Error detected: %s \n\n", FourQ_get_error_message(Status));
 		return false;
 	}
-*/
 
     Status = SchnorrQ_run();          // Benchmark SchnorrQ signature scheme
     if (Status != ECCRYPTO_SUCCESS) {
