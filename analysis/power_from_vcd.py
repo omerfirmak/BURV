@@ -1,7 +1,7 @@
 from Verilog_VCD import *
 import matplotlib.pyplot as plt
 
-vcd = parse_vcd('hardgf2.vcd')
+vcd = parse_vcd('softloop_unrolled.vcd')
 
 trans_count = [0] * (get_endtime() + 1)
 

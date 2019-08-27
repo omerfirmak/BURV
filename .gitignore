@@ -17,7 +17,7 @@ iv_exec
 *.xspice
 *_nofanout
 *_powerground
-*.vcd
+./*.vcd
 test.*
 firmware.*
 *.o
