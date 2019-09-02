@@ -1,7 +1,7 @@
 from Verilog_VCD import *
 import matplotlib.pyplot as plt
 
-vcd = parse_vcd('softloop_unrolled.vcd')
+vcd = parse_vcd('hardgf2_fixed.vcd')
 
 trans_count = [0] * (get_endtime() + 1)
 
@@ -15,6 +15,10 @@ for key in vcd.keys():
 			trans_count[trans[0]] += 1
 		except Exception as e:
 			print(trans[0])
+
+for i,val in enumerate(trans_count):
+	if val >= 25 and val <= 30:
+		print(i)
 
 print(signal_count)
 print(trans_sum)

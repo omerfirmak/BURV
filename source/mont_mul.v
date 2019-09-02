@@ -135,7 +135,7 @@ module mont_mul
 		adder_in = B_packed;
 		is_greater_equal = 0;
 		lsu_addr_offset = 0;
-		op_address_sel = {1'b0, counter[WORD_COUNT_BIT] | (&counter[WORD_COUNT_BIT - 1 : 0])};
+		op_address_sel = 2; // A
 
 		case (CS)
 			IDLE:
@@ -159,6 +159,7 @@ module mont_mul
 					end
 				end
 
+				op_address_sel = {1'b0, counter[WORD_COUNT_BIT] | (&counter[WORD_COUNT_BIT - 1 : 0])};
 				lsu_addr_offset = {{30-WORD_COUNT_BIT{1'b0}}, counter_n[WORD_COUNT_BIT - 1 : 0], 2'h0};
 			end
 			// Fetch a single word of operand A
@@ -166,7 +167,6 @@ module mont_mul
 			begin
 				if (PARTIAL_EXEC == 0 || start) begin 
 					lsu_ren = 1;
-					op_address_sel = 2; // A
 					lsu_addr_offset = {{30-WORD_COUNT_BIT{1'b0}}, counter[5 + WORD_COUNT_BIT - 1 : 5], 2'h0};
 
 					if (lsu_done) begin

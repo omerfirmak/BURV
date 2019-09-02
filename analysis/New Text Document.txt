@@ -1,0 +1,7 @@
+|   riscv_core    |     0.108 |
+|     controller  |     0.001 |
+|     csr         |     0.001 |
+|     fetch_stage |     0.031 |
+|       buffer    |     0.015 |
+|     mont_mul    |     0.071 |
+|     reg_file    |     0.003 |
