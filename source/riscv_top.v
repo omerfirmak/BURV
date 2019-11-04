@@ -84,6 +84,7 @@ module riscv_top
 
 	wire uart_irq;
 
+/*
 	riscv_core 
 	#(
 		.BOOT_ADDRESS(BOOT_ADDRESS),
@@ -114,14 +115,20 @@ module riscv_top
 
         .irq_i       (uart_irq)
 	);
+*/
 
-/*zeroriscy_core
+	wire dmem_we_pulp;
+	wire [3:0] dmem_be_pulp;
+	
+	assign dmem_we = dmem_we_pulp ? dmem_be_pulp : 4'd0;
+
+	zeroriscy_core
      #(
        .N_EXT_PERF_COUNTERS(0),
        .RV32E(1),
        .RV32M(0)
        )
-   riscv_core
+    riscv_core
      (
       // Clock and Reset
       .clk_i(clk),
@@ -146,8 +153,8 @@ module riscv_top
       .data_req_o(dmem_valid),
       .data_gnt_i(dmem_valid),
       .data_rvalid_i(dmem_ready),
-      .data_we_o( ),
-      .data_be_o(dmem_we),
+      .data_we_o(dmem_we_pulp),
+      .data_be_o(dmem_be_pulp),
       .data_addr_o(dmem_addr),
       .data_wdata_o(dmem_wdata),
       .data_rdata_i(dmem_rdata),
@@ -177,7 +184,7 @@ module riscv_top
 
       .ext_perf_counters_i(2'b00)//[N_EXT_PERF_COUNTERS-1:0]
       );
-*/
+
 
 	mem_bus_arbiter imem_arbiter
 	(

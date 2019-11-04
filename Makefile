@@ -21,7 +21,34 @@ VERILOG_SRC = 	./source/alu.v 				\
 POST_SYNTH_SRC = ./riscv_core.rtlnopwr.v 	\
 			  	 /usr/local/share/qflow/tech/osu018/osu018_stdcells.v	
 
-SIM_SRC = $(VERILOG_SRC)
+PULP_CORE_DIR = /home/omer/zero-riscy-test/src/main/zero-riscy
+PULP_SRCS = $(addprefix $(PULP_CORE_DIR)/, \
+include/zeroriscy_defines.sv \
+include/zeroriscy_tracer_defines.sv \
+cluster_clock_gating.sv \
+zeroriscy_alu.sv \
+zeroriscy_compressed_decoder.sv \
+zeroriscy_controller.sv \
+zeroriscy_cs_registers.sv \
+zeroriscy_debug_unit.sv \
+zeroriscy_decoder.sv \
+zeroriscy_int_controller.sv \
+zeroriscy_ex_block.sv \
+zeroriscy_id_stage.sv \
+zeroriscy_if_stage.sv \
+zeroriscy_load_store_unit.sv \
+zeroriscy_multdiv_fast.sv \
+zeroriscy_mmult.sv \
+zeroriscy_prefetch_buffer.sv \
+zeroriscy_register_file.sv \
+zeroriscy_tracer.sv \
+zeroriscy_tracer_verilator.sv \
+zeroriscy_fetch_fifo.sv \
+zeroriscy_core.sv \
+)
+
+SIM_SRC = $(PULP_SRCS)
+
 
 TESTNAMES = $(wildcard ./tests/*.S)
 
@@ -34,7 +61,7 @@ MEM_SIZE = 524288
 DEFINE_FLAGS = -DECC_WORD_COUNT=$(ECC_WORD_COUNT) -DBOOT_ADDRESS=$(BOOT_ADDRESS) -DMEM_SIZE=$(MEM_SIZE) -DDUMP_TRACE=$(DUMP_TRACE) -DMEM_ORIGIN=$(MEM_ORIGIN) -DMEM_LENGTH=$(MEM_LENGTH) -DSTACK_LENGTH=$(STACK_LENGTH) -DSTACK_ORIGIN=$(STACK_ORIGIN) -DHARD_GF=$(HARD_GF)
 
 all: firmware sim_iverilog
-test: compile_test sim_iverilog
+test: compile_test sim_verilator
 
 clean:
 	rm -rf $(shell (cat .gitignore))
@@ -46,7 +73,7 @@ MEM_ORIGIN=0
 MEM_LENGTH=\(MEM_SIZE-STACK_LENGTH\)
 STACK_LENGTH=98304
 STACK_ORIGIN=\(MEM_SIZE-STACK_LENGTH\)
-CFLAGS = -O2 -falign-functions=4 -falign-jumps=4 -falign-labels=4 -funroll-all-loops -fdata-sections -ffunction-sections -Wl,--gc-sections
+CFLAGS = -O2 -falign-functions=4 -falign-jumps=4 -falign-labels=4 -funroll-all-loops #-fdata-sections -ffunction-sections -Wl,--gc-sections
 
 COMMON_C_SRC = software/start.S software/handlers.c software/print.c
 
@@ -60,7 +87,7 @@ bootrom: STACK_ORIGIN=0
 bootrom: STACK_LENGTH=MEM_SIZE 
 bootrom: SRC=software/bootrom.c
 compile_test bootrom firmware: prepare_ld
-	riscv32-unknown-elf-gcc -I./software $(CFLAGS) $(DEFINE_FLAGS) -march=rv32e -mabi=ilp32e -nostartfiles -T software/out.ld $(COMMON_C_SRC) $(SRC) -o firmware.elf 
+	/home/omer/riscv_e/bin/riscv32-unknown-elf-gcc -I./software $(CFLAGS) $(DEFINE_FLAGS) -march=rv32e -mabi=ilp32e -nostartfiles -T software/out.ld $(COMMON_C_SRC) $(SRC) -o firmware.elf 
 	riscv32-unknown-elf-objdump --disassembler-options=no-aliases,numeric -D firmware.elf > firmware.dump
 	riscv32-unknown-elf-objcopy -O binary firmware.elf firmware.bin
 	riscv32-unknown-elf-objcopy -O ihex firmware.elf firmware.ihex
@@ -118,14 +145,14 @@ sim_verilator: compile_verilator
 	-./obj_dir/V$(MODULE)
 
 compile_verilator:
-	verilator -O3 $(DEFINE_FLAGS) --cc --trace --x-assign unique $(SIM_SRC) $(COMMON_SRC) -I./source --exe $(MODULE)_tb.cpp --top-module $(MODULE)
+	verilator -O3 --Wno-fatal $(DEFINE_FLAGS) --cc --trace --x-assign unique $(SIM_SRC) $(COMMON_SRC) -I./source -I$(PULP_CORE_DIR)/include --exe $(MODULE)_tb.cpp --top-module $(MODULE)
 	make CXXFLAGS="$(DEFINE_FLAGS)" -j -C obj_dir/ -f V$(MODULE).mk V$(MODULE)
 
 sim_iverilog: compile_iverilog
 	vvp iv_exec
 
 compile_iverilog:
-	iverilog $(DEFINE_FLAGS) -g2012 -I./source $(SIM_SRC) $(COMMON_SRC) riscv_top_tb.v -o iv_exec
+	iverilog $(DEFINE_FLAGS) -g2012 -I./source -I$(PULP_CORE_DIR)/include $(SIM_SRC) $(COMMON_SRC) riscv_top_tb.v -o iv_exec
 
 synth_vivado:
 	vivado -mode batch -nojournal -nolog -source vivado_synth.tcl

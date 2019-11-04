@@ -4,8 +4,6 @@
 
 #include "Vriscv_top_riscv_top.h"
 //#include "Vriscv_top_dp_ram__pi1.h"
-#include "Vriscv_top_reg_file.h"
-#include "Vriscv_top_riscv_core__B0_M1.h"
 
 #include "verilated.h"
 #include "verilated_vcd_c.h"
@@ -76,5 +74,4 @@ int main(int argc, char **argv, char **env) {
 #if DUMP_TRACE == 1
     tfp->close();
 #endif
-    exit(!(top->riscv_top->riscv_core->reg_file->readReg(11) == 'O' && top->riscv_top->riscv_core->reg_file->readReg(12) == 'K'));
 }
