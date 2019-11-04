@@ -24,8 +24,7 @@ void print_chr(char ch)
 void print_str(const char *p)
 {
 	while (*p != 0) {
-		wait_tx();
-		huart->tx_data = *(p++);	
+		print_chr(*(p++));
 	}
 }
 
@@ -38,16 +37,14 @@ void print_dec(unsigned int val)
 		val = val / 10;
 	}
 	while (p != buffer) {
-		wait_tx();
-		huart->tx_data = '0' + *(--p);
+		print_chr('0' + *(--p));
 	}
 }
 
 void print_hex(unsigned int val, int digits)
 {
 	for (int i = (4*digits)-4; i >= 0; i -= 4) {
-		wait_tx();
-		huart->tx_data = "0123456789ABCDEF"[(val >> i) % 16];
+		print_chr("0123456789ABCDEF"[(val >> i) % 16]);
 	}
 }
 
