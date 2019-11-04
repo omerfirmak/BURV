@@ -11,7 +11,10 @@ module riscv_top_small
 	input wire clk,    // Clock
 	input wire rst_n,   // Asynchronous reset active low
 
-	output wire dmem_valid_o
+//	input wire irq_i,
+
+    output wire rst_n_o,
+	output wire ebreak_inst_o
 );
 	// Instruction memory interface
 	wire imem_valid;
@@ -31,7 +34,18 @@ module riscv_top_small
 	wire [3 : 0] 					 dmem_we;
 	wire [`RISCV_WORD_WIDTH - 1 : 0] dmem_rdata;
 
-	assign dmem_valid_o = dmem_valid;
+	assign rst_n_o = rst_n;
+
+    reg clk_50mhz = 0;
+    
+    always @(posedge clk or negedge rst_n)
+    begin
+        if (~rst_n) begin
+            clk_50mhz <= 0;
+        end else begin
+            clk_50mhz <= ~clk_50mhz;        
+        end
+    end
 
 	riscv_core 
 	#(
@@ -40,7 +54,7 @@ module riscv_top_small
 	)
 	riscv_core
 	(
-		.clk 		 (clk),
+		.clk 		 (clk_50mhz),
 		.rst_n		 (rst_n),
 
 		// Instruction memory interface
@@ -61,7 +75,8 @@ module riscv_top_small
 		.dmem_we_o   (dmem_we),
 		.dmem_rdata_i(dmem_rdata),
 
-        .irq_i       (0)
+        .irq_i       (0),
+        .ebreak_inst_o (ebreak_inst_o) 
 	);
 
 	dp_ram
@@ -69,7 +84,7 @@ module riscv_top_small
 	    .INIT_FILE_BIN("/home/omer/Dropbox/BURV/firmware.txt"),
 	    .SIZE_BYTES(MEM_SIZE)
 	) ram (
-		.clk      (clk),
+		.clk      (clk_50mhz),
 
 		// Instruction memory interface
 		.a_valid_i(dmem_valid),

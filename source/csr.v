@@ -16,10 +16,12 @@ module csr
 	output reg  [31 : 0] rdata_o,
 
 	input  wire 		 save_epc_i,
+	input  wire 		 mret_inst_i,
 	input  wire [31 : 0] pc_i,
 	output wire [31 : 0] epc_o,
 	output wire [31 : 0] tvec_o,
 
+	output wire			 mmul_partial_exec_o,
 	output wire 		 interrupt_enable_o
 );
 
@@ -27,6 +29,7 @@ module csr
 	reg  [31 : 0] mcycle,  mcycle_n;
 	reg  [31 : 0] mtvec,   mtvec_n;
 	reg  [1 : 0]  mstatus, mstatus_n;
+	reg  		  mmmul,   mmmul_n;
 
 	`define MSTATUS_MIE  0
 	`define MSTATUS_MPIE 1
@@ -41,6 +44,7 @@ module csr
 			12'h305: rdata_o = mtvec;
 			12'h341: rdata_o = mepc;
 			12'hB00: rdata_o = mcycle;
+			12'h800: rdata_o = {31'd0, mmmul};
 			default:;
 		endcase
 	end
@@ -64,6 +68,7 @@ module csr
 		mstatus_n = mstatus;
 		mtvec_n = mtvec;
 		mcycle_n = mcycle + 1;
+		mmmul_n = mmmul;
 
 		// Handle write operations
 		case (addr_i)
@@ -71,10 +76,13 @@ module csr
 			12'h300: mstatus_n = {wdata[7], wdata[3]};
 			12'h341: mepc_n = wdata;
 			12'hB00: mcycle_n = wdata;
+			12'h800: mmmul_n = wdata[0];
 			default:;
 		endcase
 
-		if (save_epc_i) begin
+		if (mret_inst_i) begin
+			mstatus_n = {mstatus[`MSTATUS_MPIE], mstatus[`MSTATUS_MPIE]};
+		end else if (save_epc_i) begin
 			mepc_n = pc_i;
 			mstatus_n = {mstatus[`MSTATUS_MIE], 1'b0};
 		end
@@ -85,11 +93,13 @@ module csr
 			mepc <= 0;
 			mstatus <= 0;
 			mcycle <= 0;
+			mmmul <= 0;
 			mtvec <= TVEC_ADDRESS;
 		end else begin
 			mepc <= mepc_n;
 			mcycle <= mcycle_n;
 			mstatus <= mstatus_n;
+			mmmul <= mmmul_n;
 			mtvec <= mtvec_n;
 		end
 	end
@@ -98,5 +108,6 @@ module csr
 	assign epc_o = mepc;
 	assign tvec_o = mtvec;
 	assign interrupt_enable_o = mstatus[`MSTATUS_MIE];
+	assign mmul_partial_exec_o = mmmul;
 
 endmodule

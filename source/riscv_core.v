@@ -30,6 +30,8 @@ module riscv_core
 	input  wire [`RISCV_WORD_WIDTH - 1 : 0] dmem_rdata_i,
 
 	input  wire irq_i
+
+//	output wire ebreak_inst_o
 );
 
 	// ALU signals
@@ -103,6 +105,7 @@ module riscv_core
 	wire 									lsu_err;
 
 	wire 									mm_lsu_en;
+	wire 									mm_partial_exec;
 	wire 									mm_lsu_w_en;
 	wire 									mm_lsu_r_en; 	
 	wire [1 : 0] 							mm_lsu_data_type;
@@ -114,6 +117,8 @@ module riscv_core
 	wire [`RISCV_ADDR_WIDTH - 1 : 0] 		mm_op_addr;
 	wire [`RISCV_ADDR_WIDTH - 1 : 0] 		mm_res_addr;
 	wire 									mm_done;
+
+//	assign ebreak_inst_o = ebreak_inst;
 
 	alu alu
 	(
@@ -274,7 +279,7 @@ module riscv_core
 		.mm_start_i       (mm_start),
 		.mm_done_i        (mm_done),
 
-		.lsu_en_i         (lsu_en),
+		.lsu_en_i         (lsu_r_en),
 		.lsu_done_i       (lsu_done),
 		.lsu_err_i        (lsu_err),
 
@@ -307,22 +312,25 @@ module riscv_core
 		.rdata_o   (csr_rdata),
 
 		.save_epc_i(save_epc),
+		.mret_inst_i(mret_inst),
 		.pc_i      (instr_addr),
 		.epc_o     (epc),
 		.tvec_o    (tvec),
+
+		.mmul_partial_exec_o(mm_partial_exec),
 		.interrupt_enable_o (interrupt_enable)
 	);
 
 if (MMUL_EN) begin
 	mont_mul 
 	#(
-		.WORDS(`ECC_WORD_COUNT),
-		.PARTIAL_EXEC(`HARD_GF == 2)
+		.WORDS(`ECC_WORD_COUNT)
 	)
 	mont_mul (
 		.clk 		(clk),    // Clock
 		.rst_n    	(rst_n),  // Asynchronous reset active low
-		.start      (mm_start),
+		.start      (mm_start & ~(irq_i & interrupt_enable)),
+		.partial_exec(mm_partial_exec),
 
 		.lsu_ren    (mm_lsu_r_en),
 		.lsu_wen    (mm_lsu_w_en),

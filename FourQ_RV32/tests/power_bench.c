@@ -11,6 +11,12 @@ uint32_t c[4] = {0, 0, 0, 0};
 
 void main()
 {
+	write_csr(mstatus, 0xFFFFFFFF);
+
+#if (HARD_GF == 2)
+	write_csr(0x800, 1);
+#endif
+
 //	for (int32_t i = 0; i < 20; i++)
 		fpmul1271(a, b, c);
 }

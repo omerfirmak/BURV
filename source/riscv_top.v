@@ -115,6 +115,70 @@ module riscv_top
         .irq_i       (uart_irq)
 	);
 
+/*zeroriscy_core
+     #(
+       .N_EXT_PERF_COUNTERS(0),
+       .RV32E(1),
+       .RV32M(0)
+       )
+   riscv_core
+     (
+      // Clock and Reset
+      .clk_i(clk),
+      .rst_ni(~reset),
+
+      .clock_en_i(1'b1),    // enable clock, otherwise it is gated
+      .test_en_i(1'b0),     // enable all clock gates for testing
+
+      // Core ID, Cluster ID and boot address are considered more or less static
+      .core_id_i(4'h0),//[ 3:0]
+      .cluster_id_i(6'h00),//[ 5:0]
+      .boot_addr_i(32'h00000000),//[31:0]
+
+      // Instruction memory interface
+      .instr_req_o(imem_valid),
+      .instr_gnt_i(imem_valid),
+      .instr_rvalid_i(imem_ready),
+      .instr_addr_o(imem_addr),
+      .instr_rdata_i(imem_rdata),
+
+      // Data memory interface
+      .data_req_o(dmem_valid),
+      .data_gnt_i(dmem_valid),
+      .data_rvalid_i(dmem_ready),
+      .data_we_o( ),
+      .data_be_o(dmem_we),
+      .data_addr_o(dmem_addr),
+      .data_wdata_o(dmem_wdata),
+      .data_rdata_i(dmem_rdata),
+      .data_err_i(0),
+
+      // Interrupt inputs
+      .irq_i(1'b0),                 // level sensitive IR lines
+      .irq_id_i(5'h00),//[4:0]
+      .irq_ack_o(),             // irq ack
+      .irq_id_o(),//[4:0]
+
+      // Debug Interface
+      .debug_req_i(1'b0),
+      .debug_gnt_o(),
+      .debug_rvalid_o(),
+      .debug_addr_i(15'h0),//[14:0]
+      .debug_we_i(1'b0),
+      .debug_wdata_i(0),//[31:0]
+      .debug_rdata_o(),//[31:0]
+      .debug_halted_o(),
+      .debug_halt_i(1'b0),
+      .debug_resume_i(1'b0),
+
+      // CPU Control Signals
+      .fetch_enable_i(1'b1),
+      .core_busy_o(),
+
+      .ext_perf_counters_i(2'b00)//[N_EXT_PERF_COUNTERS-1:0]
+      );
+*/
+
 	mem_bus_arbiter imem_arbiter
 	(
 		.clk 		 (clk),

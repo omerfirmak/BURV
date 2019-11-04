@@ -1,11 +1,12 @@
 from Verilog_VCD import *
 import matplotlib.pyplot as plt
+import sys
 
-vcd = parse_vcd('hardgf2_fixed.vcd')
+vcd = parse_vcd(sys.argv[1])
 
 trans_count = [0] * (get_endtime() + 1)
 
-signal_count = 0;
+signal_count = 0
 trans_sum = 0
 for key in vcd.keys():
 	signal_count += len(vcd[key]['nets'])

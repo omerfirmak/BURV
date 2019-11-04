@@ -47,7 +47,7 @@ module dp_ram
             if (a_we_i[2]) mem[a_addr][23 : 16] <= a_wdata_i[23 : 16];
             if (a_we_i[3]) mem[a_addr][31 : 24] <= a_wdata_i[31 : 24];
 
-            a_ready_o <= 1;
+            if (~(| a_we_i)) a_ready_o <= 1;
             a_rdata_o <= mem[a_addr];
         end
       
@@ -58,8 +58,6 @@ module dp_ram
             b_rdata_o <= mem[b_addr];
         end
     end
-
-
 
 `ifdef VERILATOR
     function [31:0] readWord;

@@ -98,11 +98,13 @@ module fetch_stage
 			// Start fetching from branch/target address
 			if (target_valid_i) begin
 				fetch_addr <= target_addr;
-				instr_valid_o <= 0;
-				instr_o <= 0;
-				instr_addr_o <= 0;
-				compressed_inst_o <= 0;
-				illegal_compressed_inst_o <= 0;
+				if (retire_inst_i) begin
+					instr_valid_o <= 0;
+					instr_o <= 0;
+					instr_addr_o <= 0;
+					compressed_inst_o <= 0;
+					illegal_compressed_inst_o <= 0;
+				end
 			end else if (take_next) begin
 				// Latch decompressed instruction and related data
 				instr_valid_o <= ~realign_buffer_empty;

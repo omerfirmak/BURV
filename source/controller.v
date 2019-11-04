@@ -84,6 +84,7 @@ module controller (
 							mm_start_i,
 							jump_inst_i:
 							begin
+								target_valid_o = jump_inst_i;
 								retire_o = 0;
 								NS = MULTI_CYCLE_OP;
 							end
@@ -127,15 +128,14 @@ module controller (
 				end
 				MULTI_CYCLE_OP:
 				begin
-					if ((lsu_en_i & ~lsu_done_i) || 
-						(mm_start_i & ~mm_done_i))  begin
+					if (jump_inst_i | branch_inst_i)  begin
+						NS = IDLE;
+						target_valid_o = branch_inst_i;
+					end else if (~(lsu_done_i || mm_done_i))  begin
 						retire_o = 0;
 						NS = MULTI_CYCLE_OP;
 						deassert_rf_wen_n_o = 0;						
-					end else if (jump_inst_i | branch_inst_i)  begin
-						NS = IDLE;
-						target_valid_o = 1;
-					end	
+					end 	
 					else NS = IDLE;
 				end
 				default: NS = IDLE;

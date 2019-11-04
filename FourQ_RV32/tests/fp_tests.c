@@ -10,6 +10,7 @@
 #include "test_extras.h"
 
 #include "print.h"
+#include "encoding.h"
 
 // Benchmark and test parameters 
 #define BENCH_LOOPS       1      // Number of iterations per bench
@@ -183,6 +184,10 @@ bool fp2_run()
 int main()
 {
     bool OK = true;
+
+#if (HARD_GF == 2)
+	write_csr(0x800, 1);
+#endif
 
     OK = OK && fp2_test();     // Test quadratic extension field operations using p = 2^127-1
     OK = OK && fp2_run();      // Benchmark quadratic extension field operations using p = 2^127-1

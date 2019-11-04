@@ -14,6 +14,9 @@ void wait_tx()
 
 void print_chr(char ch)
 {
+	// volatile unsigned char *Data = ((volatile unsigned char *)0x9a100004);
+	// (*Data) = ch;
+
 	wait_tx();
 	huart->tx_data = ch;
 }

@@ -5,13 +5,13 @@
 
 module mont_mul 
 #(
-    parameter WORDS = 4,
-    parameter PARTIAL_EXEC = 0
+    parameter WORDS = 4
 )(
 	input wire clk,    // Clock
 	input wire rst_n,  // Asynchronous reset active low
 	
 	input wire 							  start,			// Start execution
+	input wire 							  partial_exec,
 
 	/* LSU Control Signals*/
 	output reg						  	  lsu_ren,
@@ -98,7 +98,7 @@ module mont_mul
 		if (~rst_n) begin
 			A <= 0;
 		end else begin
-			if (PARTIAL_EXEC == 0 || start) begin
+			if (partial_exec == 0 || start) begin
 				if (lsu_done && CS == FETCH_A) begin
 					A <= lsu_rdata;
 				end else if (CS == RUNNING_1) begin
@@ -165,7 +165,7 @@ module mont_mul
 			// Fetch a single word of operand A
 			FETCH_A:
 			begin
-				if (PARTIAL_EXEC == 0 || start) begin 
+				if (partial_exec == 0 || start) begin 
 					lsu_ren = 1;
 					lsu_addr_offset = {{30-WORD_COUNT_BIT{1'b0}}, counter[5 + WORD_COUNT_BIT - 1 : 5], 2'h0};
 
@@ -177,7 +177,7 @@ module mont_mul
 			end
 			RUNNING_1:
 			begin
-				if (PARTIAL_EXEC == 0 || start) begin 
+				if (partial_exec == 0 || start) begin 
 					// At this stage adder_out = M + B, if A is odd update M with M + B
 					// Remember A is shifted right by 1 every RUNNING_1 state
 					if (A[0]) M_n = adder_out[BITS + 2: 1];
@@ -187,7 +187,7 @@ module mont_mul
 			RUNNING_2:
 			begin
 				adder_in = N_packed;
-				done = PARTIAL_EXEC;
+				done = partial_exec;
 
 				// If M is odd update M with M + N then shift it by 1 regardless
 				if (M[0]) 	M_n = adder_out[BITS + 2: 1];
@@ -199,9 +199,12 @@ module mont_mul
 					NS = CLEANUP;
 					done = 0;
 				// If iteration count is a multiple of 32, fetch new word of A
-				end else if (counter_n[4 : 0] == 0)
+				end else if (counter_n[4 : 0] == 0) begin
+					lsu_ren = 1;
+					lsu_addr_offset = {{30-WORD_COUNT_BIT{1'b0}}, counter_n[5 + WORD_COUNT_BIT - 1 : 5], 2'h0};
+
 					NS = FETCH_A;
-				else
+				end else
 	 				NS = RUNNING_1;
 			end
 			CLEANUP:

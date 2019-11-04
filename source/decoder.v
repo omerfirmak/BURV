@@ -186,12 +186,12 @@ module decoder
 
 				// Calculate target address in first cycle, then execute the jump
 				case (cycle_counter_i)
-					0:
+					1:
 					begin
 						rf_we_o = 1;
 						imm_sel = `IMM_PC_INC;
 					end
-					1: 	
+					0: 	
 					begin
 						operand_a_sel_o = `ALU_OP_SEL_RF;
 						imm_sel = `IMM_I;
@@ -209,12 +209,12 @@ module decoder
 
 				// Calculate target address in first cycle, then execute the jump
 				case (cycle_counter_i)
-					0:
+					1:
 					begin
 						rf_we_o = 1;
 						imm_sel = `IMM_PC_INC;
 					end
-					1:  imm_sel = `IMM_UJ;
+					0:  imm_sel = `IMM_UJ;
 					default: illegal_inst = 1'b1; 
 				endcase
 			end

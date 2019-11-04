@@ -209,7 +209,6 @@ void fpmul1271(felm_t a, felm_t b, felm_t c)
                           [_b] "r" (_b)      );        
     }
 
-    
     #pragma GCC unroll 128
     for (int i = 0; i < 128; i++) {
         asm volatile (  ".insn r CUSTOM_0, 0, 0, %[c], %[_a], %[_b], %[n]\n" \
@@ -223,7 +222,6 @@ void fpmul1271(felm_t a, felm_t b, felm_t c)
                           [_a] "r" (_a), 
                           [_b] "r" (_b)      );        
     }
-
     
     #pragma GCC unroll 128
     for (int i = 0; i < 128; i++) {
