@@ -21,7 +21,7 @@ VERILOG_SRC = 	./source/alu.v 				\
 POST_SYNTH_SRC = ./riscv_core.rtlnopwr.v 	\
 			  	 /usr/local/share/qflow/tech/osu018/osu018_stdcells.v	
 
-PULP_CORE_DIR = /home/omer/zero-riscy-test/src/main/zero-riscy
+PULP_CORE_DIR = ./zeroriscy
 PULP_SRCS = $(addprefix $(PULP_CORE_DIR)/, \
 include/zeroriscy_defines.sv \
 include/zeroriscy_tracer_defines.sv \
@@ -38,11 +38,9 @@ zeroriscy_id_stage.sv \
 zeroriscy_if_stage.sv \
 zeroriscy_load_store_unit.sv \
 zeroriscy_multdiv_fast.sv \
-zeroriscy_mmult.sv \
 zeroriscy_prefetch_buffer.sv \
-zeroriscy_register_file.sv \
+zeroriscy_register_file_ff.sv \
 zeroriscy_tracer.sv \
-zeroriscy_tracer_verilator.sv \
 zeroriscy_fetch_fifo.sv \
 zeroriscy_core.sv \
 )

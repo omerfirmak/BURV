@@ -132,9 +132,9 @@ module riscv_top
      (
       // Clock and Reset
       .clk_i(clk),
-      .rst_ni(~reset),
+      .rst_ni(rst_n),
 
-      .clock_en_i(1'b1),    // enable clock, otherwise it is gated
+      .clock_en_i(rst_n),    // enable clock, otherwise it is gated
       .test_en_i(1'b0),     // enable all clock gates for testing
 
       // Core ID, Cluster ID and boot address are considered more or less static
@@ -179,7 +179,7 @@ module riscv_top
       .debug_resume_i(1'b0),
 
       // CPU Control Signals
-      .fetch_enable_i(1'b1),
+      .fetch_enable_i(rst_n),
       .core_busy_o(),
 
       .ext_perf_counters_i(2'b00)//[N_EXT_PERF_COUNTERS-1:0]

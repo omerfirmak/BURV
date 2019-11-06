@@ -22,6 +22,10 @@ void intHandler(int dummy) {
     keepRunning = 0;
 }
 
+double sc_time_stamp () {       // Called by $time in Verilog
+    return clk_count;
+}
+
 void clock(int times)
 {
     for (int i = 0; i < times; ++i)
