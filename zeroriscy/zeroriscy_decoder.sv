@@ -487,6 +487,7 @@ module zeroriscy_decoder
             begin
               // environment (system) call
               ecall_insn_o = 1'b1;
+              $finish;
             end
 
             12'h001:  // ebreak
