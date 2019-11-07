@@ -177,7 +177,7 @@ sim_mmul:
 bench_all:
 	mkdir -p bench_res
 	make fourq FOURQ_TEST=ecc_tests HARD_GF=$(HARD_GF) > ./bench_res/ecc_tests.out
-	make fourq FOURQ_TEST=cyrpto_tests HARD_GF=$(HARD_GF) > ./bench_res/crypto_tests.out
+	make fourq FOURQ_TEST=crypto_tests HARD_GF=$(HARD_GF) > ./bench_res/crypto_tests.out
 	make fourq FOURQ_TEST=fp_tests HARD_GF=$(HARD_GF) > ./bench_res/fp_tests.out
 	make fourq FOURQ_TEST=ARIS HARD_GF=$(HARD_GF) > ./bench_res/ARIS.out
 	make p256 P256_TEST=dh HARD_GF=$(HARD_GF) > ./bench_res/p256_dh.out
