@@ -3,6 +3,7 @@ log
 reports
 layout
 synthesis
+bench_res
 
 .magicrc
 iv_exec
