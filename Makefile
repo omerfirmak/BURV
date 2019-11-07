@@ -46,7 +46,7 @@ MEM_ORIGIN=0
 MEM_LENGTH=\(MEM_SIZE-STACK_LENGTH\)
 STACK_LENGTH=98304
 STACK_ORIGIN=\(MEM_SIZE-STACK_LENGTH\)
-CFLAGS = -O2 -falign-functions=4 -falign-jumps=4 -falign-labels=4 -funroll-all-loops -fdata-sections -ffunction-sections -Wl,--gc-sections
+CFLAGS = -O3 -falign-functions=4 -falign-jumps=4 -falign-labels=4 -funroll-all-loops -fdata-sections -ffunction-sections -Wl,--gc-sections
 
 COMMON_C_SRC = software/start.S software/handlers.c software/print.c
 
@@ -60,7 +60,7 @@ bootrom: STACK_ORIGIN=0
 bootrom: STACK_LENGTH=MEM_SIZE 
 bootrom: SRC=software/bootrom.c
 compile_test bootrom firmware: prepare_ld
-	riscv32-unknown-elf-gcc -I./software $(CFLAGS) $(DEFINE_FLAGS) -march=rv32e -mabi=ilp32e -nostartfiles -T software/out.ld $(COMMON_C_SRC) $(SRC) -o firmware.elf 
+	riscv32-unknown-elf-gcc -I./software $(CFLAGS) $(DEFINE_FLAGS) -march=rv32ec -mabi=ilp32e -nostartfiles -T software/out.ld $(COMMON_C_SRC) $(SRC) -o firmware.elf 
 	riscv32-unknown-elf-objdump --disassembler-options=no-aliases,numeric -D firmware.elf > firmware.dump
 	riscv32-unknown-elf-objcopy -O binary firmware.elf firmware.bin
 	riscv32-unknown-elf-objcopy -O ihex firmware.elf firmware.ihex
@@ -96,7 +96,7 @@ C25519_SRC = CycloneCrypto/ecc/curve25519.c \
 		 	 CycloneCrypto/common/cpu_endian.c \
 		 	 CycloneCrypto/main.c
 
-P256_SRC =  tinycrypt/tests/test_ecc_dsa.c \
+P256_SRC =  tinycrypt/tests/test_ecc_$(P256_TEST).c \
 			tinycrypt/tests/test_ecc_utils.c \
 			tinycrypt/source/*.c
 
@@ -148,3 +148,13 @@ gcc_fourq:
 sim_mmul:
 	iverilog -g2012 -I./source ./source/mont_mul.v ./source/dp_ram.v mont_mul_tb.v -o iv_exec
 	vvp iv_exec
+
+bench_all:
+	mkdir -p bench_res
+	make fourq FOURQ_TEST=ecc_tests HARD_GF=$(HARD_GF) > ./bench_res/ecc_tests.out
+	make fourq FOURQ_TEST=cyrpto_tests HARD_GF=$(HARD_GF) > ./bench_res/crypto_tests.out
+	make fourq FOURQ_TEST=fp_tests HARD_GF=$(HARD_GF) > ./bench_res/fp_tests.out
+	make fourq FOURQ_TEST=ARIS HARD_GF=$(HARD_GF) > ./bench_res/ARIS.out
+	make p256 P256_TEST=dh HARD_GF=$(HARD_GF) > ./bench_res/p256_dh.out
+	make p256 P256_TEST=dsa HARD_GF=$(HARD_GF) > ./bench_res/p256_dsa.out
+	make c25519 HARD_GF=$(HARD_GF) > ./bench_res/c25519.out
