@@ -127,8 +127,6 @@ int main()
         // printf("\n");
 
         memmove(publicAll_Y+i*64, publicTemp, 64);
-
-        
     }
  
      print_str("ARIS KeyGen 2\n");

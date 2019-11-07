@@ -351,7 +351,7 @@ int main()
 {
     ECCRYPTO_STATUS Status = ECCRYPTO_SUCCESS;
 
-
+/*
     Status = SchnorrQ_test();         // Test SchnorrQ signature scheme
     if (Status != ECCRYPTO_SUCCESS) {
         return false;
@@ -366,7 +366,7 @@ int main()
 		printf("\n\n   Error detected: %s \n\n", FourQ_get_error_message(Status));
 		return false;
 	}
-
+*/
     Status = SchnorrQ_run();          // Benchmark SchnorrQ signature scheme
     if (Status != ECCRYPTO_SUCCESS) {
 		print_str("\n\n   Error detected: compressedkex_run \n\n");

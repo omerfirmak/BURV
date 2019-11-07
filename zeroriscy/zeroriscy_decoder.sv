@@ -493,6 +493,7 @@ module zeroriscy_decoder
             begin
               // debugger trap
               ebrk_insn_o = 1'b1;
+              $finish;
             end
 
             12'h302:  // mret
