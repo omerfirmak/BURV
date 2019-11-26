@@ -13,6 +13,7 @@
 #include "aes.h"
 #include "blake2.h"
 #include "print.h"
+#include "encoding.h"
 
 // Benchmark and test parameters  
 #if defined(GENERIC_IMPLEMENTATION)
@@ -41,7 +42,11 @@ uint8_t concatMsg_malloc[64];
 
 int main()
 {
-    
+#if (HARD_GF == 2)
+	write_csr(0x800, 1);
+#endif
+
+
     ECCRYPTO_STATUS Status = ECCRYPTO_SUCCESS;
     
     print_str("ARIS main\n");

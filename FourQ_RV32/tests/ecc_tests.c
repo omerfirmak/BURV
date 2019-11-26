@@ -726,6 +726,10 @@ int main()
 {
     bool OK = true;
 
+#if (HARD_GF == 2)
+	write_csr(0x800, 1);
+#endif
+
 //    OK = OK && ecc_test();         // Test FourQ's curve functions
     OK = OK && ecc_run();          // Benchmark FourQ's curve functions
     

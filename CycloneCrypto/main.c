@@ -67,7 +67,9 @@ int main(int argc, char const *argv[])
 	uint8_t ctxt;
 	uint8_t msg = 'a';
 
-
+#if (HARD_GF == 2)
+	write_csr(0x800, 1);
+#endif
 
 	uint8_t privKey[ED25519_PRIVATE_KEY_LEN],
 			pubKey[ED25519_PUBLIC_KEY_LEN],

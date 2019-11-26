@@ -12,6 +12,7 @@
 #include "../FourQ_params.h"
 #include "test_extras.h"
 #include "print.h"
+#include "encoding.h"
 
 // Benchmark and test parameters  
 #if defined(GENERIC_IMPLEMENTATION)
@@ -351,6 +352,9 @@ int main()
 {
     ECCRYPTO_STATUS Status = ECCRYPTO_SUCCESS;
 
+#if (HARD_GF == 2)
+	write_csr(0x800, 1);
+#endif
 
     Status = SchnorrQ_test();         // Test SchnorrQ signature scheme
     if (Status != ECCRYPTO_SUCCESS) {

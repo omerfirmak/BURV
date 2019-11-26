@@ -504,6 +504,10 @@ int main()
 {
         unsigned int result = TC_PASS;
 
+#if (HARD_GF == 2)
+	write_csr(0x800, 1);
+#endif
+
 	print_str("Performing ECC-DH tests\n");
 
 	/* Setup of the Cryptographically Secure PRNG. */

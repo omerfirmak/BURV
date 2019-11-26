@@ -106,6 +106,7 @@ module controller (
 								exc_pc_o[4 : 0] = 5'd4;
 								target_valid_o = 1;
 								save_epc_o = 1;
+								$finish;
 							end
 							illegal_inst_i:
 							begin
@@ -118,9 +119,7 @@ module controller (
 							ebreak_inst_i:
 							begin
 								retire_o = 0;
-								// synopsys translate_off
 								$finish;
-								// synopsys translate_on
 							end
 							default: NS = IDLE;
 						endcase
@@ -131,7 +130,7 @@ module controller (
 					if (jump_inst_i | branch_inst_i)  begin
 						NS = IDLE;
 						target_valid_o = branch_inst_i;
-					end else if (~(lsu_done_i || mm_done_i))  begin
+					end else if ( ~((lsu_done_i & ~mm_start_i) || mm_done_i) ) begin
 						retire_o = 0;
 						NS = MULTI_CYCLE_OP;
 						deassert_rf_wen_n_o = 0;						
