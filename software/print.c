@@ -28,9 +28,9 @@ void print_str(const char *p)
 	}
 }
 
-void print_dec(unsigned int val)
+void print_dec(unsigned long long val)
 {
-	char buffer[10];
+	char buffer[32];
 	char *p = buffer;
 	while (val || p == buffer) {
 		*(p++) = val % 10;

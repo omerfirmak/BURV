@@ -106,7 +106,9 @@ module controller (
 								exc_pc_o[4 : 0] = 5'd4;
 								target_valid_o = 1;
 								save_epc_o = 1;
+    							// synthesis translate_off
 								$finish;
+    							// synthesis translate_on
 							end
 							illegal_inst_i:
 							begin
@@ -119,7 +121,9 @@ module controller (
 							ebreak_inst_i:
 							begin
 								retire_o = 0;
+    							// synthesis translate_off
 								$finish;
+    							// synthesis translate_on
 							end
 							default: NS = IDLE;
 						endcase

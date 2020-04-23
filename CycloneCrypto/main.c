@@ -60,6 +60,11 @@ PrngAlgo _PrngAlgo = {
 	.read = &_PrngAlgoRead
 };
 
+ unsigned long long count_sub;
+ unsigned long long count_add;
+ unsigned long long count_neg;
+ unsigned long long count_mult;
+ unsigned long long count_sqr;
 
 int main(int argc, char const *argv[])
 {
@@ -113,6 +118,26 @@ int main(int argc, char const *argv[])
 	print_dec(end - start);
 	print_str(" clk Error = ");
 	print_dec(err);
+	print_str("\n");
+
+	print_str("count_sub: ");
+	print_dec(count_sub);
+	print_str("\n");
+
+	print_str("count_add: ");
+	print_dec(count_add);
+	print_str("\n");
+
+	print_str("count_neg: ");
+	print_dec(count_neg);
+	print_str("\n");
+
+	print_str("count_sqr: ");
+	print_dec(count_sqr);
+	print_str("\n");
+	
+	print_str("count_mult: ");
+	print_dec(count_mult);
 	print_str("\n");
 
 	return 0;

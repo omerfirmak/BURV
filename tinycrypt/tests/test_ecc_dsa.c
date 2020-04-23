@@ -659,13 +659,15 @@ int montecarlo_signverify(int num_tests, bool verbose)
 }
 
 
+ unsigned long long count_sub;
+ unsigned long long count_add;
+ unsigned long long count_neg;
+ unsigned long long count_mult;
+ unsigned long long count_sqr;
+
 int main()
 {
 	unsigned int result = TC_PASS;
-
-#if (HARD_GF == 2)
-	write_csr(0x800, 1);
-#endif
 
 	print_str("Performing ECC-DSA tests:");
 	/* Setup of the Cryptographically Secure PRNG. */
@@ -697,6 +699,26 @@ int main()
 
 	print_str("\nAll ECC-DSA tests succeeded.\n");
 
+	print_str("count_sub: ");
+	print_dec(count_sub);
+	print_str("\n");
+
+	print_str("count_add: ");
+	print_dec(count_add);
+	print_str("\n");
+
+	print_str("count_neg: ");
+	print_dec(count_neg);
+	print_str("\n");
+
+	print_str("count_sqr: ");
+	print_dec(count_sqr);
+	print_str("\n");
+	
+	print_str("count_mult: ");
+	print_dec(count_mult);
+	print_str("\n");
+ 
  exitTest:
         TC_END_RESULT(result);
         TC_END_REPORT(result);

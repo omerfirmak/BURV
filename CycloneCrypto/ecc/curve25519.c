@@ -36,7 +36,7 @@
 #include "ecc/ec_curves.h"
 #include "ecc/curve25519.h"
 #include "debug.h"
-
+#include "encoding.h"
 //Check crypto library configuration
 #if (X25519_SUPPORT == ENABLED || ED25519_SUPPORT == ENABLED)
 
@@ -46,6 +46,13 @@ static const uint32_t CURVE25519_SQRT_MINUS_1[8] =
    0x4A0EA0B0, 0xC4EE1B27, 0xAD2FE478, 0x2F431806,
    0x3DFBD7A7, 0x2B4D0099, 0x4FC1DF0B, 0x2B832480
 };
+
+
+extern unsigned int count_sub;
+extern unsigned int count_add;
+extern unsigned int count_neg;
+extern unsigned int count_mult;
+extern unsigned int count_sqr;
 
 
 /**
@@ -80,6 +87,7 @@ void curve25519Add(uint32_t *r, const uint32_t *a, const uint32_t *b)
 {
    uint_t i;
    uint64_t temp;
+	unsigned int start = read_csr(mcycle);
 
    //Compute R = A + B
    for(temp = 0, i = 0; i < 8; i++)
@@ -92,6 +100,9 @@ void curve25519Add(uint32_t *r, const uint32_t *a, const uint32_t *b)
 
    //Perform modular reduction
    curve25519Red(r, r);
+		count_add += read_csr(mcycle) - start;
+
+
 }
 
 
@@ -106,6 +117,7 @@ void curve25519AddInt(uint32_t *r, const uint32_t *a, uint32_t b)
 {
    uint_t i;
    uint64_t temp;
+	unsigned int start = read_csr(mcycle);
 
    //Compute R = A + B
    for(temp = b, i = 0; i < 8; i++)
@@ -117,6 +129,9 @@ void curve25519AddInt(uint32_t *r, const uint32_t *a, uint32_t b)
 
    //Perform modular reduction
    curve25519Red(r, r);
+
+   		count_add += read_csr(mcycle) - start;
+
 }
 
 
@@ -131,6 +146,7 @@ void curve25519Sub(uint32_t *r, const uint32_t *a, const uint32_t *b)
 {
    uint_t i;
    int64_t temp;
+	unsigned int start = read_csr(mcycle);
 
    //Compute R = A - 19 - B
    for(temp = -19, i = 0; i < 8; i++)
@@ -146,6 +162,9 @@ void curve25519Sub(uint32_t *r, const uint32_t *a, const uint32_t *b)
 
    //Perform modular reduction
    curve25519Red(r, r);
+
+   		count_sub += read_csr(mcycle) - start;
+
 }
 
 
@@ -160,6 +179,7 @@ void curve25519SubInt(uint32_t *r, const uint32_t *a, uint32_t b)
 {
    uint_t i;
    int64_t temp;
+	unsigned int start = read_csr(mcycle);
 
    //Set initial value
    temp = -19;
@@ -178,6 +198,8 @@ void curve25519SubInt(uint32_t *r, const uint32_t *a, uint32_t b)
 
    //Perform modular reduction
    curve25519Red(r, r);
+      		count_sub += read_csr(mcycle) - start;
+
 }
  
 /**
@@ -275,6 +297,7 @@ void curve25519Mul(uint32_t *r, const uint32_t *a, const uint32_t *b)
    uint64_t c;
    uint64_t temp;
    uint32_t u[16];
+	unsigned int start = read_csr(mcycle);
 
    //Initialize variables
    temp = 0;
@@ -344,6 +367,9 @@ void curve25519Mul(uint32_t *r, const uint32_t *a, const uint32_t *b)
 
    //Reduce non-canonical values
    curve25519Red(r, u);
+
+      		count_mult += read_csr(mcycle) - start;
+
 #endif
 }
 
@@ -397,8 +423,13 @@ void curve25519MulInt(uint32_t *r, const uint32_t *a, uint32_t b)
 
 void curve25519Sqr(uint32_t *r, const uint32_t *a)
 {
+   	unsigned int start = read_csr(mcycle);
+
    //Compute R = (A ^ 2) mod p
    curve25519Mul(r, a, a);
+
+      		count_sqr += read_csr(mcycle) - start;
+
 }
 
 
@@ -462,6 +493,7 @@ void curve25519Inv(uint32_t *r, const uint32_t *a)
 {
    uint32_t u[8];
    uint32_t v[8];
+	unsigned int start = read_csr(mcycle);
 
    //Since GF(p) is a prime field, the Fermat's little theorem can be
    //used to find the multiplicative inverse of A modulo p
@@ -497,6 +529,8 @@ void curve25519Inv(uint32_t *r, const uint32_t *a)
    curve25519Mul(u, u, a);
    curve25519Sqr(u, u);
    curve25519Mul(r, u, a); //A^(2^255 - 21)
+         		count_neg += read_csr(mcycle) - start;
+
 }
 
 

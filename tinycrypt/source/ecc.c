@@ -56,6 +56,8 @@
 #include <tinycrypt/ecc_platform_specific.h>
 #include <string.h>
 
+#include "encoding.h"
+
 /* IMPORTANT: Make sure a cryptographically-secure PRNG is set and the platform
  * has access to enough entropy in order to feed the PRNG regularly. */
 #if default_RNG_defined
@@ -63,6 +65,12 @@ static uECC_RNG_Function g_rng_function = &default_CSPRNG;
 #else
 static uECC_RNG_Function g_rng_function = 0;
 #endif
+
+extern unsigned int count_sub;
+extern unsigned int count_add;
+extern unsigned int count_neg;
+extern unsigned int count_mult;
+extern unsigned int count_sqr;
 
 void uECC_set_rng(uECC_RNG_Function rng_function)
 {
@@ -295,24 +303,30 @@ void uECC_vli_modAdd(uECC_word_t *result, const uECC_word_t *left,
 		     const uECC_word_t *right, const uECC_word_t *mod,
 		     wordcount_t num_words)
 {
+	unsigned int start = read_csr(mcycle);
+
 	uECC_word_t carry = uECC_vli_add(result, left, right, num_words);
 	if (carry || uECC_vli_cmp_unsafe(mod, result, num_words) != 1) {
 	/* result > mod (result = mod + remainder), so subtract mod to get
 	 * remainder. */
 		uECC_vli_sub(result, result, mod, num_words);
 	}
+		count_add += read_csr(mcycle) - start;
+
 }
 
 void uECC_vli_modSub(uECC_word_t *result, const uECC_word_t *left,
 		     const uECC_word_t *right, const uECC_word_t *mod,
 		     wordcount_t num_words)
 {
+	unsigned int start = read_csr(mcycle);
 	uECC_word_t l_borrow = uECC_vli_sub(result, left, right, num_words);
 	if (l_borrow) {
 		/* In this case, result == -diff == (max int) - diff. Since -x % d == d - x,
 		 * we can get the correct result from result + mod (with overflow). */
 		uECC_vli_add(result, result, mod, num_words);
 	}
+		count_sub += read_csr(mcycle) - start;
 }
 
 /* Computes result = product % mod, where product is 2N words long. */
@@ -455,9 +469,11 @@ void uECC_vli_modMult_fast(uECC_word_t *result, const uECC_word_t *left,
 	                      [_right] "r" (_right)      );
 	}
 #else
+	unsigned int start = read_csr(mcycle);
 	uECC_word_t product[2 * NUM_ECC_WORDS];
 	uECC_vli_mult(product, left, right, curve->num_words);
 	curve->mmod_fast(result, product);
+	count_mult += read_csr(mcycle) - start;
 #endif
 }
 
@@ -465,7 +481,9 @@ static void uECC_vli_modSquare_fast(uECC_word_t *result,
 				    const uECC_word_t *left,
 				    uECC_Curve curve)
 {
+	unsigned int start = read_csr(mcycle);
 	uECC_vli_modMult_fast(result, left, left, curve);
+	count_sqr += read_csr(mcycle) - start;
 }
 
 
@@ -493,6 +511,7 @@ void uECC_vli_modInv(uECC_word_t *result, const uECC_word_t *input,
 	uECC_word_t a[NUM_ECC_WORDS], b[NUM_ECC_WORDS];
 	uECC_word_t u[NUM_ECC_WORDS], v[NUM_ECC_WORDS];
 	cmpresult_t cmpResult;
+	unsigned int start = read_csr(mcycle);
 
 	if (uECC_vli_isZero(input, num_words)) {
 		uECC_vli_clear(result, num_words);
@@ -530,6 +549,8 @@ void uECC_vli_modInv(uECC_word_t *result, const uECC_word_t *input,
     		}
   	}
   	uECC_vli_set(result, u, num_words);
+	  	count_neg += read_csr(mcycle) - start;
+
 }
 
 /* ------ Point operations ------ */

@@ -62,8 +62,22 @@ void fp2mul1271(f2elm_t a, f2elm_t b, f2elm_t c)
 
     felm_t t1, t2, t3, t4;
     
+    unsigned long long nsec, nsec1, nsec2;
+    nsec = 0;
+
+    nsec1 = cpu_nseconds();
+    nsec2 = cpu_nseconds();
+
+    nsec1 = cpu_nseconds();
     fpmul1271(a[0], b[0], t1);          // t1 = a0*b0
-    fpmul1271(a[1], b[1], t2);          // t2 = a1*b1
+    nsec2 = cpu_nseconds();
+
+  nsec = nsec+(nsec2-nsec1);
+    print_str("  GF(p) addition runs in ............... ");
+        print_dec(nsec);
+    print_str("clk\n"); 
+
+fpmul1271(a[1], b[1], t2);          // t2 = a1*b1
     fpadd1271(a[0], a[1], t3);          // t3 = a0+a1
     fpadd1271(b[0], b[1], t4);          // t4 = b0+b1
     fpsub1271(t1, t2, c[0]);            // c[0] = a0*b0 - a1*b1
